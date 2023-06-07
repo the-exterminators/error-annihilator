@@ -15,11 +15,12 @@ public class User extends AbstractEntity {
     };
 
     // Password and authentification info missing at the moment
-    public User(String firstName, String lastName, String userName, String email, String userRole) {
+    public User(String firstName, String lastName, String userName, String email, String dummyPassword, String userRole) {
         this.firstName = firstName;
         this.lastName = lastName;
         this.userName = userName;
         this.email = email;
+        this.dummyPassword = dummyPassword;
         this.userRole = userRole;
     }
 
@@ -35,6 +36,10 @@ public class User extends AbstractEntity {
     @Email
     @NotEmpty
     private String email = "";
+
+    // To test has to be removed later
+    @NotEmpty
+    private String dummyPassword = "";
 
     @NotEmpty
     private String userRole ="";
@@ -81,6 +86,14 @@ public class User extends AbstractEntity {
 
     public void setEmail(String email) {
         this.email = email;
+    }
+
+    public String getDummyPassword() {
+        return dummyPassword;
+    }
+
+    public void setDummyPassword(String dummyPassword) {
+        this.dummyPassword = dummyPassword;
     }
 
     public String getUserRole() {
