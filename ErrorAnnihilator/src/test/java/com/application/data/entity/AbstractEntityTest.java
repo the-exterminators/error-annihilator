@@ -34,4 +34,21 @@ public class AbstractEntityTest {
         // Assert
         Assertions.assertEquals(0, version);
     }
+
+    @Test
+    public void testHashCode() {
+        // Arrange
+        AbstractEntity entity1 = new ConcreteEntity();
+        AbstractEntity entity2 = new ConcreteEntity();
+        Long id = 1L;
+        entity1.setId(id);
+        entity2.setId(id);
+
+        // Act
+        int hashCode1 = entity1.hashCode();
+        int hashCode2 = entity2.hashCode();
+
+        // Assert
+        Assertions.assertEquals(hashCode1, hashCode2);
+    }
 }
