@@ -22,4 +22,16 @@ public class AbstractEntityTest {
         // Assert
         Assertions.assertEquals(id, retrievedId);
     }
+
+    @Test
+    public void testGetVersion() {
+        // Arrange
+        AbstractEntity entity = new ConcreteEntity();
+
+        // Act
+        int version = entity.getVersion();
+
+        // Assert
+        Assertions.assertEquals(0, version);
+    }
 }
