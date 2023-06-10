@@ -24,4 +24,21 @@ public class TicketCommentTest {
         Assertions.assertEquals(commentAuthor, comment.getCommentAuthor());
         Assertions.assertEquals(ticket, comment.getTicket());
     }
+
+    @Test
+    public void testGetterSetterMethods() {
+        TicketComment comment = new TicketComment();
+
+        String commentText = "This is a comment.";
+        comment.setCommentText(commentText);
+        Assertions.assertEquals(commentText, comment.getCommentText());
+
+        User commentAuthor = new User();
+        comment.setCommentAuthor(commentAuthor);
+        Assertions.assertEquals(commentAuthor, comment.getCommentAuthor());
+
+        Ticket ticket = new Ticket();
+        comment.setTicket(ticket);
+        Assertions.assertEquals(ticket, comment.getTicket());
+    }
 }
