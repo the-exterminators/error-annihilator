@@ -75,4 +75,13 @@ public class UserTest {
         user.setTicket(ticket);
         Assertions.assertEquals(ticket, user.getTicket());
     }
+
+    @Test
+    public void testToStringMethod() {
+        User user = new User();
+        user.setFirstName("John");
+        user.setLastName("Doe");
+
+        Assertions.assertEquals("John Doe", user.toString());
+    }
 }
