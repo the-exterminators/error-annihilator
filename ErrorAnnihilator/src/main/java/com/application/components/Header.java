@@ -5,10 +5,7 @@ import com.application.views.Help;
 import com.vaadin.flow.component.applayout.AppLayout;
 import com.vaadin.flow.component.applayout.DrawerToggle;
 import com.vaadin.flow.component.button.Button;
-import com.vaadin.flow.component.html.H1;
 import com.vaadin.flow.component.html.Image;
-import com.vaadin.flow.component.html.Paragraph;
-import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
@@ -18,6 +15,7 @@ import com.vaadin.flow.router.RouterLink;
 import com.vaadin.flow.theme.lumo.LumoUtility;
 
 public class Header extends AppLayout {
+    TextField ticketSearch = new TextField();
     public Header() {
         createHeader();
         createDrawer();
@@ -27,7 +25,7 @@ public class Header extends AppLayout {
         HorizontalLayout content = new HorizontalLayout();
         content.add(new DrawerToggle());
 
-        content.setWidthFull();
+        //content.setWidthFull();
         content.setDefaultVerticalComponentAlignment(FlexComponent.Alignment.CENTER);
         content.addClassNames(
                 LumoUtility.Padding.Vertical.NONE,
@@ -37,26 +35,25 @@ public class Header extends AppLayout {
         logo.setWidth("200px");
         content.add(logo);
 
-
-
         addToNavbar(content);
     }
 
     private void createDrawer() {
         VerticalLayout content = new VerticalLayout();
 
-        TextField searchbar = new TextField();
-        searchbar.setPlaceholder("Ticket Number");
-        searchbar.setClearButtonVisible(true);
-        searchbar.setPrefixComponent(VaadinIcon.SEARCH.create());
-        content.add(searchbar);
+        ticketSearch.setPlaceholder("Ticket Number");
+        ticketSearch.setClearButtonVisible(true);
+        ticketSearch.setWidth("170px");
+        Button searchButton = new Button(VaadinIcon.SEARCH.create());
+        content.add(new HorizontalLayout(ticketSearch, searchButton));
 
-        content.add(new RouterLink("Assigned Tickets", AssignedTickets.class)); // Home
+        content.add(new RouterLink("Assigned Tickets", AssignedTickets.class)); // Home (for now)
         content.add(new RouterLink("Help", Help.class));
-        content.add(new Paragraph("Notifications")); // Placeholder
 
         Button logout = new Button("Log out");// + u, e -> securityService.logout());
         content.add(logout); // Placeholder
+
+        setDrawerOpened(false);
 
         addToDrawer(content);
     }
