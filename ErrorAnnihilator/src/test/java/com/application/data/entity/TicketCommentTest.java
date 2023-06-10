@@ -11,4 +11,17 @@ public class TicketCommentTest {
         Assertions.assertNull(comment.getCommentAuthor());
         Assertions.assertNull(comment.getTicket());
     }
+
+    @Test
+    public void testParameterizedConstructor() {
+        String commentText = "This is a comment.";
+        User commentAuthor = new User();
+        Ticket ticket = new Ticket();
+
+        TicketComment comment = new TicketComment(commentText, commentAuthor, ticket);
+
+        Assertions.assertEquals(commentText, comment.getCommentText());
+        Assertions.assertEquals(commentAuthor, comment.getCommentAuthor());
+        Assertions.assertEquals(ticket, comment.getTicket());
+    }
 }
