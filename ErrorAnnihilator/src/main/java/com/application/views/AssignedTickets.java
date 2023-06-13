@@ -133,6 +133,7 @@ public class AssignedTickets extends VerticalLayout {
         // Add listeners
         grid.asSingleSelect().addValueChangeListener(e -> editTicket(e.getValue()));
         grid.asSingleSelect().addValueChangeListener(e -> ticketForm.validateAndUpdate());
+        grid.asSingleSelect().addValueChangeListener(e -> ticketForm.updateAssignedUsers());
 
         // Set items for grid
         GridListDataView<Ticket> dataView = grid.setItems(testTickets); // replace with dataservice.getTickets()

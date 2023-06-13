@@ -4,10 +4,7 @@ import com.application.data.entity.Ticket;
 import com.application.data.entity.TicketComment;
 import com.application.data.entity.TicketStatus;
 import com.application.data.entity.User;
-import com.vaadin.flow.component.Component;
-import com.vaadin.flow.component.ComponentEvent;
-import com.vaadin.flow.component.ComponentEventListener;
-import com.vaadin.flow.component.Key;
+import com.vaadin.flow.component.*;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.combobox.ComboBox;
@@ -46,7 +43,8 @@ public class EditTicketForm extends FormLayout {
     DateTimePicker createdTimeStamp = new DateTimePicker();
     ComboBox<TicketStatus> ticketStatus = new ComboBox<>("Status"); // I want this to be a dropdown of predefined statuses
     TextField ticketCreator = new TextField("Creator");
-    ComboBox<List<User>> assignedUsers = new ComboBox<>("Assignees"); // I'd like a MultiSelectComboBox, but it doesn't work rn
+    ComboBox<List<User>> assignedUsers = new ComboBox<>("Assignees"); // for binding
+    MultiSelectComboBox<String> assignedUsersMulti = new MultiSelectComboBox<>("Assignees"); // for display
 
     // Comment variables
     MessageList ticketComments = new MessageList(); // The end display
@@ -71,8 +69,12 @@ public class EditTicketForm extends FormLayout {
         // set items and labels for lists
         ticketStatus.setItems(statuses);
         ticketStatus.setItemLabelGenerator(TicketStatus::getStatusName);
-        assignedUsers.setItems(assignees);
         ticketComment.setItems(comments);
+
+        // set items Assigned Users
+        assignedUsers.setItems(assignees);
+        updateAssignedUsers();
+        assignedUsers.addValueChangeListener(event -> updateAssignedUsers());
 
         configureFormLayout();
 
@@ -84,10 +86,22 @@ public class EditTicketForm extends FormLayout {
             ticketCreator,
             ticketType,
             ticketStatus,
-            assignedUsers,
+            assignedUsersMulti,
             commentSection
         );
 
+    }
+
+    // Update Assigned Users on select in grid
+    public void updateAssignedUsers() {
+        List<String> list = new ArrayList<>();
+        if(ticket != null) {
+            for (User user : this.ticket.getAssignedUsers()) {
+                list.add(user.getUserName());
+            }
+            assignedUsersMulti.setItems(list);
+            assignedUsersMulti.select(list);
+        }
     }
 
     // To bind everything to ticket entity
