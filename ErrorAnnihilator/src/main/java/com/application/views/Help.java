@@ -1,21 +1,13 @@
 package com.application.views;
 
 import com.application.components.Header;
-import com.vaadin.flow.component.ClickEvent;
 import com.vaadin.flow.component.Component;
-import com.vaadin.flow.component.ComponentEventListener;
-import com.vaadin.flow.component.Text;
 import com.vaadin.flow.component.accordion.Accordion;
-import com.vaadin.flow.component.contextmenu.MenuItem;
 import com.vaadin.flow.component.html.*;
-import com.vaadin.flow.component.menubar.MenuBar;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.tabs.TabSheet;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
-import com.vaadin.flow.spring.annotation.SpringComponent;
-import jakarta.annotation.security.PermitAll;
-import org.springframework.context.annotation.Scope;
 
 @Route(value = "help")
 @PageTitle("Help | Error Annihilator")
@@ -27,6 +19,7 @@ public class Help extends VerticalLayout {
         setSizeFull();
     }
 
+    // all content is created here
     private VerticalLayout getContent(){
         VerticalLayout content = new VerticalLayout();
         content.addClassNames("content");
@@ -46,6 +39,7 @@ public class Help extends VerticalLayout {
         return content;
     }
 
+    // Content of Menu Tab AssignedTickets
     private Component assignedTicketsContent() {
         // Accordion for better orientation
         // https://vaadin.com/docs/latest/components/accordion
@@ -60,6 +54,7 @@ public class Help extends VerticalLayout {
         return accordion;
     }
 
+    // Content of Menu Tab Dashboard
     private Component dashboardContent() {
         // Accordion for better orientation
         // https://vaadin.com/docs/latest/components/accordion

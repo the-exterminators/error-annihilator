@@ -3,49 +3,34 @@ package com.application.views;
 import com.application.components.EditTicketForm;
 import com.application.components.Header;
 import com.application.data.entity.Ticket;
+import com.application.data.entity.TicketComment;
 import com.application.data.entity.TicketStatus;
 import com.application.data.entity.User;
-import com.vaadin.flow.component.ClickEvent;
 import com.vaadin.flow.component.Component;
-import com.vaadin.flow.component.ComponentEventListener;
-import com.vaadin.flow.component.Text;
-import com.vaadin.flow.component.button.Button;
-import com.vaadin.flow.component.combobox.ComboBox;
-import com.vaadin.flow.component.contextmenu.HasMenuItems;
-import com.vaadin.flow.component.contextmenu.MenuItem;
-import com.vaadin.flow.component.contextmenu.SubMenu;
-import com.vaadin.flow.component.dialog.Dialog;
-import com.vaadin.flow.component.formlayout.FormLayout;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.grid.HeaderRow;
-import com.vaadin.flow.component.grid.ItemClickEvent;
 import com.vaadin.flow.component.grid.dataview.GridListDataView;
 import com.vaadin.flow.component.html.*;
-import com.vaadin.flow.component.icon.Icon;
-import com.vaadin.flow.component.icon.VaadinIcon;
-import com.vaadin.flow.component.menubar.MenuBar;
-import com.vaadin.flow.component.menubar.MenuBarVariant;
-import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.component.textfield.TextFieldVariant;
-import com.vaadin.flow.data.renderer.ComponentRenderer;
 import com.vaadin.flow.data.value.ValueChangeMode;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 import java.util.function.Consumer;
-import java.util.stream.Stream;
 
 @PageTitle("Assigned Tickets | Error Annihilator")
 @Route(value = "")
 public class AssignedTickets extends VerticalLayout {
     Grid<Ticket> grid = new Grid<>(Ticket.class, false);
-    EditTicketForm ticketForm;
+    EditTicketForm ticketForm; // Form/Editor
+
+    // Constructor
     public AssignedTickets() {
+        addClassName("assignedTickets-view");
+
         // This is how to implement the header
         setSizeFull();
         Header header = new com.application.components.Header();
@@ -53,69 +38,122 @@ public class AssignedTickets extends VerticalLayout {
         add(header); // adds Header with content into the View
     }
 
-
+    // Have all content be gathered in this function
     private VerticalLayout getContent(){
         VerticalLayout content = new VerticalLayout();
         content.addClassNames("content");
+        content.setSizeFull();
 
         // Main Page Title
         H1 title = new H1("Assigned Tickets");
         content.add(title);
 
-        // Add grid to content
+        // Add grid and form to content
         configureGrid();
-        grid.setMinWidth("800px");
-        content.setFlexGrow(2, grid);
-
-        // Add form to content
         configureForm();
-        content.setFlexGrow(1, ticketForm);
+        content.add(grid, ticketForm);
 
-        content.add(new HorizontalLayout(grid, ticketForm));
-
-        content.setSizeFull();
+        closeEditor(); // standard closed form
 
         return content;
     }
 
+    // FORM =======================================
+    // Configure the editor/form
     private void configureForm() {
-        ticketForm = new EditTicketForm(Collections.emptyList(), Collections.emptyList());
-        ticketForm.setWidth("25em");
+        ticketForm = new EditTicketForm(Collections.emptyList(), Collections.emptyList(), Collections.emptyList()); // Replace with actual lists
+        ticketForm.setSizeFull();
+        ticketForm.addCloseListener(e -> closeEditor()); // add listener to close form
+        ticketForm.addSaveListener(this::saveTicket); // add listener to save ticket - doesn't work yet
     }
 
+    // Handles selected ticket from grid
+    private void editTicket(Ticket ticket) {
+        // If a ticket is selected or unselected open/close editor/form and set current ticket
+        if(ticket == null){
+            closeEditor();
+        } else {
+            ticketForm.setTicket(ticket);
+            ticketForm.setVisible(true);
+            addClassName("editing");
+            grid.getStyle().set("display", "none");
+        }
+    }
+
+    // Closes the editor/form
+    private void closeEditor() {
+        ticketForm.setTicket(null);
+        ticketForm.setVisible(false);
+        removeClassName("editing");
+        grid.getStyle().set("display", "block");
+        grid.asSingleSelect().clear(); // deselect ticket in grid
+    }
+
+    // Saves ticket, updates the grid and closes editor/form
+    private void saveTicket(EditTicketForm.SaveEvent event) {
+       // service.saveTicket(event.getTicket()); // After DB integration
+        updateList();
+        closeEditor();
+    }
+
+    // update the grid
+    private void updateList() {
+        // grid.setItems(service.findallTickets(filterText.getValue())); // After DB integration
+    }
+
+    // GRID ====================================
+    // Configure the grid
     private void configureGrid() {
-        // Test items
+        // Test users
         List<Ticket> testTickets = new ArrayList<>();
-        testTickets.add(new Ticket("I need help", "type", "test test test", new TicketStatus("open"), new User("Jana", "Burns", "Burnsjana", "email", "1234", "dev"), null));
-        testTickets.add(new Ticket("hello", "type", "hallo hallo", new TicketStatus("in progress"), new User("Jana", "Burns", "Burnsjana", "email", "1234", "dev"), null));
+        List<User> testUsers = new LinkedList<>();
+        User testUser = new User("Jana", "Burns", "Burnsjana", "email", "1234", "dev");
+        testUsers.add(testUser);
+
+        // Test ticket 1
+        Ticket ticketOne = new Ticket("I need help", "bug", "test test test", new TicketStatus("open"), testUser, testUsers);
+        List<TicketComment> listOne = new ArrayList<>();
+        listOne.add(new TicketComment("hello", testUser, ticketOne));
+        ticketOne.setTicketComment(listOne);
+        testTickets.add(ticketOne);
+
+        // Test ticket 2
+        Ticket ticketTwo = new Ticket("hello", "feature", "hallo hallo", new TicketStatus("in progress"), testUser, testUsers);
+        List<TicketComment> listTwo = new ArrayList<>();
+        listTwo.add(new TicketComment("hello", testUser, ticketTwo));
+        ticketTwo.setTicketComment(listTwo);
+        testTickets.add(ticketTwo);
 
         // Columns
         Grid.Column<Ticket> titleColumn = grid.addColumn("ticketName").setHeader("Title");
         Grid.Column<Ticket> descrColumn = grid.addColumn("description");
-        Grid.Column<Ticket> statusColum = grid.addColumn(ticket -> ticket.getTicketStatus().getStatusName()).setHeader("Status"); // Need a progress bar integrate in ticketstatus
+        // no need for progress bar for the devs, they only need categories
+        Grid.Column<Ticket> statusColum = grid.addColumn(ticket -> ticket.getTicketStatus().getStatusName()).setHeader("Status");
+
+        // Add listeners
+        grid.asSingleSelect().addValueChangeListener(e -> editTicket(e.getValue()));
+        grid.asSingleSelect().addValueChangeListener(e -> ticketForm.validateAndUpdate());
 
         // Set items for grid
-        List<Ticket> tickets = Collections.<Ticket>emptyList(); // replace with dataservice.getTickets()
-        GridListDataView<Ticket> dataView = grid.setItems(testTickets); // replace with tickets after testing
+        GridListDataView<Ticket> dataView = grid.setItems(testTickets); // replace with dataservice.getTickets()
 
-        // Filter
-        // filter by https://vaadin.com/docs/latest/components/grid
+        // Filter - https://vaadin.com/docs/latest/components/grid
         TicketFilter ticketFilter = new TicketFilter(dataView);
         grid.getHeaderRows().clear();
         HeaderRow headerRow = grid.appendHeaderRow();
-        headerRow.getCell(titleColumn).setComponent(
-                createFilterHeader("Filter Title", ticketFilter::setTitle));
-        headerRow.getCell(descrColumn).setComponent(
-                createFilterHeader("Filter Description", ticketFilter::setDescription));
-        headerRow.getCell(statusColum).setComponent(
-                createFilterHeader("Filter Status", ticketFilter::setStatus));
+        headerRow.getCell(titleColumn).setComponent(createFilterHeader("Filter Title", ticketFilter::setTitle));
+        headerRow.getCell(descrColumn).setComponent(createFilterHeader("Filter Description", ticketFilter::setDescription));
+        headerRow.getCell(statusColum).setComponent(createFilterHeader("Filter Status", ticketFilter::setStatus));
 
         // Grid Size Settings
         grid.setSizeFull();
+        grid.addClassName("assignedTickets-grid");
+        grid.setMinWidth("90vw");
         grid.getColumns().forEach(col -> col.setAutoWidth(true));
     }
 
     // FILTER ==================================
+    // This creates the filter header with the textfield etc
     private static Component createFilterHeader(String labelText, Consumer<String> filterChangeConsumer) {
         TextField textField = new TextField();
         textField.setPlaceholder(labelText + " ...");
@@ -129,6 +167,7 @@ public class AssignedTickets extends VerticalLayout {
         return textField;
     }
 
+    // Class to filter tickets in grid
     private static class TicketFilter {
         private final GridListDataView<Ticket> dataView;
         private String title;
@@ -168,7 +207,6 @@ public class AssignedTickets extends VerticalLayout {
                     || value.toLowerCase().contains(searchTerm.toLowerCase());
         }
     }
-
 
 }
 

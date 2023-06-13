@@ -15,17 +15,19 @@ import com.vaadin.flow.router.RouterLink;
 import com.vaadin.flow.theme.lumo.LumoUtility;
 
 public class Header extends AppLayout {
-    TextField ticketSearch = new TextField();
+    TextField ticketSearch = new TextField(); // search field - not functional atm
+
+    // Constructor
     public Header() {
         createHeader();
         createDrawer();
     }
 
+    // Create the header with toggle and logo
     private void createHeader() {
         HorizontalLayout content = new HorizontalLayout();
         content.add(new DrawerToggle());
 
-        //content.setWidthFull();
         content.setDefaultVerticalComponentAlignment(FlexComponent.Alignment.CENTER);
         content.addClassNames(
                 LumoUtility.Padding.Vertical.NONE,
@@ -38,6 +40,7 @@ public class Header extends AppLayout {
         addToNavbar(content);
     }
 
+    // Create Navigation Drawer content
     private void createDrawer() {
         VerticalLayout content = new VerticalLayout();
 
