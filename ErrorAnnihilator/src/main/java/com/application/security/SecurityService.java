@@ -7,16 +7,20 @@ import org.springframework.stereotype.Component;
 @Component
 public class SecurityService {
 
-    private final AuthenticationContext authenticationContext;
+    private AuthenticationContext authenticationContext;
+
+    public SecurityService() {};
 
     public SecurityService(AuthenticationContext authenticationContext) {
         this.authenticationContext = authenticationContext;
     }
 
+    //Retrieves the authenticated user details.
     public UserDetails getAuthenticatedUser() {
         return authenticationContext.getAuthenticatedUser(UserDetails.class).get();
     }
 
+    //Logs out the currently authenticated user.
     public void logout() {
         authenticationContext.logout();
     }
