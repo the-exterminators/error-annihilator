@@ -16,18 +16,21 @@ public class SecurityConfig extends VaadinWebSecurity {
 
     /**
      * Only an empty constructor needed since VaadinWebSecurity already requires a UserDetailsService dependency
-     * there is no need to explicitly inject it again in the SecurityConfig constructor.*/
+     * there is no need to explicitly inject it again in the SecurityConfig constructor.
+    */
     SecurityConfig() {};
 
     @Override
     protected void configure(HttpSecurity http) throws Exception {
         // Configure authorization rules for HTTP requests
-        http.authorizeHttpRequests();
+        http.authorizeHttpRequests()
+                // Since our logo is an svg file, allowing access for it here explicitly
+                .requestMatchers("/images/*.svg").permitAll();
         // Call the superclass's configure() method to apply any additional configuration
         super.configure(http);
         // Set the login view for the specified HTTP security configuration
         /** HAS TO BE REINTEGRATED ONCE LOGINVIEW ADDED!!! */
-        // setLoginView(http, LoginView.class);
+        //setLoginView(http, LoginView.class);
     }
 
 
