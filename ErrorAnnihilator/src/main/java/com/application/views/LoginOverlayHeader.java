@@ -1,5 +1,5 @@
 
-package com.application.view;
+package com.application.views;
 
         import com.vaadin.flow.component.login.LoginOverlay;
         import com.vaadin.flow.component.html.Div;
