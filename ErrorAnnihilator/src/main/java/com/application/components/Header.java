@@ -2,6 +2,7 @@ package com.application.components;
 
 import com.application.views.AssignedTickets;
 import com.application.views.Help;
+import com.application.views.createTicketView.CreateTicketViewView;
 import com.vaadin.flow.component.applayout.AppLayout;
 import com.vaadin.flow.component.applayout.DrawerToggle;
 import com.vaadin.flow.component.button.Button;
@@ -52,6 +53,8 @@ public class Header extends AppLayout {
 
         content.add(new RouterLink("Assigned Tickets", AssignedTickets.class)); // Home (for now)
         content.add(new RouterLink("Help", Help.class));
+        content.add(new RouterLink("CreateTicketViewView", CreateTicketViewView.class));
+
 
         Button logout = new Button("Log out");// + u, e -> securityService.logout());
         content.add(logout); // Placeholder
