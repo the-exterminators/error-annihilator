@@ -3,12 +3,19 @@ package com.application.views;
 import com.application.components.Header;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.accordion.Accordion;
-import com.vaadin.flow.component.html.*;
+import com.vaadin.flow.component.html.H1;
+import com.vaadin.flow.component.html.Paragraph;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.tabs.TabSheet;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
+import com.vaadin.flow.server.auth.AnonymousAllowed;
 
+/**
+ * @AnonymousAllowed has to be replaced by @PermitAll once the Loginview has been added
+ * Has to be left like this in the meantime to be able to see the view
+ */
+@AnonymousAllowed
 @Route(value = "help")
 @PageTitle("Help | Error Annihilator")
 public class Help extends VerticalLayout {
