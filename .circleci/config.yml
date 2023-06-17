@@ -12,16 +12,21 @@ jobs:
     steps:
       - checkout
       - run: mvn $MAVEN_CLI_OPTS clean package -Pproduction -e
+
       - store_artifacts:
-            path: target
-            destination: target
+          path: target
+          destination: target
 
   test:
     docker:
       - image: maven:3.8.1-openjdk-17-slim
     steps:
       - checkout
-      - run: mvn test -e
-      - store_artifacts:
-          path: reports
-          destination: reports
+      - run:
+          name: Save test results
+          command: |
+            mkdir -p ~/test-results/junit/
+            find . -type f -regex ".*/target/surefire-reports/.*xml" -exec cp {} ~/test-results/junit/ \;
+          when: always
+      - store_test_results:
+          path: ~/test-results/junit/
