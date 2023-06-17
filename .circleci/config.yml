@@ -33,7 +33,7 @@ jobs:
 
 workflows:
   Test-and-Build:
-    steps:
+    jobs:
       - test
       - build:
           requires:
