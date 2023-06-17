@@ -3,6 +3,15 @@ FROM maven:3.8.1-openjdk-17-slim as build
 RUN curl -sL https://deb.nodesource.com/setup_14.x | bash -
 RUN apt-get update -qq && apt-get install -qq --no-install-recommends nodejs
 
+# install git and ssh client on image
+RUN apt-get update && apt-get install -y openssh-client git
+
+#RUN apt-get update && \
+#    apt-get install --yes --no-install-recommends \
+#    openssh-client \
+#    git \
+#    && apt-get clean && \
+
 # Stop running as root at this point
 RUN useradd -m myuser
 WORKDIR /usr/src/app/

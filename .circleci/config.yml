@@ -30,3 +30,11 @@ jobs:
           when: always
       - store_test_results:
           path: ~/test-results/junit/
+
+workflows:
+  Test-and-Build:
+    steps:
+      - test
+      - build:
+          requires:
+            - test
