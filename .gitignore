@@ -154,3 +154,11 @@ dist
 # Maven
 log/
 target/
+
+# additional
+vite.config.ts
+vite.generated.ts
+tsconfig.json
+types.d.ts
+frontend/generated/
+package-lock.json

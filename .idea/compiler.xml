@@ -7,12 +7,14 @@
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
         <module name="ErrorAnnihilator" />
+        <module name="troubleshooting-ticketing-system" />
       </profile>
     </annotationProcessing>
   </component>
   <component name="JavacSettings">
     <option name="ADDITIONAL_OPTIONS_OVERRIDE">
       <module name="ErrorAnnihilator" options="-parameters" />
+      <module name="troubleshooting-ticketing-system" options="-parameters" />
     </option>
   </component>
 </project>
