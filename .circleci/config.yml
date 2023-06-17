@@ -30,6 +30,7 @@ jobs:
           when: always
       - store_test_results:
           path: ~/test-results/junit/
+          destination: ~/test-results/junit/
 
 workflows:
   Test-and-Build:
