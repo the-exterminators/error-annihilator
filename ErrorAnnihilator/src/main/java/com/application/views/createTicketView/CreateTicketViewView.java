@@ -12,16 +12,17 @@ import com.vaadin.flow.component.textfield.NumberField;
 import com.vaadin.flow.component.textfield.TextArea;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
-import com.vaadin.flow.router.RouteAlias;
 import com.vaadin.flow.server.auth.AnonymousAllowed;
 import com.vaadin.flow.theme.lumo.LumoUtility.Gap;
-import jakarta.annotation.security.PermitAll;
+
 
 @AnonymousAllowed
 @PageTitle("CreateTicketView")
 @Route(value = "Create-Ticket-View", layout = MainLayout.class)
 
 public class CreateTicketViewView extends Composite<VerticalLayout> {
+
+
 
     private HorizontalLayout layoutRow = new HorizontalLayout();
 
@@ -48,12 +49,14 @@ public class CreateTicketViewView extends Composite<VerticalLayout> {
         layoutColumn2.setWidthFull();
         avatar.setName("Isabelle Mariacher");
         numberField.setLabel("Ticket number");
+        numberField.setReadOnly(true); // Set field as read-only
         comboBox.setLabel("Urgency 🐞?");
         setComboBoxSampleData(comboBox);
         textArea.setLabel("Description");
         textArea.setWidthFull();
         layoutColumn2.setFlexGrow(1.0, textArea);
         dateTimePicker.setLabel("Ticket created:");
+        dateTimePicker.setReadOnly(true); // Set field as read-only
         setMenuBarSampleData(menuBar);
         getContent().add(layoutRow);
         getContent().add(layoutColumn2);
