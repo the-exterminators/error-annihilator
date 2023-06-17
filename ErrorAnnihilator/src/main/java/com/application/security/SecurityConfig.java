@@ -1,5 +1,6 @@
 package com.application.security;
 
+import com.application.views.LoginOverlayHeader;
 import com.vaadin.flow.spring.security.VaadinWebSecurity;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -30,7 +31,7 @@ public class SecurityConfig extends VaadinWebSecurity {
         super.configure(http);
         // Set the login view for the specified HTTP security configuration
         /** HAS TO BE REINTEGRATED ONCE LOGINVIEW ADDED!!! */
-        //setLoginView(http, LoginView.class);
+        setLoginView(http, LoginOverlayHeader.class);
     }
 
 
