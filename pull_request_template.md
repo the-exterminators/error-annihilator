@@ -23,6 +23,8 @@
 
 - [ ] I reviewed my code
 - [ ] I updated documentation
+- [ ] I added basic automated tests
+- [ ] All tests are successful
 - [ ] I updated the corresponding Jira Issues to WAITING FOR APPROVAL
 
 ## Checklist reviewer/test-engineer
@@ -30,8 +32,6 @@
 - [ ] The changes are self-explanatory and feasible
 - [ ] Code quality is high or at least consistent with the current project code
 - [ ] Code-style is consistent with project
-- [ ] I added automated tests
-- [ ] All tests are successful
 - [ ] I tested the changes manually and left the 'happy-path'
 - [ ] I updated the corresponding Jira Issues to DONE/APPROVED
 - [ ] All tests passed successfully
