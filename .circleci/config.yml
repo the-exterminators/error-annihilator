@@ -59,34 +59,29 @@ jobs:
       image: ubuntu-2004:202010-01
     steps:
       - checkout
-      - when:
-          condition:
-            equal: [SP-69-Deploy-Error-Annihilator-on-GCP, << pipeline.git.branch >> ]
-          steps:
-            - run:
-              name: Build Java App and Docker Image
-              command: |
-                echo 'export PATH=~$PATH:~/.local/bin' >> $BASH_ENV
+      - run:
+          name: Build Java App and Docker Image
+          command: |
+             echo 'export PATH=~$PATH:~/.local/bin' >> $BASH_ENV
                 echo ${GCP_PROJECT_KEY} | base64 --decode --ignore-garbage > $HOME/gcp-service-key.json
                 echo 'export GOOGLE_CLOUD_KEYS=$(cat $HOME/gcp-service-key.json)' >> $BASH_ENV
                 echo 'export TAG=${CIRCLE_SHA1} >> $BASH_ENV
-            - gcp-gcr/gcr-auth:
-                gcp-service-key: GCP_PROJECT_KEY
-                google-project-id: GOOGLE_PROJECT_ID
-                google-compute-region: GOOGLE_COMPUTE_REGION
-                google-compute-zone: GOOGLE_COMPUTE_ZONE
-            - gcp-gcr/build-image:
-                image: error-annihilator
-                no_output_timeout: 10m
-                registry-url: eu.gcr.io
-            - gcp-gcr/push-image:
-                digest-path: /tmp/digest.txt
-                image: error-annihilator
-                registry-url: eu.gcr.io
-            - run:
-                command: |
-                  echo 'Digest is: $(</tmp/digest.txt)'
-
+      - gcp-gcr/gcr-auth:
+          gcp-service-key: GCP_PROJECT_KEY
+          google-project-id: GOOGLE_PROJECT_ID
+          google-compute-region: GOOGLE_COMPUTE_REGION
+          google-compute-zone: GOOGLE_COMPUTE_ZONE
+      - gcp-gcr/build-image:
+          image: error-annihilator
+          no_output_timeout: 10m
+          registry-url: eu.gcr.io
+      - gcp-gcr/push-image:
+          digest-path: /tmp/digest.txt
+          image: error-annihilator
+          registry-url: eu.gcr.io
+      - run:
+          command: |
+            echo 'Digest is: $(</tmp/digest.txt)'
 
 workflows:
   install-and-configure-cli:
@@ -100,3 +95,7 @@ workflows:
       - build:
           requires:
             - test
+
+  Push-Image-To-GCP:
+    jobs:
+      - build-and-push-master
