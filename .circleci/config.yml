@@ -12,10 +12,10 @@ jobs:
     steps:
       - checkout
       - run:
-        name: Build Project with Dependencies
-        command: |
-          npm install express@9.5.1
-          mvn clean package -Pproduction -e
+          name: Build Project with Dependencies
+          command: |
+            npm install express@9.5.1
+            mvn clean package -Pproduction -e
 
       - store_artifacts:
           path: target
