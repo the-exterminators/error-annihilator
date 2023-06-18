@@ -67,7 +67,7 @@ jobs:
                 echo 'export GOOGLE_CLOUD_KEYS=$(cat $HOME/gcp-service-key.json)' >> $BASH_ENV
                 echo 'export TAG=${CIRCLE_SHA1} >> $BASH_ENV
       - gcp-gcr/gcr-auth:
-          gcp-service-key: GCP_PROJECT_KEY
+          gcloud-service-key: GCP_PROJECT_KEY
           google-project-id: GOOGLE_PROJECT_ID
           google-compute-region: GOOGLE_COMPUTE_REGION
           google-compute-zone: GOOGLE_COMPUTE_ZONE
