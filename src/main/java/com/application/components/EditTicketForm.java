@@ -25,6 +25,7 @@ import com.vaadin.flow.data.binder.Setter;
 import com.vaadin.flow.data.binder.ValidationException;
 import com.vaadin.flow.function.ValueProvider;
 import com.vaadin.flow.shared.Registration;
+import jakarta.annotation.security.PermitAll;
 
 import java.sql.Timestamp;
 import java.time.Instant;
@@ -32,6 +33,7 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.*;
 
+@PermitAll
 public class EditTicketForm extends FormLayout {
     Binder<Ticket> binder = new BeanValidationBinder<>(Ticket.class); // to bind to Ticket Entity
     Ticket ticket; // To replace with current ticket, that is selected

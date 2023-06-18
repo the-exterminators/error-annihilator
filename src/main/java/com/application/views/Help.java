@@ -1,6 +1,7 @@
 package com.application.views;
 
 import com.application.components.Header;
+import com.application.security.SecurityService;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.accordion.Accordion;
 import com.vaadin.flow.component.html.H1;
@@ -9,18 +10,19 @@ import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.tabs.TabSheet;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
-import com.vaadin.flow.server.auth.AnonymousAllowed;
+import com.vaadin.flow.spring.security.AuthenticationContext;
+import jakarta.annotation.security.PermitAll;
 
-/**
- * @AnonymousAllowed has to be replaced by @PermitAll once the Loginview has been added
- * Has to be left like this in the meantime to be able to see the view
- */
-@AnonymousAllowed
+@PermitAll
 @Route(value = "help")
 @PageTitle("Help | Error Annihilator")
 public class Help extends VerticalLayout {
-    public Help(){
-        Header header = new com.application.components.Header();
+
+    private final SecurityService securityService;
+    public Help(AuthenticationContext authenticationContext){
+        SecurityService securityService = new SecurityService(authenticationContext);
+        this.securityService = securityService;
+        Header header = new Header(securityService);
         header.setContent(getContent()); // getContent should contain all the pages contents
         add(header); // adds Header with content into the View
         setSizeFull();

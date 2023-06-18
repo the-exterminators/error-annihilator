@@ -1,8 +1,9 @@
 package com.application.components;
 
+import com.application.security.SecurityService;
 import com.application.views.AssignedTickets;
 import com.application.views.Help;
-import com.application.views.createTicketView;
+import com.application.views.CreateTicket;
 import com.vaadin.flow.component.applayout.AppLayout;
 import com.vaadin.flow.component.applayout.DrawerToggle;
 import com.vaadin.flow.component.button.Button;
@@ -14,15 +15,22 @@ import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.router.RouterLink;
 import com.vaadin.flow.theme.lumo.LumoUtility;
+import jakarta.annotation.security.PermitAll;
 
+@PermitAll
 public class Header extends AppLayout {
+    private final SecurityService securityService;
+
     TextField ticketSearch = new TextField(); // search field - not functional atm
 
+
     // Constructor
-    public Header() {
+    public Header(SecurityService securityService) {
+        this.securityService = securityService;
         createHeader();
         createDrawer();
     }
+
 
     // Create the header with toggle and logo
     private void createHeader() {
@@ -53,10 +61,11 @@ public class Header extends AppLayout {
 
         content.add(new RouterLink("Assigned Tickets", AssignedTickets.class)); // Home (for now)
         content.add(new RouterLink("Help", Help.class));
-        content.add(new RouterLink("CreateTicketView", createTicketView.class));
+        content.add(new RouterLink("Create Ticket", CreateTicket.class));
 
 
-        Button logout = new Button("Log out");// + u, e -> securityService.logout());
+        String u = securityService.getAuthenticatedUser().getUsername();
+        Button logout = new Button("Log out " + u, e -> securityService.logout());
         content.add(logout); // Placeholder
 
         setDrawerOpened(false);
