@@ -1,6 +1,7 @@
 package com.application.views;
 
 import com.application.components.Header;
+import com.application.security.SecurityService;
 import com.vaadin.flow.component.avatar.Avatar;
 import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.datetimepicker.DateTimePicker;
@@ -12,12 +13,15 @@ import com.vaadin.flow.component.textfield.TextArea;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
-import com.vaadin.flow.server.auth.AnonymousAllowed;
+import com.vaadin.flow.spring.security.AuthenticationContext;
+import jakarta.annotation.security.PermitAll;
 
-@AnonymousAllowed
-@PageTitle("CreateTicketView | Error Annihilator")
+@PermitAll
+@PageTitle("Create Ticket | Error Annihilator")
 @Route(value = "create-ticket-view")
-public class createTicketView extends VerticalLayout {
+public class CreateTicket extends VerticalLayout {
+
+    private final SecurityService securityService;
     private Avatar avatar = new Avatar();
     private NumberField ticketNumber = new NumberField();
     private ComboBox<String> ticketType = new ComboBox<>();
@@ -28,8 +32,9 @@ public class createTicketView extends VerticalLayout {
     private DateTimePicker dateCreated = new DateTimePicker();
     private MenuBar buttons = new MenuBar();
 
-    public createTicketView() {
-        Header header = new com.application.components.Header();
+    public CreateTicket(AuthenticationContext authenticationContext) {
+        securityService = new SecurityService(authenticationContext);
+        Header header = new Header(securityService);
         header.setContent(getCreateTicketContent());
         add(header);
     }

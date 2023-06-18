@@ -79,8 +79,8 @@ public class MainLayout extends AppLayout {
 
     private MenuItemInfo[] createMenuItems() {
         return new MenuItemInfo[]{ //
-                new MenuItemInfo("CreateTicketView", LineAwesomeIcon.PENCIL_RULER_SOLID.create(),
-                        createTicketView.class), //
+                new MenuItemInfo("Create Ticket", LineAwesomeIcon.PENCIL_RULER_SOLID.create(),
+                        CreateTicket.class), //
 
         };
     }
