@@ -5,13 +5,17 @@ version: 2.1
 jobs:
   build:
     docker:
-      - image: maven:3.9.2-openjdk-17-slim
+      - image: maven:3.8.1-openjdk-17-slim
     environment:
       MAVEN_CLI_OPTS: "--batch-mode"
 
     steps:
       - checkout
-      - run: mvn $MAVEN_CLI_OPTS clean package -Pproduction -e
+      - run:
+        name: Build Project with Dependencies
+        command: |
+          npm install express@9.5.1
+          mvn clean package -Pproduction -e
 
       - store_artifacts:
           path: target
@@ -19,13 +23,13 @@ jobs:
 
   test:
     docker:
-      - image: maven:3.9.2-openjdk-17-slim
+      - image: maven:3.8.1-openjdk-17-slim
     steps:
       - checkout
       - run:
           name: Save test results
           command: |
-            mvn test
+            mvn test -e
             mkdir -p ~/test-results/junit/
             find . -type f -regex ".*/target/surefire-reports/.*xml" -exec cp {} ~/test-results/junit/ \;
           when: always
