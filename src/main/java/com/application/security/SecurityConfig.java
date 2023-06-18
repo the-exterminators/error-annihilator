@@ -26,7 +26,7 @@ public class SecurityConfig extends VaadinWebSecurity {
         // Configure authorization rules for HTTP requests
         http.authorizeHttpRequests()
                 // Since our logo is an svg file, allowing access for it here explicitly
-                .requestMatchers("/images/*.svg").permitAll();
+                .requestMatchers("/images/*").permitAll();
         // Call the superclass's configure() method to apply any additional configuration
         super.configure(http);
         // Set the login view for the specified HTTP security configuration

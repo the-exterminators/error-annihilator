@@ -1,5 +1,6 @@
 package com.application.views.createTicketView;
 
+import com.application.security.SecurityService;
 import com.application.views.MainLayout;
 import com.vaadin.flow.component.Composite;
 import com.vaadin.flow.component.avatar.Avatar;
@@ -13,16 +14,18 @@ import com.vaadin.flow.component.textfield.TextArea;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.auth.AnonymousAllowed;
+import com.vaadin.flow.spring.security.AuthenticationContext;
 import com.vaadin.flow.theme.lumo.LumoUtility.Gap;
+import jakarta.annotation.security.PermitAll;
 
 
-@AnonymousAllowed
+@PermitAll
 @PageTitle("CreateTicketView")
 @Route(value = "Create-Ticket-View", layout = MainLayout.class)
 
 public class CreateTicketViewView extends Composite<VerticalLayout> {
 
-
+    private final SecurityService securityService;
 
     private HorizontalLayout layoutRow = new HorizontalLayout();
 
@@ -40,7 +43,9 @@ public class CreateTicketViewView extends Composite<VerticalLayout> {
 
     private MenuBar menuBar = new MenuBar();
 
-    public CreateTicketViewView() {
+    public CreateTicketViewView(AuthenticationContext authenticationContext) {
+        SecurityService securityService = new SecurityService(authenticationContext);
+        this.securityService = securityService;
         getContent().setHeightFull();
         getContent().setWidthFull();
         layoutRow.setWidthFull();
