@@ -27,7 +27,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.function.Consumer;
 
-@PermitAll
+@PermitAll // Declare roles dev or project lead
 @PageTitle("Assigned Tickets | Error Annihilator")
 @Route(value = "")
 public class AssignedTickets extends VerticalLayout {
