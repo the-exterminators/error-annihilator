@@ -2,7 +2,27 @@
 # See: https://circleci.com/docs/configuration-reference
 version: 2.1
 
+# GCP Orb for GCP deployment
+orbs:
+  gcp-cli: circleci/gcp-cli@3.1.0
+  gcp-cloud-run: circleci/gcp-cloud-run@1.0.2
+  gcp-gcr: circleci/gcp-gcr@0.15.1
+
+executors:
+  gcloud-executor:
+    docker:
+      - image: google/cloud-sdk
+
+  machine-executor:
+    machine: true
+
 jobs:
+  use-gcp:
+    executor: gcp-cli/default
+    steps:
+      - gcp-cli/setup:
+          version: 404.0.0
+
   build:
     docker:
       - image: maven:3.8.1-openjdk-17-slim
@@ -32,7 +52,48 @@ jobs:
           path: ~/test-results/junit/
           destination: ~/test-results/junit/
 
+  build-and-push-master:
+    description: Build Docker image and push to gcr
+    executor: gcp-gcr/default
+    machine:
+      image: ubuntu-2004:202010-01
+    steps:
+      - checkout
+      - when:
+          condition:
+            equal: [SP-69-Deploy-Error-Annihilator-on-GCP, << pipeline.git.branch >> ]
+          steps:
+            - run:
+              name: Build Java App and Docker Image
+              command: |
+                echo 'export PATH=~$PATH:~/.local/bin' >> $BASH_ENV
+                echo ${GCP_PROJECT_KEY} | base64 --decode --ignore-garbage > $HOME/gcp-service-key.json
+                echo 'export GOOGLE_CLOUD_KEYS=$(cat $HOME/gcp-service-key.json)' >> $BASH_ENV
+                echo 'export TAG=${CIRCLE_SHA1} >> $BASH_ENV
+            - gcp-gcr/gcr-auth:
+                gcp-service-key: GCP_PROJECT_KEY
+                google-project-id: GOOGLE_PROJECT_ID
+                google-compute-region: GOOGLE_COMPUTE_REGION
+                google-compute-zone: GOOGLE_COMPUTE_ZONE
+            - gcp-gcr/build-image:
+                image: error-annihilator
+                no_output_timeout: 10m
+                registry-url: eu.gcr.io
+            - gcp-gcr/push-image:
+                digest-path: /tmp/digest.txt
+                image: error-annihilator
+                registry-url: eu.gcr.io
+            - run:
+                command: |
+                  echo 'Digest is: $(</tmp/digest.txt)'
+
+
 workflows:
+  install-and-configure-cli:
+    jobs:
+      - use-gcp:
+          context: ErrorAnnihilator
+
   Test-and-Build:
     jobs:
       - test
