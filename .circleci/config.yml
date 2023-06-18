@@ -11,7 +11,7 @@ jobs:
 
     steps:
       - checkout
-      - run: mvn clean compile package -Pproduction -e
+      - run: mvn $MAVEN_CLI_OPTS clean package -Pproduction -e
 
       - store_artifacts:
           path: target
