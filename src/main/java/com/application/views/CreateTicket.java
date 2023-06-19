@@ -6,6 +6,7 @@ import com.vaadin.flow.component.avatar.Avatar;
 import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.datetimepicker.DateTimePicker;
 import com.vaadin.flow.component.formlayout.FormLayout;
+import com.vaadin.flow.component.html.H1;
 import com.vaadin.flow.component.menubar.MenuBar;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.NumberField;
@@ -18,7 +19,7 @@ import jakarta.annotation.security.PermitAll;
 
 @PermitAll
 @PageTitle("Create Ticket | Error Annihilator")
-@Route(value = "create-ticket-view")
+@Route(value = "") // create-ticket-view
 public class CreateTicket extends VerticalLayout {
 
     private final SecurityService securityService;
@@ -44,6 +45,10 @@ public class CreateTicket extends VerticalLayout {
         fullContent.setHeightFull();
         fullContent.setWidthFull();
 
+        // Main Page Title
+        H1 title = new H1("Create a Ticket");
+        fullContent.add(title);
+
         avatar.setName("Isabelle Mariacher");
         fullContent.add(avatar);
 
@@ -53,8 +58,8 @@ public class CreateTicket extends VerticalLayout {
 
         ticketNumber.setLabel("Ticket number");
         dateCreated.setLabel("Ticket created");
-        ticketName.setLabel("Ticket name");
-        ticketType.setLabel("Ticket Type");
+        ticketName.setLabel("Ticket title");
+        ticketType.setLabel("Ticket type");
         urgency.setLabel("Urgency");
         description.setLabel("Description");
 
@@ -106,9 +111,7 @@ public class CreateTicket extends VerticalLayout {
 
     //set sample data for the buttons bar
     private void setMenuBarSampleData(MenuBar menuBar) {
-        menuBar.addItem("Save");
         menuBar.addItem("Create");
-        menuBar.addItem("Delete");
     }
 }
 
