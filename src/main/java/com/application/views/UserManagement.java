@@ -1,9 +1,7 @@
 package com.application.views;
 
-import com.application.components.EditTicketForm;
 import com.application.components.EditUserForm;
 import com.application.components.Header;
-import com.application.data.entity.Ticket;
 import com.application.data.entity.User;
 import com.application.security.SecurityService;
 import com.vaadin.flow.component.Component;
@@ -19,10 +17,7 @@ import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.spring.security.AuthenticationContext;
 import jakarta.annotation.security.PermitAll;
-import org.hibernate.annotations.Columns;
 
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.function.Consumer;
@@ -39,8 +34,7 @@ public class UserManagement extends VerticalLayout {
     private final SecurityService securityService;
 
     public UserManagement(AuthenticationContext authenticationContext) {
-        SecurityService securityService = new SecurityService(authenticationContext);
-        this.securityService = securityService;
+        this.securityService = new SecurityService(authenticationContext);
         addClassName("userManagement-view");
 
         // This is how to implement the header
