@@ -20,8 +20,8 @@ import com.vaadin.flow.shared.Registration;
 
 
 public class EditUserForm extends FormLayout {
-    Binder<User> binder = new BeanValidationBinder<>(User.class); // to bind to Ticket Entity
-    User user; // To replace with current ticket, that is selected
+    Binder<User> binder = new BeanValidationBinder<>(User.class); // to bind to User Entity
+    User user; // To replace with current user, that is selected
     TextField userName = new TextField("Username");
     TextField firstName = new TextField("First Name");
     TextField lastName = new TextField("Last Name");
@@ -79,7 +79,7 @@ public class EditUserForm extends FormLayout {
         return new HorizontalLayout(save, delete, close);
     }
 
-    // this function validates and saves the ticket according to the form (comments are saved when written)
+    // this function validates and saves the user according to the form (comments are saved when written)
     private void validateAndSave() {
         try {
             binder.writeBean(user);
@@ -99,7 +99,7 @@ public class EditUserForm extends FormLayout {
         }
     }
 
-    // Save Event for saving ticket
+    // Save Event for saving user
     public static class SaveEvent extends EditUserForm.EditUserFormEvent {
         SaveEvent(EditUserForm source, User user){
             super(source, user);

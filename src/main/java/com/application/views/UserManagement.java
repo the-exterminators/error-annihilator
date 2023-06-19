@@ -2,9 +2,12 @@ package com.application.views;
 
 import com.application.components.EditUserForm;
 import com.application.components.Header;
+import com.application.components.NewUserForm;
 import com.application.data.entity.User;
 import com.application.security.SecurityService;
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.grid.HeaderRow;
 import com.vaadin.flow.component.grid.dataview.GridListDataView;
@@ -29,7 +32,9 @@ import java.util.function.Consumer;
 public class UserManagement extends VerticalLayout {
     Grid<User> grid = new Grid<>(User.class, false);
     EditUserForm userForm; // Form/Editor
+    NewUserForm newUserForm; // Form/Editor for new users
     H1 title = new H1("User Management");
+    Button newUser = new Button("New User");
 
     private final SecurityService securityService;
 
@@ -52,10 +57,15 @@ public class UserManagement extends VerticalLayout {
         // Main Page Title
         content.add(title);
 
+        // Create User button
+        newUser.addClickListener(e -> newUser());
+        newUser.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
+        content.add(newUser);
+
         // Add grid and form to content
         configureGrid();
         configureForm();
-        content.add(grid, userForm);
+        content.add(grid, userForm, newUserForm);
 
         closeEditor(); // standard closed form
 
@@ -65,12 +75,14 @@ public class UserManagement extends VerticalLayout {
     private void closeEditor() {
         userForm.setUser(null);
         userForm.setVisible(false);
+        newUserForm.setVisible(false);
         removeClassName("editing");
         grid.getStyle().set("display", "block");
+        newUser.getStyle().set("display", "block");
         grid.asSingleSelect().clear(); // deselect ticket in grid
     }
 
-    // Handles selected ticket from grid
+    // Handles selected user from grid
     private void editUser(User user) {
         // If a ticket is selected or unselected open/close editor/form and set current ticket
         if(user == null){
@@ -80,14 +92,30 @@ public class UserManagement extends VerticalLayout {
             userForm.setVisible(true);
             addClassName("editing");
             grid.getStyle().set("display", "none");
+            newUser.getStyle().set("display", "none");
         }
     }
 
+    // Handles new User
+    private void newUser() {
+        // If a ticket is selected or unselected open/close editor/form and set current ticket
+        newUserForm.setVisible(true);
+        //addClassName("editing");
+        grid.getStyle().set("display", "none");
+        newUser.getStyle().set("display", "none");
+    }
+
     private void configureForm() {
-        userForm = new EditUserForm(); // Replace with actual lists
+        userForm = new EditUserForm();
         userForm.setSizeFull();
         userForm.addCloseListener(e -> closeEditor()); // add listener to close form
         userForm.addSaveListener(this::saveUser); // add listener to save ticket - doesn't work yet
+
+
+        newUserForm = new NewUserForm();
+        newUserForm.setSizeFull();
+        newUserForm.addCloseListener(e -> closeEditor()); // add listener to close form
+        //newUserForm.addSaveListener(this::saveUser); // add listener to save ticket - doesn't work yet
     }
 
     // Saves ticket, updates the grid and closes editor/form
