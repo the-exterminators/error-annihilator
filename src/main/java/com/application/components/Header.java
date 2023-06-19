@@ -60,8 +60,8 @@ public class Header extends AppLayout {
         Button searchButton = new Button(VaadinIcon.SEARCH.create());
         content.add(new HorizontalLayout(ticketSearch, searchButton));
 
-        content.add(new RouterLink("Create Ticket", CreateTicket.class));
-        content.add(new RouterLink("Assigned Tickets", AssignedTickets.class)); // Home (for now)
+        content.add(new RouterLink("Create Ticket", CreateTicket.class)); // Home (for now)
+        content.add(new RouterLink("Assigned Tickets", AssignedTickets.class));
         content.add(new RouterLink("User Management", UserManagement.class));
         content.add(new RouterLink("Help", Help.class));
 
