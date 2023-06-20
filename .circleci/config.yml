@@ -20,14 +20,15 @@ jobs:
   use-gcp:
     executor: gcp-cli/default
     steps:
-      - gcp-cli/setup:
-          version: 404.0.0
-
       - run:
           name: authenticate with GCP-SA-Key
           command: |
-            echo $GCLOUD_SERVICE_KEY | base64 --decode >> /tmp/circleci/gcloud-service-key.json
-            gcloud_auth_activate_service-account --key-file=/tmp/circleci/gcloud-service-key.json
+            echo $GCLOUD_SERVICE_KEY | base64 --decode >> /home/circleci/gcloud-service-key.json
+            gcloud_auth_activate_service-account --key-file=/home/circleci/gcloud-service-key.json
+
+      - gcp-cli/setup:
+          version: 404.0.0
+
 
   build:
     docker:
