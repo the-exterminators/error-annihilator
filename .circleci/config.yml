@@ -30,8 +30,8 @@ jobs:
           name: Build app binary and Docker image
           command: |
             echo 'export PATH=~$PATH:~/.local/bin' >> $BASH_ENV
-            echo ${GCLOUD_SERVICE_KEY} | base64 --decode --ignore-garbage > $HOME/circleci/gcloud-service-key.json
-            echo 'export GOOGLE_CLOUD_KEYS=$(cat $HOME/circleci/gcloud-service-key.json)' >> $BASH_ENV
+            echo ${GCLOUD_SERVICE_KEY} | base64 --decode --ignore-garbage > home/circleci/gcloud-service-key.json
+            echo 'export GOOGLE_CLOUD_KEYS=$(cat $HOME/gcloud-service-key.json)' >> $BASH_ENV
             echo 'export TAG=$CIRCLE_SHA1' >> $BASH_ENV                 
 
       - gcp-gcr/gcr-auth
