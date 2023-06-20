@@ -17,17 +17,24 @@ executors:
     machine: true
 
 jobs:
-  use-gcp:
-    executor: gcp-cli/default
-    steps:
-      - run:
-          name: authenticate with GCP-SA-Key
-          command: |
-            echo $GCLOUD_SERVICE_KEY | base64 --decode >> /home/circleci/gcloud-service-key.json
-            gcloud_auth_activate_service-account --key-file=/home/circleci/gcloud-service-key.json
+  build_push_image_gcr:
 
-      - gcp-cli/setup:
-          version: 404.0.0
+    description: Build docker image and push to gcr registry
+    executor: gcp-gcr/default
+    machine:
+      image: ubuntu-2004:202010-01
+    steps:
+      - checkout
+
+      - run:
+          name: Build app binary and Docker image
+          command: |
+            echo 'export PATH=~$PATH:~/.local/bin' >> $BASH_ENV
+            echo ${GCLOUD_SERVICE_KEY} | base64 --decode --ignore-garbage > $HOME/gcloud-service-key.json
+            echo 'export GOOGLE_CLOUD_KEYS=$(cat $HOME/gcloud-service-key.json)' >> $BASH_ENV
+            echo 'export TAG=$CIRCLE_SHA1' >> $BASH_ENV                 
+
+      - gcp-gcr/gcr-auth
 
 
   build:
@@ -63,8 +70,7 @@ jobs:
 workflows:
   install-and-configure-cli:
     jobs:
-      - use-gcp:
-          context: ErrorAnnihilator
+      - build_push_image_gcr
 
   Test-and-Build:
     jobs:
