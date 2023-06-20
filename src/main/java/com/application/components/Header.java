@@ -2,6 +2,7 @@ package com.application.components;
 
 import com.application.security.SecurityService;
 import com.application.views.AssignedTickets;
+import com.application.views.Dashboard;
 import com.application.views.Help;
 import com.application.views.CreateTicket;
 import com.vaadin.flow.component.applayout.AppLayout;
@@ -62,6 +63,7 @@ public class Header extends AppLayout {
         content.add(new RouterLink("Assigned Tickets", AssignedTickets.class)); // Home (for now)
         content.add(new RouterLink("Help", Help.class));
         content.add(new RouterLink("Create Ticket", CreateTicket.class));
+        content.add(new RouterLink("Dashboard", Dashboard.class));
 
 
         String u = securityService.getAuthenticatedUser().getUsername();
