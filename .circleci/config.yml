@@ -4,9 +4,9 @@ version: 2.1
 
 # GCP Orb for GCP deployment
 orbs:
-  gcp-cli: circleci/gcp-cli@3.1.0
+#  gcp-cli: circleci/gcp-cli@3.1.0
 #  gcp-cloud-run: circleci/gcp-cloud-run@1.0.2
-#  gcp-gcr: circleci/gcp-gcr@0.15.1
+  gcp-gcr: circleci/gcp-gcr@0.15.1
 
 executors:
   gcloud-executor:
@@ -68,7 +68,7 @@ jobs:
           destination: ~/test-results/junit/
 
 workflows:
-  install-and-configure-cli:
+  Push-Image-To-GCR:
     jobs:
       - build_push_image_gcr
 
