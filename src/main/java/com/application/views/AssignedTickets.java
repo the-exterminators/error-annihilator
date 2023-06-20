@@ -6,6 +6,7 @@ import com.application.data.entity.Ticket;
 import com.application.data.entity.TicketComment;
 import com.application.data.entity.TicketStatus;
 import com.application.data.entity.User;
+import com.application.security.SecurityService;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.grid.HeaderRow;
@@ -17,7 +18,7 @@ import com.vaadin.flow.component.textfield.TextFieldVariant;
 import com.vaadin.flow.data.value.ValueChangeMode;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
-import com.vaadin.flow.server.auth.AnonymousAllowed;
+import com.vaadin.flow.spring.security.AuthenticationContext;
 import jakarta.annotation.security.PermitAll;
 
 import java.util.ArrayList;
@@ -26,24 +27,24 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.function.Consumer;
 
-/**
- * @AnonymousAllowed has to be replaced by @PermitAll once the Loginview has been added
- * Has to be left like this in the meantime to be able to see the view
-*/
-@AnonymousAllowed
+@PermitAll // Declare roles dev or project lead
 @PageTitle("Assigned Tickets | Error Annihilator")
-@Route(value = "")
+@Route(value = "assigned-tickets")
 public class AssignedTickets extends VerticalLayout {
     Grid<Ticket> grid = new Grid<>(Ticket.class, false);
     EditTicketForm ticketForm; // Form/Editor
 
+    private final SecurityService securityService;
+
     // Constructor
-    public AssignedTickets() {
+    public AssignedTickets(AuthenticationContext authenticationContext) {
+        SecurityService securityService = new SecurityService(authenticationContext);
+        this.securityService = securityService;
         addClassName("assignedTickets-view");
 
         // This is how to implement the header
         setSizeFull();
-        Header header = new com.application.components.Header();
+        Header header = new Header(securityService);
         header.setContent(getContent()); // getContent should contain all the pages contents
         add(header); // adds Header with content into the View
     }

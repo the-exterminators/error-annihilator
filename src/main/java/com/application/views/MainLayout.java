@@ -1,7 +1,6 @@
 package com.application.views;
 
 
-import com.application.views.createTicketView.CreateTicketViewView;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.applayout.AppLayout;
 import com.vaadin.flow.component.html.*;
@@ -80,8 +79,8 @@ public class MainLayout extends AppLayout {
 
     private MenuItemInfo[] createMenuItems() {
         return new MenuItemInfo[]{ //
-                new MenuItemInfo("CreateTicketView", LineAwesomeIcon.PENCIL_RULER_SOLID.create(),
-                        CreateTicketViewView.class), //
+                new MenuItemInfo("Create Ticket", LineAwesomeIcon.PENCIL_RULER_SOLID.create(),
+                        CreateTicket.class), //
 
         };
     }
