@@ -65,7 +65,3 @@ workflows:
       - build:
           requires:
             - test
-
-  Push-Image-To-GCP:
-    jobs:
-      - build-and-push-master
