@@ -4,8 +4,8 @@ version: 2.1
 
 # GCP Orb for GCP deployment
 orbs:
-#  gcp-cli: circleci/gcp-cli@3.1.0
-#  gcp-cloud-run: circleci/gcp-cloud-run@1.0.2
+  gcp-cli: circleci/gcp-cli@3.1.0
+  gcp-cloud-run: circleci/gcp-cloud-run@1.0.2
   gcp-gcr: circleci/gcp-gcr@0.15.1
 
 executors:
@@ -17,31 +17,6 @@ executors:
     machine: true
 
 jobs:
-  build_push_image_gcr:
-
-    description: Build docker image and push to gcr registry
-    executor: gcp-gcr/default
-    machine:
-      image: ubuntu-2004:202010-01
-    steps:
-      - checkout
-
-      - run:
-          name: Build app binary and Docker image
-          command: |
-            echo 'export PATH=~$PATH:~/.local/bin' >> $BASH_ENV
-            echo ${GCP_PROJECT_KEY} | base64 --decode --ignore-garbage > $HOME/gcloud-service-key.json
-            echo 'export GOOGLE_CLOUD_KEYS=$(cat $HOME/gcloud-service-key.json)' >> $BASH_ENV
-            echo 'export TAG=$CIRCLE_SHA1' >> $BASH_ENV                 
-
-      - gcp-gcr/gcr-auth:
-          gcloud-service-key: GOOGLE_CLOUD_KEYS
-          google-compute-region: GOOGLE_COMPUTE_REGION
-          google-compute-zone: GOOGLE_COMPUTE_ZONE
-          google-project-id: GOOGLE_PROJECT_ID
-          registry-url: eu.gcr.io
-
-
   build:
     docker:
       - image: maven:3.8.1-openjdk-17-slim
@@ -71,6 +46,33 @@ jobs:
       - store_test_results:
           path: ~/test-results/junit/
           destination: ~/test-results/junit/
+
+  build_push_image_gcr:
+
+    description: Build docker image and push to gcr registry
+    executor: gcp-gcr/default
+    machine:
+      image: ubuntu-2004:202010-01
+    steps:
+      - checkout
+
+      - run:
+          name: Build app binary and Docker image
+          command: |
+            echo 'export PATH=~$PATH:~/.local/bin' >> $BASH_ENV
+            echo ${GCP_PROJECT_KEY} | base64 --decode --ignore-garbage > $HOME/gcloud-service-key.json
+            echo 'export GOOGLE_CLOUD_KEYS=$(cat $HOME/gcloud-service-key.json)' >> $BASH_ENV
+            echo 'export TAG=$CIRCLE_SHA1' >> $BASH_ENV                 
+
+      - gcp-gcr/gcr-auth:
+          gcloud-service-key: GOOGLE_CLOUD_KEYS
+          google-compute-region: GOOGLE_COMPUTE_REGION
+          google-compute-zone: GOOGLE_COMPUTE_ZONE
+          google-project-id: GOOGLE_PROJECT_ID
+          registry-url: eu.gcr.io
+
+
+
 
 workflows:
   Push-Image-To-GCR:
