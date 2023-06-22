@@ -57,19 +57,46 @@ jobs:
       - checkout
       - gcp-gcr/gcr-auth
 
+      - gcp-gcr/build-image:
+          dockerfile: Dockerfile
+          google-project-id: GOOGLE_PROJECT_ID
+          image: $CIRCLE_WORKFLOW_ID
+          registry-url: "eu.gcr.io"
+          tag: "latest"
 
+      - gcp-gcr/push-image:
+          google-project-id: GOOGLE_PROJECT_ID
+          image: $CIRCLE_WORKFLOW_ID
+          registry-url: "eu.gcr.io"
+          tag: "latest"
+
+  gcp_cloudrun_deploy:
+    description: Deploy using cloud run
+    executor: machine-executor
+    steps:
+      - cloudrun/init
+      - cloudrun/deploy:
+          platform: 'managed'
+          image: 'eu.gc.io/$GOOGLE_PROJECT_ID/$CIRCLE_WORKFLOW_ID'
+          service-name: 'error-annihilator'
+          region: GOOGLE_COMPUTE_REGION
+          unauthenticated: true
 
 
 
 
 workflows:
-  Push-Image-To-GCR:
+  Push-Image-And-Deploy-To-GCR:
     jobs:
       - build_push_image_gcr
+      - gcp_cloudrun_deploy:
+          requires:
+            - build_push_image_gcr
+
 
   Test-and-Build:
     jobs:
-      - test
-      - build:
+      - build
+      - test:
           requires:
-            - test
+            - build
