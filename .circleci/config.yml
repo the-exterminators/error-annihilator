@@ -75,7 +75,7 @@ jobs:
       - cloud-run/init
       - cloud-run/deploy:
           platform: 'managed'
-          image: 'eu.gc.io/$GOOGLE_PROJECT_ID/$CIRCLE_WORKFLOW_ID'
+          image: 'eu.gc.io/$GOOGLE_PROJECT_ID/sp-69-test'
           service-name: 'error-annihilator'
           region: GOOGLE_COMPUTE_REGION
           unauthenticated: true
@@ -84,9 +84,9 @@ workflows:
   push-image-and-deploy-to-gcr:
     jobs:
       - build_push_image_gcr
-#      - gcp_cloud_run_deploy:
-#          requires:
-#            - build_push_image_gcr
+      - gcp_cloud_run_deploy:
+          requires:
+            - build_push_image_gcr
 
   Test-and-Build:
     jobs:
