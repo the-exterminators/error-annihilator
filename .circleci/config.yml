@@ -5,7 +5,7 @@ version: 2.1
 # GCP Orb for GCP deployment
 orbs:
   gcp-cli: circleci/gcp-cli@3.1.0
-  gcp-cloud-run: circleci/gcp-cloud-run@1.0.2
+  cloud-run: circleci/gcp-cloud-run@1.0.2
   gcp-gcr: circleci/gcp-gcr@0.15.1
 
 executors:
@@ -17,6 +17,7 @@ executors:
     machine: true
 
 jobs:
+
   build:
     docker:
       - image: maven:3.8.1-openjdk-17-slim
@@ -48,7 +49,6 @@ jobs:
           destination: ~/test-results/junit/
 
   build_push_image_gcr:
-
     description: Build docker image and push to gcr registry
     executor: gcp-gcr/default
     machine:
@@ -56,43 +56,37 @@ jobs:
     steps:
       - checkout
       - gcp-gcr/gcr-auth
-
       - gcp-gcr/build-image:
           dockerfile: Dockerfile
           google-project-id: GOOGLE_PROJECT_ID
           image: $CIRCLE_WORKFLOW_ID
           registry-url: "eu.gcr.io"
           tag: "latest"
-
       - gcp-gcr/push-image:
           google-project-id: GOOGLE_PROJECT_ID
           image: $CIRCLE_WORKFLOW_ID
           registry-url: "eu.gcr.io"
           tag: "latest"
 
-  gcp_cloudrun_deploy:
+  gcp_cloud_run_deploy:
     description: Deploy using cloud run
     executor: machine-executor
     steps:
-      - cloudrun/init
-      - cloudrun/deploy:
+      - cloud-run/init
+      - cloud-run/deploy:
           platform: 'managed'
           image: 'eu.gc.io/$GOOGLE_PROJECT_ID/$CIRCLE_WORKFLOW_ID'
           service-name: 'error-annihilator'
           region: GOOGLE_COMPUTE_REGION
           unauthenticated: true
 
-
-
-
 workflows:
   Push-Image-And-Deploy-To-GCR:
     jobs:
       - build_push_image_gcr
-      - gcp_cloudrun_deploy:
+      - gcp_cloud_run_deploy:
           requires:
             - build_push_image_gcr
-
 
   Test-and-Build:
     jobs:
