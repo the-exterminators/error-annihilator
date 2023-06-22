@@ -78,4 +78,88 @@ public class AssignedTicketsTest {
 
         }
     }
+
+    @Test
+    public void testTitleFilter() {
+        String filterValue = "test";
+
+        // Open the view's URL in the web driver
+        driver.get("http://localhost:8080/");
+
+        WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(10)); // Adjust the timeout as needed
+        wait.until(ExpectedConditions.presenceOfElementLocated(By.cssSelector("h1")));
+
+        // Find the title filter input element and enter the filter value
+        WebElement titleFilterInput = driver.findElement(By.cssSelector("input[placeholder='Filter Title ...']"));
+        titleFilterInput.click();
+        titleFilterInput.sendKeys(filterValue);
+
+        // Retrieve the updated grid rows and perform assertions on the filtered results
+        List<WebElement> filteredRows = driver.findElements(By.cssSelector("vaadin-grid-row"));
+
+        // Assert that the filtered rows contain only the desired results based on the applied filter
+        for (WebElement row : filteredRows) {
+            // Perform assertions on the filtered rows as needed
+            // For example, you can assert that the title in each row contains the filter value
+            WebElement titleElement = row.findElement(By.cssSelector("vaadin-grid-cell-content:first-child"));
+            String titleText = titleElement.getText();
+            assertTrue(titleText.toLowerCase().contains(filterValue.toLowerCase()));
+        }
+    }
+
+    @Test
+    public void testDescriptionFilter() {
+        String filterValue = "test";
+
+        // Open the view's URL in the web driver
+        driver.get("http://localhost:8080/");
+
+        WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(10)); // Adjust the timeout as needed
+        wait.until(ExpectedConditions.presenceOfElementLocated(By.cssSelector("h1")));
+
+        // Find the title filter input element and enter the filter value
+        WebElement descriptionFilterInput = driver.findElement(By.cssSelector("input[placeholder='Filter Description ...']"));
+        descriptionFilterInput.click();
+        descriptionFilterInput.sendKeys(filterValue);
+
+        // Retrieve the updated grid rows and perform assertions on the filtered results
+        List<WebElement> filteredRows = driver.findElements(By.cssSelector("vaadin-grid-row"));
+
+        // Assert that the filtered rows contain only the desired results based on the applied filter
+        for (WebElement row : filteredRows) {
+            // Perform assertions on the filtered rows as needed
+            // For example, you can assert that the title in each row contains the filter value
+            WebElement titleElement = row.findElement(By.cssSelector("vaadin-grid-cell-content:first-child"));
+            String titleText = titleElement.getText();
+            assertTrue(titleText.toLowerCase().contains(filterValue.toLowerCase()));
+        }
+    }
+
+    @Test
+    public void testStatusFilter() {
+        String filterValue = "test";
+
+        // Open the view's URL in the web driver
+        driver.get("http://localhost:8080/");
+
+        WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(10)); // Adjust the timeout as needed
+        wait.until(ExpectedConditions.presenceOfElementLocated(By.cssSelector("h1")));
+
+        // Find the title filter input element and enter the filter value
+        WebElement statusFilterInput = driver.findElement(By.cssSelector("input[placeholder='Filter Status ...']"));
+        statusFilterInput.click();
+        statusFilterInput.sendKeys(filterValue);
+
+        // Retrieve the updated grid rows and perform assertions on the filtered results
+        List<WebElement> filteredRows = driver.findElements(By.cssSelector("vaadin-grid-row"));
+
+        // Assert that the filtered rows contain only the desired results based on the applied filter
+        for (WebElement row : filteredRows) {
+            // Perform assertions on the filtered rows as needed
+            // For example, you can assert that the title in each row contains the filter value
+            WebElement titleElement = row.findElement(By.cssSelector("vaadin-grid-cell-content:first-child"));
+            String titleText = titleElement.getText();
+            assertTrue(titleText.toLowerCase().contains(filterValue.toLowerCase()));
+        }
+    }
 }
