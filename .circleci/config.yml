@@ -84,9 +84,9 @@ workflows:
   Push-Image-And-Deploy-To-GCR:
     jobs:
       - build_push_image_gcr
-      - gcp_cloud_run_deploy:
-          requires:
-            - build_push_image_gcr
+#      - gcp_cloud_run_deploy:
+#          requires:
+#            - build_push_image_gcr
 
   Test-and-Build:
     jobs:
