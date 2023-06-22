@@ -75,7 +75,7 @@ jobs:
       - cloud-run/init
       - cloud-run/deploy:
           platform: 'managed'
-          image: 'eu.gc.io/$GOOGLE_PROJECT_ID/sp-69-test'
+          image: 'eu.gc.io/$GOOGLE_PROJECT_ID/sp-69-test/'
           service-name: 'error-annihilator'
           region: GOOGLE_COMPUTE_REGION
           unauthenticated: true
