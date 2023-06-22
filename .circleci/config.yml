@@ -81,7 +81,7 @@ jobs:
           unauthenticated: true
 
 workflows:
-  Push-Image-And-Deploy-To-GCR:
+  push-image-and-deploy-to-gcr:
     jobs:
       - build_push_image_gcr
 #      - gcp_cloud_run_deploy:
