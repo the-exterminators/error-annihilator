@@ -72,12 +72,12 @@ jobs:
                 command: |
                   #!/bin/bash 
   
-                  IFS="," read -ra DOCKER_TAGS <<< "$ORB_EVAL_TAG"
+                  IFS="," read -ra DOCKER_TAGS \<<< "$ORB_EVAL_TAG"
                   PROJECT_ID="${!ORB_ENV_PROJECT_ID}"
   
                   for tag_to_eval in "${DOCKER_TAGS[@]}"; do
-                  TAG=$(eval echo "$tag_to_eval")
-                  docker push "$ORB_VAL_REGISTRY_URL/$PROJECT_ID/$(echo "$ORB_VAL_IMAGE" | tr '[:upper:]' '[:lower:]'):$TAG"
+                    TAG=$(eval echo "$tag_to_eval")
+                    docker push "$ORB_VAL_REGISTRY_URL/$PROJECT_ID/$(echo "$ORB_VAL_IMAGE" | tr '[:upper:]' '[:lower:]'):$TAG"
                   done
   
                   if [ -n "$ORB_VAL_DIGEST_PATH" ]; then
