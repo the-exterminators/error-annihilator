@@ -85,8 +85,9 @@ workflows:
     jobs:
       - build_push_image_gcr:
         filters:
-          only:
-            - master
+          branches:
+            only:
+              - master
       - gcp_cloud_run_deploy:
           requires:
             - build_push_image_gcr
