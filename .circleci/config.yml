@@ -59,12 +59,12 @@ jobs:
       - gcp-gcr/build-image:
           dockerfile: Dockerfile
           google-project-id: GOOGLE_PROJECT_ID
-          image: sp-69-test
+          image: error-annihilator
           registry-url: 'eu.gcr.io'
           tag: 'latest'
       - gcp-gcr/push-image:
           google-project-id: GOOGLE_PROJECT_ID
-          image: sp-69-test
+          image: error-annihilator
           registry-url: 'eu.gcr.io'
           tag: 'latest'
 
@@ -75,7 +75,7 @@ jobs:
       - cloud-run/init
       - cloud-run/deploy:
           platform: 'managed'
-          image: 'eu.gc.io/$GOOGLE_PROJECT_ID/sp-69-test:latest'
+          image: eu.gc.io/$GOOGLE_PROJECT_ID/sp-69-test:latest
           service-name: 'error-annihilator'
           region: 'europe-west1'
           unauthenticated: true
