@@ -16,6 +16,11 @@ executors:
   machine-executor:
     machine: true
 
+master_only: &master_only
+  filters:
+    branches:
+      only: master
+
 jobs:
 
   build:
@@ -84,11 +89,9 @@ workflows:
   push-image-and-deploy-to-gcr:
     jobs:
       - build_push_image_gcr:
-        filters:
-          branches:
-            only:
-              - master
+          <<: *master_only
       - gcp_cloud_run_deploy:
+          <<: *master_only
           requires:
             - build_push_image_gcr
 
