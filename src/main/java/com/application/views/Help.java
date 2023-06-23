@@ -20,9 +20,8 @@ public class Help extends VerticalLayout {
 
     private final SecurityService securityService;
     public Help(AuthenticationContext authenticationContext){
-        SecurityService securityService = new SecurityService(authenticationContext);
-        this.securityService = securityService;
-        Header header = new Header(securityService);
+        this.securityService = new SecurityService(authenticationContext);
+        Header header = new Header(authenticationContext);
         header.setContent(getContent()); // getContent should contain all the pages contents
         add(header); // adds Header with content into the View
         setSizeFull();

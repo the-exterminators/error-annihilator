@@ -35,7 +35,7 @@ public class CreateTicket extends VerticalLayout {
 
     public CreateTicket(AuthenticationContext authenticationContext) {
         securityService = new SecurityService(authenticationContext);
-        Header header = new Header(securityService);
+        Header header = new Header(authenticationContext);
         header.setContent(getCreateTicketContent());
         add(header);
     }

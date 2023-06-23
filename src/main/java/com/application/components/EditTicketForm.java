@@ -60,21 +60,23 @@ public class EditTicketForm extends FormLayout {
     // comments
     Component commentSection = createCommentsLayout();
     // buttons
-    HorizontalLayout buttonSection = createButtonsLayout();
+    HorizontalLayout buttonSection;
 
     // Constructor
-    public EditTicketForm(List<TicketStatus> statuses, List<User> assignees, List<TicketComment> comments) {
+    public EditTicketForm(List<TicketStatus> statuses) {
         addClassName("ticket-form");
 
         configureBind();
 
+        buttonSection = createButtonsLayout();
+
         // set items and labels for lists
         ticketStatus.setItems(statuses);
         ticketStatus.setItemLabelGenerator(TicketStatus::getStatusName);
-        ticketComment.setItems(comments);
+        ticketComment.setItems(Collections.emptyList());
 
         // set items Assigned Users
-        assignedUsers.setItems(assignees);
+        assignedUsers.setItems(Collections.emptyList());
         updateAssignedUsers();
         assignedUsers.addValueChangeListener(event -> updateAssignedUsers());
 
@@ -93,6 +95,40 @@ public class EditTicketForm extends FormLayout {
         );
 
     }
+
+    public EditTicketForm(List<TicketStatus> statuses, Boolean noCancel) { // I only have the boolean for a separate constructor when no cancel button is needed - thats why it isnt used in the code
+        addClassName("ticket-form");
+
+        configureBind();
+
+        buttonSection = createButtonsLayoutNoCancel();
+
+        // set items and labels for lists
+        ticketStatus.setItems(statuses);
+        ticketStatus.setItemLabelGenerator(TicketStatus::getStatusName);
+        ticketComment.setItems(Collections.emptyList());
+
+        // set items Assigned Users
+        assignedUsers.setItems(Collections.emptyList());
+        updateAssignedUsers();
+        assignedUsers.addValueChangeListener(event -> updateAssignedUsers());
+
+        configureFormLayout();
+
+        // add to form layout
+        add(buttonSection,
+                ticketName,
+                description,
+                createdTimeStamp,
+                ticketCreator,
+                ticketType,
+                ticketStatus,
+                assignedUsersMulti,
+                commentSection
+        );
+
+    }
+
 
     // Update Assigned Users on select in grid
     public void updateAssignedUsers() {
@@ -174,6 +210,17 @@ public class EditTicketForm extends FormLayout {
         close.addClickShortcut(Key.ESCAPE);
 
         return new HorizontalLayout(save, close);
+    }
+
+    // Creates the button layout to just save the form
+    private HorizontalLayout createButtonsLayoutNoCancel() {
+        save.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
+
+        save.addClickListener(event -> validateAndSave());
+
+        save.addClickShortcut(Key.ENTER);
+
+        return new HorizontalLayout(save);
     }
 
     // this function validates and saves the ticket according to the form (comments are saved when written)

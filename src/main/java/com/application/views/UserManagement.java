@@ -12,6 +12,7 @@ import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.grid.HeaderRow;
 import com.vaadin.flow.component.grid.dataview.GridListDataView;
 import com.vaadin.flow.component.html.H1;
+import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.component.textfield.TextFieldVariant;
@@ -32,7 +33,7 @@ import java.util.function.Consumer;
 public class UserManagement extends VerticalLayout {
     Grid<User> grid = new Grid<>(User.class, false);
     EditUserForm userForm; // Form/Editor
-    NewUserForm newUserForm; // Form/Editor for new users
+    NewUserForm newUserForm = new NewUserForm(); // Form/Editor for new users
     H1 title = new H1("User Management");
     Button newUser = new Button("New User");
 
@@ -44,7 +45,7 @@ public class UserManagement extends VerticalLayout {
 
         // This is how to implement the header
         setSizeFull();
-        Header header = new Header(securityService);
+        Header header = new Header(authenticationContext);
         header.setContent(getContent()); // getContent should contain all the pages contents
         add(header); // adds Header with content into the View
     }
@@ -53,6 +54,11 @@ public class UserManagement extends VerticalLayout {
         VerticalLayout content = new VerticalLayout();
         content.addClassNames("content");
         content.setSizeFull();
+
+        HorizontalLayout horizontalContent = new HorizontalLayout();
+        horizontalContent.addClassNames("content");
+        horizontalContent.setSizeFull();
+        horizontalContent.setWidth("90vw");
 
         // Main Page Title
         content.add(title);
@@ -65,7 +71,9 @@ public class UserManagement extends VerticalLayout {
         // Add grid and form to content
         configureGrid();
         configureForm();
-        content.add(grid, userForm, newUserForm);
+
+        horizontalContent.add(userForm, grid, newUserForm);
+        content.add(horizontalContent);
 
         closeEditor(); // standard closed form
 
@@ -79,6 +87,7 @@ public class UserManagement extends VerticalLayout {
         removeClassName("editing");
         grid.getStyle().set("display", "block");
         newUser.getStyle().set("display", "block");
+        newUserForm.getStyle().set("display", "none");
         grid.asSingleSelect().clear(); // deselect ticket in grid
     }
 
@@ -88,11 +97,12 @@ public class UserManagement extends VerticalLayout {
         if(user == null){
             closeEditor();
         } else {
+            grid.getStyle().set("display", "none");
+            newUserForm.getStyle().set("display", "none");
+            newUser.getStyle().set("display", "none");
             userForm.setUser(user);
             userForm.setVisible(true);
             addClassName("editing");
-            grid.getStyle().set("display", "none");
-            newUser.getStyle().set("display", "none");
         }
     }
 
@@ -100,9 +110,9 @@ public class UserManagement extends VerticalLayout {
     private void newUser() {
         // If a ticket is selected or unselected open/close editor/form and set current ticket
         newUserForm.setVisible(true);
-        //addClassName("editing");
-        grid.getStyle().set("display", "none");
-        newUser.getStyle().set("display", "none");
+        addClassName("editing");
+        grid.getStyle().set("display", "block");
+        newUserForm.getStyle().set("display", "block");
     }
 
     private void configureForm() {
@@ -111,8 +121,6 @@ public class UserManagement extends VerticalLayout {
         userForm.addCloseListener(e -> closeEditor()); // add listener to close form
         userForm.addSaveListener(this::saveUser); // add listener to save ticket - doesn't work yet
 
-
-        newUserForm = new NewUserForm();
         newUserForm.setSizeFull();
         newUserForm.addCloseListener(e -> closeEditor()); // add listener to close form
         //newUserForm.addSaveListener(this::saveUser); // add listener to save ticket - doesn't work yet
@@ -164,8 +172,10 @@ public class UserManagement extends VerticalLayout {
         // Grid Size Settings
         grid.setSizeFull();
         grid.addClassName("assignedTickets-grid");
-        grid.setMinWidth("90vw");
+        grid.setWidth("90vw");
         grid.getColumns().forEach(col -> col.setAutoWidth(true));
+        grid.getStyle().set("display", "block");
+        newUserForm.getStyle().set("display", "none");
     }
 
     // FILTER ==================================
