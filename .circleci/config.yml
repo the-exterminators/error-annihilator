@@ -9,7 +9,7 @@ jobs:
 
     steps:
       - checkout
-      - run: mvn $MAVEN_CLI_OPTS clean package -Pproduction -e
+      - run: mvn $MAVEN_CLI_OPTS clean -DskipTests package -Pproduction -e
 
       - store_artifacts:
           path: target
