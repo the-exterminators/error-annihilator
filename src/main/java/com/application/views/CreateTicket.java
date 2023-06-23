@@ -27,6 +27,8 @@ public class CreateTicket extends VerticalLayout {
     private NumberField ticketNumber = new NumberField();
     private ComboBox<String> ticketType = new ComboBox<>();
     private ComboBox<String> urgency = new ComboBox<>();
+
+    private ComboBox<String> projectType = new ComboBox<>();
     private TextArea description = new TextArea();
 
     private TextField ticketName = new TextField();
@@ -59,9 +61,11 @@ public class CreateTicket extends VerticalLayout {
         ticketNumber.setLabel("Ticket number");
         dateCreated.setLabel("Ticket created");
         ticketName.setLabel("Ticket title");
+        projectType.setLabel("Project Type");
         ticketType.setLabel("Ticket type");
         urgency.setLabel("Urgency");
         description.setLabel("Description");
+
 
         //set the read only fields
         ticketNumber.setReadOnly(true);
@@ -70,22 +74,27 @@ public class CreateTicket extends VerticalLayout {
         //set sample items
         setUrgencyComboBoxSampleData(urgency);
         setTicketTypeComboBoxSampleData(ticketType);
+        setProjectTypeComboBoxSampleData(projectType);
 
 
         //set column spans
         formContent.setColspan(urgency, 1);
+        formContent.setColspan(projectType, 1);
         formContent.setColspan(ticketType, 1);
-        formContent.setColspan(ticketName, 2);
+        formContent.setColspan(ticketName, 1);
         formContent.setColspan(description, 2);
+
 
         //add components to form layout
 
         formContent.add(ticketNumber);
         formContent.add(dateCreated);
         formContent.add(ticketName);
+        formContent.add(projectType);
         formContent.add(ticketType);
         formContent.add(urgency);
         formContent.add(description);
+
 
 
         //add form to main layout
@@ -108,6 +117,12 @@ public class CreateTicket extends VerticalLayout {
         comboBox.setItems("bugs", "defects", "errors");
         comboBox.setValue("defects");
     }
+
+    private void setProjectTypeComboBoxSampleData(ComboBox<String> comboBox) {
+        comboBox.setItems("Project 1", "Project 2", "Project 3");
+        comboBox.setValue("Project 3");
+    }
+
 
     //set sample data for the buttons bar
     private void setMenuBarSampleData(MenuBar menuBar) {
