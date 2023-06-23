@@ -1,10 +1,7 @@
 package com.application.components;
 
 import com.application.security.SecurityService;
-import com.application.views.AssignedTickets;
-import com.application.views.Help;
-import com.application.views.CreateTicket;
-import com.application.views.UserManagement;
+import com.application.views.*;
 import com.vaadin.flow.component.applayout.AppLayout;
 import com.vaadin.flow.component.applayout.DrawerToggle;
 import com.vaadin.flow.component.button.Button;
@@ -64,6 +61,7 @@ public class Header extends AppLayout {
         content.add(new RouterLink("Assigned Tickets", AssignedTickets.class));
         content.add(new RouterLink("User Management", UserManagement.class));
         content.add(new RouterLink("Help", Help.class));
+        content.add(new RouterLink ("Ticket History", TicketHistory.class ));
 
 
         String u = securityService.getAuthenticatedUser().getUsername();
