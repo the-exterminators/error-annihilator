@@ -26,7 +26,7 @@ jobs:
 
     steps:
       - checkout
-      - run: mvn $MAVEN_CLI_OPTS clean package -Pproduction -e
+      - run: mvn $MAVEN_CLI_OPTS clean -DskipTests package -Pproduction -e
 
       - store_artifacts:
           path: target
@@ -83,12 +83,15 @@ jobs:
 workflows:
   push-image-and-deploy-to-gcr:
     jobs:
-      - build_push_image_gcr
+      - build_push_image_gcr:
+        filters:
+          only:
+            - master
       - gcp_cloud_run_deploy:
           requires:
             - build_push_image_gcr
 
-  Test-and-Build:
+  build-and-test:
     jobs:
       - build
       - test:
