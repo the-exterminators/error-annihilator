@@ -12,7 +12,9 @@ jobs:
 
     steps:
       - checkout
-      - run: VAADIN_OFFLINE_KEY=245f05ad-ec2f-4865-be9c-bc748ade3d8a mvn $MAVEN_CLI_OPTS clean package -Pproduction -e
+      - run: mvn -Dvaadin.offlineKey=245f05ad-ec2f-4865-be9c-bc748ade3d8a $MAVEN_CLI_OPTS clean package -Pproduction -e
+        environment:
+          VAADIN_OFFLINE_KEY: 245f05ad-ec2f-4865-be9c-bc748ade3d8a
 
       - store_artifacts:
           path: target
