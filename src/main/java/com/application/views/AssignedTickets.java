@@ -2,10 +2,7 @@ package com.application.views;
 
 import com.application.components.EditTicketForm;
 import com.application.components.Header;
-import com.application.data.entity.Ticket;
-import com.application.data.entity.TicketComment;
-import com.application.data.entity.TicketStatus;
-import com.application.data.entity.User;
+import com.application.data.entity.*;
 import com.application.security.SecurityService;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.grid.Grid;
@@ -72,7 +69,7 @@ public class    AssignedTickets extends VerticalLayout {
     // FORM =======================================
     // Configure the editor/form
     private void configureForm() {
-        ticketForm = new EditTicketForm(Collections.emptyList(), Collections.emptyList(), Collections.emptyList()); // Replace with actual lists
+        ticketForm = new EditTicketForm(Collections.emptyList()); // Replace with actual lists
         ticketForm.setSizeFull();
         ticketForm.addCloseListener(e -> closeEditor()); // add listener to close form
         ticketForm.addSaveListener(this::saveTicket); // add listener to save ticket - doesn't work yet
@@ -102,7 +99,7 @@ public class    AssignedTickets extends VerticalLayout {
 
     // Saves ticket, updates the grid and closes editor/form
     private void saveTicket(EditTicketForm.SaveEvent event) {
-       // service.saveTicket(event.getTicket()); // After DB integration
+        // service.saveTicket(event.getTicket()); // After DB integration
         updateList();
         closeEditor();
     }
@@ -122,24 +119,28 @@ public class    AssignedTickets extends VerticalLayout {
         testUsers.add(testUser);
 
         // Test ticket 1
-        Ticket ticketOne = new Ticket("I need help", "bug", "test test test", new TicketStatus("open"), testUser, testUsers);
+        Ticket ticketOne = new Ticket("1", "I need help", "bug", "test test test", new TicketStatus("open"), new TicketProject("Project 1"), testUser, testUsers);
         List<TicketComment> listOne = new ArrayList<>();
         listOne.add(new TicketComment("hello", testUser, ticketOne));
         ticketOne.setTicketComment(listOne);
         testTickets.add(ticketOne);
 
         // Test ticket 2
-        Ticket ticketTwo = new Ticket("hello", "feature", "hallo hallo", new TicketStatus("in progress"), testUser, testUsers);
+        Ticket ticketTwo = new Ticket("2", "hello", "defect", "hallo hallo", new TicketStatus("unassigned"), new TicketProject("Project 2"), testUser, testUsers);
         List<TicketComment> listTwo = new ArrayList<>();
         listTwo.add(new TicketComment("hello", testUser, ticketTwo));
         ticketTwo.setTicketComment(listTwo);
         testTickets.add(ticketTwo);
 
         // Columns
+        Grid.Column<Ticket> numberColumn = grid.addColumn("ticketNumber").setHeader("Number"); // change to ticketnumber
         Grid.Column<Ticket> titleColumn = grid.addColumn("ticketName").setHeader("Title");
         Grid.Column<Ticket> descrColumn = grid.addColumn("description");
+        Grid.Column<Ticket> typeColumn = grid.addColumn("ticketType").setHeader("Type");
         // no need for progress bar for the devs, they only need categories
         Grid.Column<Ticket> statusColum = grid.addColumn(ticket -> ticket.getTicketStatus().getStatusName()).setHeader("Status");
+        Grid.Column<Ticket> projectColum = grid.addColumn(ticket -> ticket.getTicketProject().getProjectName()).setHeader("Project");
+        //Grid.Column<Ticket> projectColum = grid.addColumn("assignedUsers").setHeader("Project"); // change to row above
 
         // Add listeners
         grid.asSingleSelect().addValueChangeListener(e -> editTicket(e.getValue()));
@@ -153,9 +154,12 @@ public class    AssignedTickets extends VerticalLayout {
         TicketFilter ticketFilter = new TicketFilter(dataView);
         grid.getHeaderRows().clear();
         HeaderRow headerRow = grid.appendHeaderRow();
+        headerRow.getCell(numberColumn).setComponent(createFilterHeader("Filter Number", ticketFilter::setNumber));
         headerRow.getCell(titleColumn).setComponent(createFilterHeader("Filter Title", ticketFilter::setTitle));
+        headerRow.getCell(typeColumn).setComponent(createFilterHeader("Filter Type", ticketFilter::setType));
         headerRow.getCell(descrColumn).setComponent(createFilterHeader("Filter Description", ticketFilter::setDescription));
         headerRow.getCell(statusColum).setComponent(createFilterHeader("Filter Status", ticketFilter::setStatus));
+        headerRow.getCell(projectColum).setComponent(createFilterHeader("Filter Project", ticketFilter::setProject));
 
         // Grid Size Settings
         grid.setSizeFull();
@@ -185,14 +189,27 @@ public class    AssignedTickets extends VerticalLayout {
         private String title;
         private String description;
         private String status;
+        private String project;
+        private String number;
+        private String type;
 
         public TicketFilter(GridListDataView<Ticket> dataView) {
             this.dataView = dataView;
             this.dataView.addFilter(this::test);
         }
 
+        public void setNumber(String number) {
+            this.number = number;
+            this.dataView.refreshAll();
+        }
+
         public void setTitle(String title) {
             this.title = title;
+            this.dataView.refreshAll();
+        }
+
+        public void setType(String type) {
+            this.type = type;
             this.dataView.refreshAll();
         }
 
@@ -206,12 +223,20 @@ public class    AssignedTickets extends VerticalLayout {
             this.dataView.refreshAll();
         }
 
+        public void setProject(String project) {
+            this.project = project;
+            this.dataView.refreshAll();
+        }
+
         public boolean test(Ticket ticket) {
+            boolean matchesNumber = matches(ticket.getTicketNumber(), number);
             boolean matchesTitle = matches(ticket.getTicketName(), title);
+            boolean matchesType = matches(ticket.getTicketType(), type);
             boolean matchesDescription = matches(ticket.getDescription(), description);
             boolean matchesStatus = matches(ticket.getTicketStatus().getStatusName(), status);
+            boolean matchesProject = matches(ticket.getTicketProject().getProjectName(), project);
 
-            return matchesDescription && matchesTitle && matchesStatus;
+            return matchesDescription && matchesTitle && matchesStatus && matchesProject && matchesNumber && matchesType;
         }
 
         private boolean matches(String value, String searchTerm) {

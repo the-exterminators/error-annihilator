@@ -21,13 +21,15 @@ public class NewUserForm extends FormLayout {
     TextField lastName = new TextField("Last Name");
     EmailField email = new EmailField("Email");
     PasswordField dummyPassword = new PasswordField("Password");
-    TextField userRole = new TextField("User Role"); // Combobox in future
+    ComboBox<String> userRole = new ComboBox<>("User Role"); // Combobox in future
 
     // Buttons
     Button save = new Button("Save");
     Button close = new Button("Cancel");
     public NewUserForm() {
         addClassName("new-user-form");
+
+        setUserRoleSampleData(userRole);
 
         // add to form layout
         add(userName,
@@ -52,6 +54,10 @@ public class NewUserForm extends FormLayout {
         close.addClickShortcut(Key.ESCAPE);
 
         return new HorizontalLayout(save, close);
+    }
+
+    private void setUserRoleSampleData(ComboBox<String> comboBox){
+        comboBox.setItems("Manager", "Project Lead", "Developer", "User");
     }
 
     // this function validates and saves the user according to the form

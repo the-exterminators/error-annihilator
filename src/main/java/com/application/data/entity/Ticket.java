@@ -18,6 +18,29 @@ public class Ticket extends AbstractEntity {
 
     };
 
+    // Created a new constructor with ticket number and ticket project, so it doesnt mess with any existing in memory stuff
+    public Ticket(String tickerNumber, String ticketName, String ticketType, String description, TicketStatus ticketStatus,
+                  TicketProject ticketProject, @NotNull User ticketCreator, @Nullable List<User> assignedUsers) {
+
+        this.ticketNumber = tickerNumber;
+        this.ticketName = ticketName;
+        this.ticketType = ticketType;
+        this.description = description;
+
+        if (ticketStatus != null) {
+            this.ticketStatus = ticketStatus;
+        } else this.ticketStatus = new TicketStatus("New");
+
+        this.ticketProject = ticketProject;
+
+        this.ticketCreator = ticketCreator;
+        this.assignedUsers = assignedUsers;
+
+        this.createdTimeStamp = Timestamp.from(Instant.now());
+        this.resolvedTimeStamp = null;
+        this.progressPercent = 0;
+    }
+
     public Ticket(String ticketName, String ticketType, String description, TicketStatus ticketStatus,
                   @NotNull User ticketCreator, @Nullable List<User> assignedUsers) {
 
@@ -36,6 +59,10 @@ public class Ticket extends AbstractEntity {
         this.resolvedTimeStamp = null;
         this.progressPercent = 0;
     }
+
+    // New property ticket number - I did it as a string because I had to use a textfield in the frontend - numberfield only accepts doubles
+    @NotEmpty
+    private String ticketNumber = ""; // I just did it over the constructor but Im not sure how it works with IDs
 
     @NotEmpty
     private String ticketName = "";
@@ -57,6 +84,11 @@ public class Ticket extends AbstractEntity {
     @ManyToOne
     private TicketStatus ticketStatus;
 
+    // New property ticket project
+    @NotNull
+    @ManyToOne
+    private TicketProject ticketProject;
+
     @NotNull
     @ManyToOne
     private User ticketCreator;
@@ -67,6 +99,20 @@ public class Ticket extends AbstractEntity {
 
     @OneToMany(mappedBy = "ticket", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<TicketComment> ticketComment = new ArrayList<>();
+
+    // Getter & Setter for the new properties ticket number and ticket project
+    public String getTicketNumber(){
+        return ticketNumber;
+    }
+    public void setTicketNumber(String ticketNumber){
+        this.ticketNumber = ticketNumber;
+    }
+    public TicketProject getTicketProject() {
+        return ticketProject;
+    }
+    public void setTicketProject(TicketProject ticketProject) {
+        this.ticketProject = ticketProject;
+    }
 
     public String getTicketName() {
         return ticketName;
