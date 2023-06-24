@@ -2,9 +2,8 @@ package com.application.views;
 
 import com.application.components.EditTicketForm;
 import com.application.components.Header;
-import com.application.data.entity.Ticket;
-import com.application.data.entity.TicketStatus;
-import com.application.data.entity.User;
+import com.application.components.SingleTicketForm;
+import com.application.data.entity.*;
 import com.application.security.SecurityService;
 import com.vaadin.flow.component.html.H1;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
@@ -14,6 +13,7 @@ import com.vaadin.flow.router.RouteConfiguration;
 import com.vaadin.flow.spring.security.AuthenticationContext;
 import jakarta.annotation.security.PermitAll;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
@@ -21,12 +21,15 @@ import java.util.List;
 /*
 * Only problem I have is on reload it doesn't reload the content correctly
 * And it also needs binding with DB
+* At the moment I cant enter a ticket number twice, because I am creating new tickets with the same number and it doesnt like that
+* Once we have it working with the database, I need to change it from creating new tickets, to searching for existing ones
+* Also need to create a fallback for when the ticket number doesnt exist!
 */
 @PermitAll // all roles
 @PageTitle("Searched Ticket | Error Annihilator")
 @Route(value = "single-ticket")
 public class SingleTicket extends VerticalLayout {
-    public EditTicketForm ticketForm; // Form/Editor
+    public SingleTicketForm ticketForm; // Form/Editor
     private final SecurityService securityService;
     Ticket ticket; // set this ticket when searched
     long ticketNumber;
@@ -83,16 +86,13 @@ public class SingleTicket extends VerticalLayout {
         testUsers.add(testUser);
 
         // Test ticket 1
-        ticket = new Ticket("I need help", "bug", "test test test", new TicketStatus("open"), testUser, testUsers);
+        ticket = new Ticket("1", "I need help", "bug", "test test test", new TicketStatus("open"), new TicketProject("Project 1"), testUser, testUsers);
+        List<TicketComment> comments = new ArrayList<>();
+        comments.add(new TicketComment("hello", testUser, ticket));
+        ticket.setTicketComment(comments);
 
-        ticketForm = new EditTicketForm(Collections.emptyList(), true); // Replace with actual lists of status
+        ticketForm = new SingleTicketForm(Collections.emptyList()); // Replace with actual lists of status
         ticketForm.setTicket(ticket); // find ticket based on search term
         ticketForm.setSizeFull();
-        ticketForm.addSaveListener(this::saveTicket); // add listener to save ticket - doesn't work yet
-    }
-
-    // Saves ticket, updates the grid and closes editor/form
-    private void saveTicket(EditTicketForm.SaveEvent event) {
-        // service.saveTicket(event.getTicket()); // After DB integration
     }
 }
