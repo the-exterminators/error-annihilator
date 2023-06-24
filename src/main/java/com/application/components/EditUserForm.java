@@ -27,7 +27,7 @@ public class EditUserForm extends FormLayout {
     TextField lastName = new TextField("Last Name");
     EmailField email = new EmailField("Email");
     PasswordField dummyPassword = new PasswordField("Password");
-    TextField userRole = new TextField("User Role"); // Combobox in future
+    ComboBox<String> userRole = new ComboBox<>("User Role"); // Combobox in future
 
     // Buttons
     Button save = new Button("Save");
@@ -35,6 +35,8 @@ public class EditUserForm extends FormLayout {
     Button delete = new Button("Delete");
     public EditUserForm() {
         addClassName("user-form");
+
+        setUserRoleSampleData(userRole);
 
         configureBind();
 
@@ -62,6 +64,10 @@ public class EditUserForm extends FormLayout {
     public void setUser(User user){
         this.user = user;
         binder.readBean(user);
+    }
+
+    private void setUserRoleSampleData(ComboBox<String> comboBox){
+        comboBox.setItems("Manager", "Project Lead", "Developer", "User");
     }
 
     private HorizontalLayout createButtonsLayout() {

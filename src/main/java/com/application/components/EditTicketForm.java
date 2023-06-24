@@ -1,9 +1,6 @@
 package com.application.components;
 
-import com.application.data.entity.Ticket;
-import com.application.data.entity.TicketComment;
-import com.application.data.entity.TicketStatus;
-import com.application.data.entity.User;
+import com.application.data.entity.*;
 import com.vaadin.flow.component.*;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
@@ -17,12 +14,14 @@ import com.vaadin.flow.component.messages.MessageList;
 import com.vaadin.flow.component.messages.MessageListItem;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
+import com.vaadin.flow.component.textfield.NumberField;
 import com.vaadin.flow.component.textfield.TextArea;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.binder.BeanValidationBinder;
 import com.vaadin.flow.data.binder.Binder;
 import com.vaadin.flow.data.binder.Setter;
 import com.vaadin.flow.data.binder.ValidationException;
+import com.vaadin.flow.data.validator.RegexpValidator;
 import com.vaadin.flow.function.ValueProvider;
 import com.vaadin.flow.shared.Registration;
 import jakarta.annotation.security.PermitAll;
@@ -40,8 +39,10 @@ public class EditTicketForm extends FormLayout {
 
     // Ticket entity fields
     TextField ticketName = new TextField("Title");
+    TextField ticketNumber = new TextField("Ticket Number");
     TextArea description = new TextArea("Description");
-    TextField ticketType = new TextField("Type"); // I want this to be a dropdown of predefined types
+    ComboBox<String> ticketType = new ComboBox<String>("Type"); // I want this to be a dropdown of predefined types
+    ComboBox<String> ticketProject = new ComboBox<>("Project"); // Change it to Projects
     DateTimePicker createdTimeStamp = new DateTimePicker();
     ComboBox<TicketStatus> ticketStatus = new ComboBox<>("Status"); // I want this to be a dropdown of predefined statuses
     TextField ticketCreator = new TextField("Creator");
@@ -63,35 +64,55 @@ public class EditTicketForm extends FormLayout {
     HorizontalLayout buttonSection = createButtonsLayout();
 
     // Constructor
-    public EditTicketForm(List<TicketStatus> statuses, List<User> assignees, List<TicketComment> comments) {
+    public EditTicketForm(List<TicketStatus> statuses) {
         addClassName("ticket-form");
+
+        ticketNumber.setPattern("\\d*");
 
         configureBind();
 
         // set items and labels for lists
         ticketStatus.setItems(statuses);
         ticketStatus.setItemLabelGenerator(TicketStatus::getStatusName);
-        ticketComment.setItems(comments);
+        ticketComment.setItems(Collections.emptyList());
 
         // set items Assigned Users
-        assignedUsers.setItems(assignees);
+        assignedUsers.setItems(Collections.emptyList());
         updateAssignedUsers();
         assignedUsers.addValueChangeListener(event -> updateAssignedUsers());
+
+        setProjectSampleData(ticketProject);
+        setTypeSampleData(ticketType);
+        setStatusSampleData(ticketStatus);
+
 
         configureFormLayout();
 
         // add to form layout
         add(buttonSection,
-            ticketName,
-            description,
-            createdTimeStamp,
-            ticketCreator,
-            ticketType,
-            ticketStatus,
-            assignedUsersMulti,
-            commentSection
+                ticketNumber,
+                ticketName,
+                description,
+                createdTimeStamp,
+                ticketCreator,
+                ticketType,
+                ticketStatus,
+                ticketProject,
+                assignedUsersMulti,
+                commentSection
         );
 
+    }
+
+    // Sample data for project, type and status
+    private void setProjectSampleData(ComboBox<String> comboBox){
+        comboBox.setItems("Project 1", "Project 2", "Project 3");
+    }
+    private void setTypeSampleData(ComboBox<String> comboBox){
+        comboBox.setItems("bug", "defect", "error");
+    }
+    private void setStatusSampleData(ComboBox<TicketStatus> comboBox){
+        comboBox.setItems(new TicketStatus("unassigned"), new TicketStatus("open"), new TicketStatus("in progress"), new TicketStatus("waiting for approval"), new TicketStatus("closed"));
     }
 
     // Update Assigned Users on select in grid
@@ -119,10 +140,15 @@ public class EditTicketForm extends FormLayout {
         );
 
         // Bind rest
+        //binder.bind(ticketNumber, "ticketNumber");
+        binder.forField(ticketNumber)
+                        .withValidator(new RegexpValidator("Only numbers allowed!", "\\d*"))
+                        .bind(Ticket::getTicketNumber, Ticket::setTicketNumber);
         binder.bind(ticketName, "ticketName");
         binder.bind(description, "description");
         binder.bind(ticketType, "ticketType");
         binder.bind(ticketStatus, "ticketStatus");
+        binder.bind(ticketProject, "ticketProject.projectName");
         binder.bind(ticketCreator, "ticketCreator.userName");
         binder.bind(assignedUsers, "assignedUsers");
         binder.bind(ticketComment, "ticketComment");
@@ -135,6 +161,7 @@ public class EditTicketForm extends FormLayout {
         description.setReadOnly(true);
         createdTimeStamp.setReadOnly(true);
         ticketCreator.setReadOnly(true);
+        ticketNumber.setReadOnly(true);
 
         // Layout reform
         setColspan(buttonSection, 2);
