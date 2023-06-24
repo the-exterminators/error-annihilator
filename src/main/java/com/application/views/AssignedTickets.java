@@ -35,11 +35,13 @@ public class AssignedTickets extends VerticalLayout {
     EditTicketForm ticketForm; // Form/Editor
 
     private final SecurityService securityService;
+    //private final ErrorService service;
 
     // Constructor
-    public AssignedTickets(AuthenticationContext authenticationContext) {
+    public AssignedTickets(AuthenticationContext authenticationContext/*, ErrorService service*/) {
         SecurityService securityService = new SecurityService(authenticationContext);
         this.securityService = securityService;
+        //this.service = service;
         addClassName("assignedTickets-view");
 
         // This is how to implement the header
@@ -72,7 +74,7 @@ public class AssignedTickets extends VerticalLayout {
     // FORM =======================================
     // Configure the editor/form
     private void configureForm() {
-        ticketForm = new EditTicketForm(Collections.emptyList(), Collections.emptyList(), Collections.emptyList()); // Replace with actual lists
+        ticketForm = new EditTicketForm(/*service.findAllStatuses()*/Collections.emptyList());
         ticketForm.setSizeFull();
         ticketForm.addCloseListener(e -> closeEditor()); // add listener to close form
         ticketForm.addSaveListener(this::saveTicket); // add listener to save ticket - doesn't work yet
@@ -102,14 +104,14 @@ public class AssignedTickets extends VerticalLayout {
 
     // Saves ticket, updates the grid and closes editor/form
     private void saveTicket(EditTicketForm.SaveEvent event) {
-       // service.saveTicket(event.getTicket()); // After DB integration
+        //service.saveTicket(event.getTicket()); // After DB integration
         updateList();
         closeEditor();
     }
 
     // update the grid
     private void updateList() {
-        // grid.setItems(service.findallTickets(filterText.getValue())); // After DB integration
+        //grid.setItems(service.findAllTickets()); // After DB integration
     }
 
     // GRID ====================================
@@ -147,7 +149,8 @@ public class AssignedTickets extends VerticalLayout {
         grid.asSingleSelect().addValueChangeListener(e -> ticketForm.updateAssignedUsers());
 
         // Set items for grid
-        GridListDataView<Ticket> dataView = grid.setItems(testTickets); // replace with dataservice.getTickets()
+        GridListDataView<Ticket> dataView = grid.setItems(testTickets); // test
+        //GridListDataView<Ticket> dataView = grid.setItems(service.findAllTickets()); // real
 
         // Filter - https://vaadin.com/docs/latest/components/grid
         TicketFilter ticketFilter = new TicketFilter(dataView);

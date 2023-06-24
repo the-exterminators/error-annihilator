@@ -63,7 +63,7 @@ public class EditTicketForm extends FormLayout {
     HorizontalLayout buttonSection = createButtonsLayout();
 
     // Constructor
-    public EditTicketForm(List<TicketStatus> statuses, List<User> assignees, List<TicketComment> comments) {
+    public EditTicketForm(List<TicketStatus> statuses) {
         addClassName("ticket-form");
 
         configureBind();
@@ -71,10 +71,10 @@ public class EditTicketForm extends FormLayout {
         // set items and labels for lists
         ticketStatus.setItems(statuses);
         ticketStatus.setItemLabelGenerator(TicketStatus::getStatusName);
-        ticketComment.setItems(comments);
+        ticketComment.setItems(Collections.emptyList());
 
         // set items Assigned Users
-        assignedUsers.setItems(assignees);
+        assignedUsers.setItems(Collections.emptyList());
         updateAssignedUsers();
         assignedUsers.addValueChangeListener(event -> updateAssignedUsers());
 
@@ -217,6 +217,9 @@ public class EditTicketForm extends FormLayout {
     public static class SaveEvent extends EditTicketFormEvent{
         SaveEvent(EditTicketForm source, Ticket ticket){
             super(source, ticket);
+        }
+        public Ticket getTicket() {
+            return ticket;
         }
     }
 

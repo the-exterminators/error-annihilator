@@ -1,4 +1,4 @@
-INSERT INTO "STATUS" VALUES
+/*INSERT INTO "STATUS" VALUES
 (1, 1, 'Imported lead'),
 (2, 1, 'Not contacted'),
 (3, 1, 'Contacted'),
@@ -61,4 +61,4 @@ INSERT INTO "CONTACT" VALUES
 (57, 1, 'mattie.graham@ispaviw.gt', 'Mattie', 'Graham', 7, 2),
 (58, 1, 'bryan.shaw@ha.ee', 'Bryan', 'Shaw', 9, 1),
 (59, 1, 'essie.adams@iliat.cw', 'Essie', 'Adams', 8, 5),
-(60, 1, 'gary.osborne@do.ga', 'Gary', 'Osborne', 7, 5);
+(60, 1, 'gary.osborne@do.ga', 'Gary', 'Osborne', 7, 5);*/

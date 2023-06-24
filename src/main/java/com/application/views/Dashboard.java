@@ -2,11 +2,9 @@ package com.application.views;
 
 import com.application.components.Header;
 import com.application.security.SecurityService;
-import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.charts.Chart;
 import com.vaadin.flow.component.charts.model.*;
 import com.vaadin.flow.component.html.H1;
-import com.vaadin.flow.component.html.H2;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.router.PageTitle;
@@ -16,17 +14,19 @@ import jakarta.annotation.security.PermitAll;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
-import java.util.Date;
 import java.util.concurrent.ThreadLocalRandom;
+import java.util.concurrent.atomic.AtomicReference;
 
 @PermitAll
 @PageTitle("Dashboard | Error Annihilator")
 @Route(value = "dashboard")
 public class Dashboard extends VerticalLayout {
     private final SecurityService securityService;
+    //private final Service service;
 
-    public Dashboard(AuthenticationContext authenticationContext) {
+    public Dashboard(AuthenticationContext authenticationContext/*, Service service*/) {
         this.securityService = new SecurityService(authenticationContext);
+        //this.service = service;
         addClassName("dashboard-view");
 
         // This is how to implement the header
@@ -39,7 +39,6 @@ public class Dashboard extends VerticalLayout {
     private VerticalLayout getContent() {
         VerticalLayout content = new VerticalLayout();
         content.addClassNames("content");
-        //content.setSizeFull();
 
         // Main Page Title
         H1 title = new H1("Dashboard");
@@ -175,15 +174,112 @@ public class Dashboard extends VerticalLayout {
         conf.addyAxis(y);
 
         /*
-         for(Tickets.RangeData data){
-                if(data.getTicketType().lowercase == "bugs"){
-                    bugs++;
-                    if(createdTimeStamp == MOnday){
-                     bugsMo++;
-                } else if(...)...
+        AtomicReference<Long> mondays = new AtomicReference<>(0l);
+        AtomicReference<Long> tuesdays = new AtomicReference<>(0l);
+        AtomicReference<Long> wednesdays = new AtomicReference<>(0l);
+        AtomicReference<Long> thursdays = new AtomicReference<>(0l);
+        AtomicReference<Long> fridays = new AtomicReference<>(0l);
+        AtomicReference<Long> saturdays = new AtomicReference<>(0l);
+        AtomicReference<Long> sundays = new AtomicReference<>(0l);
+        AtomicReference<Long> bugsMo = new AtomicReference<>(0l);
+        AtomicReference<Long> bugsTu = new AtomicReference<>(0l);
+        AtomicReference<Long> bugsWe = new AtomicReference<>(0l);
+        AtomicReference<Long> bugsTh = new AtomicReference<>(0l);
+        AtomicReference<Long> bugsFr = new AtomicReference<>(0l);
+        AtomicReference<Long> bugsSa = new AtomicReference<>(0l);
+        AtomicReference<Long> bugsSu = new AtomicReference<>(0l);
+        AtomicReference<Long> defectsMo = new AtomicReference<>(0l);
+        AtomicReference<Long> defectsTu = new AtomicReference<>(0l);
+        AtomicReference<Long> defectsWe = new AtomicReference<>(0l);
+        AtomicReference<Long> defectsTh = new AtomicReference<>(0l);
+        AtomicReference<Long> defectsFr = new AtomicReference<>(0l);
+        AtomicReference<Long> defectsSa = new AtomicReference<>(0l);
+        AtomicReference<Long> defectsSu = new AtomicReference<>(0l);
+        AtomicReference<Long> errorsMo = new AtomicReference<>(0l);
+        AtomicReference<Long> errorsTu = new AtomicReference<>(0l);
+        AtomicReference<Long> errorsWe = new AtomicReference<>(0l);
+        AtomicReference<Long> errorsTh = new AtomicReference<>(0l);
+        AtomicReference<Long> errorsFr = new AtomicReference<>(0l);
+        AtomicReference<Long> errorsSa = new AtomicReference<>(0l);
+        AtomicReference<Long> errorsSu = new AtomicReference<>(0l);
+
+        service.findAllTickets().forEach(ticket -> {
+            if(ticket.getTicketType().lowercase() == "bug"){
+                if(ticket.getCreatedTimeStamp() == 1{
+                    mondays.getAndSet(mondays.get() + 1);
+                    bugsMo.getAndSet(bugsMo.get() + 1);
+                } else if(ticket.getCreatedTimeStamp() == 2{
+                    tuesdays.getAndSet(tuesdays.get() + 1);
+                    bugsTu.getAndSet(bugsTu.get() + 1);
+                } else if(ticket.getCreatedTimeStamp() == 3{
+                    wednesdays.getAndSet(wednesdays.get() + 1);
+                    bugsWe.getAndSet(bugsWe.get() + 1);
+                } else if(ticket.getCreatedTimeStamp() == 4{
+                    thursdays.getAndSet(thursdays.get() + 1);
+                    bugsTh.getAndSet(bugsTh.get() + 1);
+                } else if(ticket.getCreatedTimeStamp() == 5{
+                    fridays.getAndSet(fridays.get() + 1);
+                    bugsFr.getAndSet(bugsFr.get() + 1);
+                } else if(ticket.getCreatedTimeStamp() == 6{
+                    saturdays.getAndSet(saturdays.get() + 1);
+                    bugsSa.getAndSet(bugsSa.get() + 1);
+                } else if(ticket.getCreatedTimeStamp() == 7{
+                    sundays.getAndSet(sundays.get() + 1);
+                    bugsSu.getAndSet(bugsSu.get() + 1);
+                }
+            } else if(ticket.getTicketType().lowercase() == "defect"){
+                if(ticket.getCreatedTimeStamp() == 1{
+                    mondays.getAndSet(mondays.get() + 1);
+                    defectsMo.getAndSet(defectsMo.get() + 1);
+                } else if(ticket.getCreatedTimeStamp() == 2{
+                    tuesdays.getAndSet(tuesdays.get() + 1);
+                    defectsTu.getAndSet(defectsTu.get() + 1);
+                } else if(ticket.getCreatedTimeStamp() == 3{
+                    wednesdays.getAndSet(wednesdays.get() + 1);
+                    defectsWe.getAndSet(defectsWe.get() + 1);
+                } else if(ticket.getCreatedTimeStamp() == 4{
+                    thursdays.getAndSet(thursdays.get() + 1);
+                    defectsTh.getAndSet(defectsTh.get() + 1);
+                } else if(ticket.getCreatedTimeStamp() == 5{
+                    fridays.getAndSet(fridays.get() + 1);
+                    defectsFr.getAndSet(defectsFr.get() + 1);
+                } else if(ticket.getCreatedTimeStamp() == 6{
+                    saturdays.getAndSet(saturdays.get() + 1);
+                    defectsSa.getAndSet(defectsSa.get() + 1);
+                } else if(ticket.getCreatedTimeStamp() == 7{
+                    sundays.getAndSet(sundays.get() + 1);
+                    defectsSu.getAndSet(defectsSu.get() + 1);
+                }
+            } else if(ticket.getTicketType().lowercase() == "error"){
+                if(ticket.getCreatedTimeStamp() == 1{
+                    mondays.getAndSet(mondays.get() + 1);
+                    errorsMo.getAndSet(errorsMo.get() + 1);
+                } else if(ticket.getCreatedTimeStamp() == 2{
+                    tuesdays.getAndSet(tuesdays.get() + 1);
+                    errorsTu.getAndSet(errorsTu.get() + 1);
+                } else if(ticket.getCreatedTimeStamp() == 3{
+                    wednesdays.getAndSet(wednesdays.get() + 1);
+                    errorsWe.getAndSet(errorsWe.get() + 1);
+                } else if(ticket.getCreatedTimeStamp() == 4{
+                    thursdays.getAndSet(thursdays.get() + 1);
+                    errorsTh.getAndSet(errorsTh.get() + 1);
+                } else if(ticket.getCreatedTimeStamp() == 5{
+                    fridays.getAndSet(fridays.get() + 1);
+                    errorsFr.getAndSet(errorsFr.get() + 1);
+                } else if(ticket.getCreatedTimeStamp() == 6{
+                    saturdays.getAndSet(saturdays.get() + 1);
+                    errorsSa.getAndSet(errorsSa.get() + 1);
+                } else if(ticket.getCreatedTimeStamp() == 7{
+                    sundays.getAndSet(sundays.get() + 1);
+                    errorsSu.getAndSet(errorsSu.get() + 1);
+                }
             }
-            new ListSeries("bugs", bugsMo, bugsTu, bugsWe, bugsTh, bugsFr, bugsSa, bugsSu);
-         */
+        });
+
+        conf.addSeries(new ListSeries("bugs", bugsMo/mondays, bugsTu/tuesdays, bugsWe/wednesdays, bugsTh/thursdays, bugsFr/fridays, bugsSa/saturdays, bugsSu/sundays));
+        conf.addSeries(new ListSeries("defects", defectsMo/mondays, defectsTu/tuesdays, defectsWe/wednesdays, defectsTh/thursdays, defectsFr/fridays, defectsSa/saturdays, defectsSu/sundays));
+        conf.addSeries(new ListSeries("errors", errorsMo/mondays, errorsTu/tuesdays, errorsWe/wednesdays, errorsTh/thursdays, errorsFr/fridays, errorsSa/saturdays, errorsSu/sundays));
+        */
 
 
         conf.addSeries(new ListSeries("bugs", 25, 20, 30, 15, 5, 1, 0));
@@ -226,13 +322,27 @@ public class Dashboard extends VerticalLayout {
         conf.addyAxis(y);
 
         /*
-         for(Tickets.RangeData data){
-                if(data.getTicketType().lowercase == "bugs"){
-                    bugs++;
-                    timeResolved += data.resolvedTimestamp - data.createdtimestamp;
-                } else if(...)...
+        AtomicReference<Long> bugs = new AtomicReference<>(0l);
+        AtomicReference<Long> timeResolvedBugs = new AtomicReference<>(0l);
+        AtomicReference<Long> defects = new AtomicReference<>(0l);
+        AtomicReference<Long> timeResolvedDefects = new AtomicReference<>(0l);
+        AtomicReference<Long> errors = new AtomicReference<>(0l);
+        AtomicReference<Long> timeResolvedErrors = new AtomicReference<>(0l);
+
+        service.findAllTickets().forEach(ticket -> {
+            if(ticket.getTicketType().lowercase() == "bug"){
+                bugs.getAndSet(bugs.get() + 1);
+                timeResolvedBugs.getAndSet(timeResolvedBugs.get() + (ticket.getResolvedTimeStamp() - ticket.getCreatedTimeStamp()));
+            } else if(ticket.getTicketType().lowercase() == "defect"){
+                defects.getAndSet(defects.get() + 1);
+                timeResolvedDefects.getAndSet(timeResolvedDefects.get() + (ticket.getResolvedTimeStamp() - ticket.getCreatedTimeStamp()));
+            } else if(ticket.getTicketType().lowercase() == "error"){
+                errors.getAndSet(errors.get() + 1);
+                timeResolvedErrors.getAndSet(timeResolvedErrors.get() + (ticket.getResolvedTimeStamp() - ticket.getCreatedTimeStamp()));
             }
-            new ListSeries(timeResolved/bugs, ...);
+        });
+
+        conf.addSeries(new ListSeries(timeResolvedBugs.get()/bugs.get(), timeResolvedDefects.get()/defects.get(), timeResolvedErrors.get()/errors.get())); // in hrs
          */
 
         conf.addSeries(new ListSeries(9, 11, 30)); // in hrs
@@ -265,11 +375,11 @@ public class Dashboard extends VerticalLayout {
         configuration.setSubTitle("Number of Tickets submitted per day");
 
         DataSeries dataSeries = new DataSeries("Submitted Tickets");
-        /* //example of for loop with data
-        for (StockPrices.RangeData data : StockPrices.fetchDailyTempRanges()) {
+        /*
+        service.findAllDates().forEach(date ->
+                dataSeries.add(new DataSeriesItem(date, 0, service.getTicketSubmittedCount()))); // <5>
+        */
 
-            dataSeries.add(new DataSeriesItem(data.getDate(), data.getMin(), data.getMax()));
-        } */
         int i = 0;
         while(i < 200){
             int randomNum = ThreadLocalRandom.current().nextInt(0, 30 + 1);
@@ -300,11 +410,10 @@ public class Dashboard extends VerticalLayout {
         configuration.setSubTitle("Number of Tickets resolved per day");
 
         DataSeries dataSeries = new DataSeries("Resolved Tickets");
-        /* //example of for loop with data
-        for (StockPrices.RangeData data : StockPrices.fetchDailyTempRanges()) {
-
-            dataSeries.add(new DataSeriesItem(data.getDate(), data.getMin(), data.getMax()));
-        } */
+        /*
+        service.findAllDates().forEach(date ->
+                dataSeries.add(new DataSeriesItem(date, 0, service.getTicketResolvedCount()))); // <5>
+        */
         int i = 0;
         while(i < 200){
             int randomNum = ThreadLocalRandom.current().nextInt(0, 30 + 1);
