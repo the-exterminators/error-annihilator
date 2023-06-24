@@ -12,7 +12,7 @@ jobs:
 
     steps:
       - checkout
-      - run: mvn $MAVEN_CLI_OPTS clean package -Pproduction -e
+      - run: mvn $MAVEN_CLI_OPTS -Dvaadin.charts.developer.license=$VAADIN_OFFLINE_KEY clean package -Pproduction -e
 
       - store_artifacts:
           path: target
