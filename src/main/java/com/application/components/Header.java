@@ -71,6 +71,7 @@ public class Header extends AppLayout{
         content.add(new RouterLink("Assigned Tickets", AssignedTickets.class));
         content.add(new RouterLink("User Management", UserManagement.class));
         content.add(new RouterLink("Help", Help.class));
+        content.add(new RouterLink ("Ticket History", TicketHistory.class ));
 
 
         String u = securityService.getAuthenticatedUser().getUsername();

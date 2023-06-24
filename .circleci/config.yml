@@ -2,7 +2,27 @@
 # See: https://circleci.com/docs/configuration-reference
 version: 2.1
 
+# GCP Orb for GCP deployment
+orbs:
+  gcp-cli: circleci/gcp-cli@3.1.0
+  cloud-run: circleci/gcp-cloud-run@1.0.2
+  gcp-gcr: circleci/gcp-gcr@0.15.1
+
+executors:
+  gcloud-executor:
+    docker:
+      - image: google/cloud-sdk
+
+  machine-executor:
+    machine: true
+
+master_only: &master_only
+  filters:
+    branches:
+      only: master
+
 jobs:
+
   build:
     docker:
       - image: maven:3.8.1-openjdk-17-slim
@@ -11,7 +31,7 @@ jobs:
 
     steps:
       - checkout
-      - run: mvn $MAVEN_CLI_OPTS clean package -Pproduction -e
+      - run: mvn $MAVEN_CLI_OPTS clean -DskipTests package -Pproduction -e
 
       - store_artifacts:
           path: target
@@ -19,24 +39,80 @@ jobs:
 
   test:
     docker:
-      - image: maven:3.8.1-openjdk-17-slim
+      - image: circleci/openjdk:17-buster
+        environment:
+          CHROME_BIN: /usr/bin/google-chrome-stable
+          DISPLAY: ":99"
+
     steps:
       - checkout
-      - run:
-          name: Save test results
-          command: |
-            mvn test -e
-            mkdir -p ~/test-results/junit/
-            find . -type f -regex ".*/target/surefire-reports/.*xml" -exec cp {} ~/test-results/junit/ \;
-          when: always
+      - run: sudo apt-get update && sudo apt-get install -y wget curl unzip xvfb libxi6 libgconf-2-4
+      - run: |
+          wget -q -O - https://dl.google.com/linux/linux_signing_key.pub | sudo apt-key add -
+          echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" | sudo tee /etc/apt/sources.list.d/google-chrome.list
+          sudo apt-get update && sudo apt-get install -y google-chrome-stable
+
+      - run: |
+          CHROME_DRIVER_VERSION=$(curl -sS chromedriver.storage.googleapis.com/LATEST_RELEASE)
+          wget -q -O /tmp/chromedriver.zip http://chromedriver.storage.googleapis.com/$CHROME_DRIVER_VERSION/chromedriver_linux64.zip
+          sudo unzip -q /tmp/chromedriver.zip -d /usr/local/bin
+          sudo chmod +x /usr/local/bin/chromedriver
+
+      - run: |
+          Xvfb :99 -screen 0 1280x1024x24 > /dev/null 2>&1 &
+          export DISPLAY=:99
+
+      - run: mvn $MAVEN_CLI_OPTS test
+
       - store_test_results:
-          path: ~/test-results/junit/
-          destination: ~/test-results/junit/
+          path: target/surefire-reports
+          destination: test-results
+
+  build_push_image_gcr:
+    description: Build docker image and push to gcr registry
+    executor: gcp-gcr/default
+    machine:
+      image: ubuntu-2004:202010-01
+    steps:
+      - checkout
+      - gcp-gcr/gcr-auth
+      - gcp-gcr/build-image:
+          dockerfile: Dockerfile
+          google-project-id: GOOGLE_PROJECT_ID
+          image: error-annihilator
+          registry-url: 'eu.gcr.io'
+          tag: 'latest'
+      - gcp-gcr/push-image:
+          google-project-id: GOOGLE_PROJECT_ID
+          image: error-annihilator
+          registry-url: 'eu.gcr.io'
+          tag: 'latest'
+
+  gcp_cloud_run_deploy:
+    description: Deploy using cloud run
+    executor: machine-executor
+    steps:
+      - cloud-run/init
+      - cloud-run/deploy:
+          platform: 'managed'
+          image: eu.gcr.io/$GOOGLE_PROJECT_ID/sp-69-test:latest
+          service-name: 'error-annihilator'
+          region: 'europe-west1'
+          unauthenticated: true
 
 workflows:
-  Test-and-Build:
+  push-image-and-deploy-to-gcr:
     jobs:
-      - test
-      - build:
+      - build_push_image_gcr:
+          <<: *master_only
+      - gcp_cloud_run_deploy:
+          <<: *master_only
           requires:
-            - test
+            - build_push_image_gcr
+
+  build-and-test:
+    jobs:
+      - build
+      - test:
+          requires:
+            - build

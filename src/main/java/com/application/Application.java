@@ -17,7 +17,8 @@ import org.springframework.boot.web.servlet.support.SpringBootServletInitializer
         offlineResources = {"images/logo.png", "images/offline.png"}
 )
 @SpringBootApplication
-public class Application extends SpringBootServletInitializer implements AppShellConfigurator {
+public class
+Application extends SpringBootServletInitializer implements AppShellConfigurator {
     public static void main(String[] args) {
         SpringApplication.run(Application.class, args);
     }
