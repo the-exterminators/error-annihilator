@@ -43,7 +43,7 @@ public class UserProfile extends VerticalLayout {
 
         // This is how to implement the header
         setSizeFull();
-        Header header = new Header(securityService);
+        Header header = new Header(authenticationContext);
         header.setContent(getContent()); // getContent should contain all the pages contents
         add(header); // adds Header with content into the View
     }
