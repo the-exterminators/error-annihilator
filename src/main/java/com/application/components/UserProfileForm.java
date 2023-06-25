@@ -29,7 +29,7 @@ public class UserProfileForm extends FormLayout {
 
     // Buttons
     Button save = new Button("Save");
-    Button delete = new Button("Delete");
+    Button delete = new Button("Delete my Profile");
     public UserProfileForm() {
         addClassName("user-form");
 
