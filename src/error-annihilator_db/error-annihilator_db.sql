@@ -1,109 +1,110 @@
-CREATE TABLE error-annihilator_db.public users (
-    user-id integer NOT NULL AUTO_INCREMENT,
-    first-name varchar(50),
-    last-name varchar(50),
+CREATE TABLE roles (
+    role_id serial,
+    role_name varchar(50),
+    Primary Key (role_id)
+);
+
+CREATE TABLE users (
+    user_id serial,
+    first_name varchar(50),
+    last_name varchar(50),
     username varchar(100),
     email varchar(150),
     passwordhash varchar(255),
-    role-id integer,
-    is-active boolean,
-    Primary Key (user-id),
-    Foreign Key (role-id) References roles(role-id)
+    role_id integer,
+    is_active boolean,
+    Primary Key (user_id),
+    Foreign Key (role_id) References roles(role_id)
 );
 
-CREATE TABLE error-annihilator_db.public roles (
-    role-id NOT NULL AUTO_INCREMENT,
-    name varchar(50),
-    Primary Key (role-id)
-);
-
-CREATE TABLE error-annihilator_db.public projects (
-    project-id integer NOT NULL AUTO_INCREMENT,
+CREATE TABLE projects (
+    project_id serial,
     title varchar(50),
     description varchar(255),
-    project-lead integer,
-    is-active boolean,
-    Primary Key (project-id),
-    Foreign Key (project-lead) References users(user-id)
+    project_lead integer,
+    is_active boolean,
+    Primary Key (project_id),
+    Foreign Key (project_lead) References users(user_id)
 );
 
-Create Table error-annihilator_db.public status (
-    status-id integer NOT NULL AUTO_INCREMENT,
-    name varchar(255),
-    Primary Key (status-id)
+Create Table status (
+    status_id serial,
+    status_name varchar(255),
+    Primary Key (status_id)
 );
 
-Create Table error-annihilator_db.public comments (
-    comment-id integer NOT NULL AUTO_INCREMENT,
-    text varchar(255),
-    ticket-id integer,
-    user-id integer,
-    created timestamp,
-    Primary Key (comment-id),
-    Foreign Key (ticket-id) References tickets(ticket-id),
-    Foreign Key (user-id) References users(user-id)
+Create Table types (
+    type_id serial,
+    type_name varchar(255),
+    Primary Key (type_id)
 );
 
-Create Table error-annihilator_db.public types (
-    type-id integer NOT NULL AUTO_INCREMENT,
-    name varchar(255),
-    Primary Key (type-id)
+Create Table ticket_urgency (
+    urgency_id serial,
+    tu_name varchar(150),
+    Primary Key (urgency_id)
 );
 
-Create Table error-annihilator_db.public tickets (
-    ticket-id integer NOT NULL AUTO_INCREMENT,
+Create Table tickets (
+    ticket_id serial,
     title varchar(127),
     description varchar(255),
-    status-id integer,
-    type-id integer,
+    status_id integer,
+    type_id integer,
     created timestamp,
     resolved timestamp,
-    creator-id integer,
-    urgency-id integer,
-    Primary Key (ticket-id),
-    Foreign Key (status-id) References status(status-id),
-    Foreign Key (creator-id) References users(user-id),
-    Foreign Key (type-id) References types(type-id),
-    Foreign Key (urgency-id) References ticket-urgency(urgency-id)
+    creator_id integer,
+    urgency_id integer,
+    Primary Key (ticket_id),
+    Foreign Key (status_id) References status(status_id),
+    Foreign Key (creator_id) References users(user_id),
+    Foreign Key (type_id) References types(type_id),
+    Foreign Key (urgency_id) References ticket_urgency(urgency_id)
 );
 
-Create Table error-annihilator_db.public tickets-assigned-users (
-    tau-id integer NOT NULL AUTO_INCREMENT,
-    ticket-id integer,
-    user-id integer,
-    Primary Key (tau-id),
-    Foreign Key (ticket-id) References tickets(ticket-id),
-    Foreign Key (user-id) References users(user-id)
+Create Table tickets_assigned_users (
+    tau_id serial,
+    ticket_id integer,
+    user_id integer,
+    Primary Key (tau_id),
+    Foreign Key (ticket_id) References tickets(ticket_id),
+    Foreign Key (user_id) References users(user_id)
 );
 
-Create Table error-annihilator_db.public ticket-urgency (
-    urgency-id integer NOT NULL AUTO_INCREMENT,
-    name varchar(150)
+Create Table comments (
+    comment_id serial,
+    comment_text varchar(255),
+    ticket_id integer,
+    user_id integer,
+    created timestamp,
+    Primary Key (comment_id),
+    Foreign Key (ticket_id) References tickets(ticket_id),
+    Foreign Key (user_id) References users(user_id)
 );
+
 
 --Prepared Statements for use in Service-Layer
-
 --Arguments for CreateTicket(Title, Description, Status-ID, Type-ID, Creator-ID, Priority-ID)
 Prepare CreateTicket(varchar(127), varchar(255), integer, integer, integer, integer) AS
-Insert Into tickets Values(default, $1, $2, $3, $4, CURRENT_TIMESTAMP, NULL, $5, $6);
+    Insert Into tickets Values(default, $1, $2, $3, $4, CURRENT_TIMESTAMP, NULL, $5, $6);
 
 --Arguments for CreateUser(first-name, last-name, username, email, passwordhash, role-id)
 Prepare CreateUser(varchar(50), varchar(50), varchar(100), varchar(150), varchar(255), integer) AS
-Insert Into users Values(default, $1, $2, $3, $4, $5, $6, true);
+    Insert Into users Values(default, $1, $2, $3, $4, $5, $6, true);
 
 --Arguments for CreateProject(Title, Description, Project-Lead-User)
 Prepare CreateProject(varchar(50), varchar(255), integer) AS
-Insert Into projects Values(default, $1, $2, $3, true);
+    Insert Into projects Values(default, $1, $2, $3, true);
 
 --Arguments for CreateComment(Text, Ticket-ID, Creator-ID)
 Prepare CreateComment(varchar(255), integer, integer) AS
-Insert Into comments Values(default, $1, $2, $3, CURRENT_TIMESTAMP);
+    Insert Into comments Values(default, $1, $2, $3, CURRENT_TIMESTAMP);
 
 --Arguments for AssignUsersToTicket(Ticket-ID, User-ID)
 Prepare AssignUsersToTicket(integer, integer) AS
-Insert Into tickets-assigned-users Values(default, $1, $2);
+    Insert Into tickets_assigned_users Values(default, $1, $2);
 
-
+/*
 --Triggers
 --arguments for deletUser(User-ID)
 --Trigger not yet usable - need to find a way to pass user-id as argument
@@ -142,3 +143,4 @@ Create or Replace Trigger deleteProject Before
     On projects
     For Each Row
     Execute Procedure deleteProject();
+*/
