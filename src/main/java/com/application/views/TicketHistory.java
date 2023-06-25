@@ -1,6 +1,5 @@
 package com.application.views;
 
-import com.application.components.EditTicketForm;
 import com.application.components.Header;
 import com.application.components.TicketHistoryForm;
 import com.application.data.entity.Ticket;
@@ -39,13 +38,12 @@ public class TicketHistory extends VerticalLayout {
 
     // Constructor
     public TicketHistory(AuthenticationContext authenticationContext) {
-        SecurityService securityService = new SecurityService(authenticationContext);
-        this.securityService = securityService;
+        this.securityService = new SecurityService(authenticationContext);
         addClassName("TicketHistory-view");
 
         // This is how to implement the header
         setSizeFull();
-        Header header = new Header(securityService);
+        Header header = new Header(authenticationContext);
         header.setContent(getContent()); // getContent should contain all the pages contents
         add(header); // adds Header with content into the View
     }
@@ -148,7 +146,7 @@ public class TicketHistory extends VerticalLayout {
         Grid.Column<Ticket> descrColumn = grid.addColumn("description");
 
         // assigned to
-        Grid.Column<Ticket> assignedToColumn = grid.addColumn(ticket -> ticket.getAssignedUsers()).setHeader("assigned to");
+        Grid.Column<Ticket> assignedToColumn = grid.addColumn(Ticket::getAssignedUsers).setHeader("assigned to");
 
         // no need for progress bar for the devs, they only need categories
         Grid.Column<Ticket> statusColum = grid.addColumn(ticket -> ticket.getTicketStatus().getStatusName()).setHeader("Status");

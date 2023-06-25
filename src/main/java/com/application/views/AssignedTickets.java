@@ -35,13 +35,12 @@ public class    AssignedTickets extends VerticalLayout {
 
     // Constructor
     public AssignedTickets(AuthenticationContext authenticationContext) {
-        SecurityService securityService = new SecurityService(authenticationContext);
-        this.securityService = securityService;
+        this.securityService = new SecurityService(authenticationContext);
         addClassName("assignedTickets-view");
 
         // This is how to implement the header
         setSizeFull();
-        Header header = new Header(securityService);
+        Header header = new Header(authenticationContext);
         header.setContent(getContent()); // getContent should contain all the pages contents
         add(header); // adds Header with content into the View
     }
@@ -99,7 +98,7 @@ public class    AssignedTickets extends VerticalLayout {
 
     // Saves ticket, updates the grid and closes editor/form
     private void saveTicket(EditTicketForm.SaveEvent event) {
-        // service.saveTicket(event.getTicket()); // After DB integration
+        //service.saveTicket(event.getTicket()); // After DB integration
         updateList();
         closeEditor();
     }
