@@ -27,7 +27,7 @@ import java.util.function.Consumer;
 @PermitAll // Declare roles dev or project lead
 @PageTitle("Assigned Tickets | Error Annihilator")
 @Route(value = "assigned-tickets")
-public class    AssignedTickets extends VerticalLayout {
+public class AssignedTickets extends VerticalLayout {
     Grid<Ticket> grid = new Grid<>(Ticket.class, false);
     EditTicketForm ticketForm; // Form/Editor
 
@@ -35,8 +35,7 @@ public class    AssignedTickets extends VerticalLayout {
 
     // Constructor
     public AssignedTickets(AuthenticationContext authenticationContext) {
-        SecurityService securityService = new SecurityService(authenticationContext);
-        this.securityService = securityService;
+        this.securityService = new SecurityService(authenticationContext);
         addClassName("assignedTickets-view");
 
         // This is how to implement the header
