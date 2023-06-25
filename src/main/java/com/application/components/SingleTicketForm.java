@@ -5,30 +5,21 @@ import com.application.data.entity.TicketComment;
 import com.application.data.entity.TicketStatus;
 import com.application.data.entity.User;
 import com.vaadin.flow.component.Component;
-import com.vaadin.flow.component.ComponentEvent;
-import com.vaadin.flow.component.ComponentEventListener;
-import com.vaadin.flow.component.Key;
-import com.vaadin.flow.component.button.Button;
-import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.combobox.MultiSelectComboBox;
 import com.vaadin.flow.component.datetimepicker.DateTimePicker;
 import com.vaadin.flow.component.formlayout.FormLayout;
 import com.vaadin.flow.component.html.H2;
-import com.vaadin.flow.component.messages.MessageInput;
 import com.vaadin.flow.component.messages.MessageList;
 import com.vaadin.flow.component.messages.MessageListItem;
-import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextArea;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.binder.BeanValidationBinder;
 import com.vaadin.flow.data.binder.Binder;
 import com.vaadin.flow.data.binder.Setter;
-import com.vaadin.flow.data.binder.ValidationException;
 import com.vaadin.flow.data.validator.RegexpValidator;
 import com.vaadin.flow.function.ValueProvider;
-import com.vaadin.flow.shared.Registration;
 import jakarta.annotation.security.PermitAll;
 
 import java.sql.Timestamp;
@@ -169,16 +160,6 @@ public class SingleTicketForm extends FormLayout {
         return new VerticalLayout(new H2("Comments"), ticketComments);
     }
 
-    // this function validates and saves the ticket according to the form (comments are saved when written)
-    private void validateAndSave() {
-        try {
-            binder.writeBean(ticket);
-            fireEvent(new SaveEvent(this, ticket));
-        } catch (ValidationException e){
-            e.printStackTrace();
-        }
-    }
-
     // updates the comments
     public void validateAndUpdate() {
         if(ticket != null) {
@@ -194,38 +175,6 @@ public class SingleTicketForm extends FormLayout {
             }
             this.ticketComments.setItems(realComments);
         }
-    }
-
-    // Parent Class of Save and Cancel Events
-    public static abstract class EditTicketFormEvent extends ComponentEvent<SingleTicketForm> {
-        public Ticket ticket;
-
-        protected EditTicketFormEvent(SingleTicketForm source, Ticket ticket) {
-            super(source, false);
-            this.ticket = ticket;
-        }
-    }
-
-    // Save Event for saving ticket
-    public static class SaveEvent extends EditTicketFormEvent{
-        SaveEvent(SingleTicketForm source, Ticket ticket){
-            super(source, ticket);
-        }
-    }
-
-    // Close Event for closing form
-    public static class CloseEvent extends EditTicketFormEvent{
-        CloseEvent(SingleTicketForm source){
-            super(source, null);
-        }
-    }
-
-    // Listeners
-    public Registration addSaveListener(ComponentEventListener<SaveEvent> listener) {
-        return addListener(SaveEvent.class, listener);
-    }
-    public Registration addCloseListener(ComponentEventListener<CloseEvent> listener) {
-        return addListener(CloseEvent.class, listener);
     }
 
 }
