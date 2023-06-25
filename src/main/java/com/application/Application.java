@@ -14,11 +14,10 @@ import org.springframework.boot.web.servlet.support.SpringBootServletInitializer
         name="ErrorAnnihilator",
         shortName = "E.A.",
         offlinePath = "offline.html",
-        offlineResources = {"images/logo.png", "images/offline.png"}
+        offlineResources = {"images/logo.png", "images/offline3.png"}
 )
 @SpringBootApplication
-public class
-Application extends SpringBootServletInitializer implements AppShellConfigurator {
+public class Application extends SpringBootServletInitializer implements AppShellConfigurator {
     public static void main(String[] args) {
         SpringApplication.run(Application.class, args);
     }

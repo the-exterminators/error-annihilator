@@ -126,7 +126,7 @@ public class UserManagement extends VerticalLayout {
         //newUserForm.addSaveListener(this::saveUser); // add listener to save ticket - doesn't work yet
     }
 
-    // Saves ticket, updates the grid and closes editor/form
+    // Saves user, updates the grid and closes editor/form
     private void saveUser(EditUserForm.SaveEvent event) {
         // service.saveTicket(event.getTicket()); // After DB integration
         updateList();
