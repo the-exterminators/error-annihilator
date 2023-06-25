@@ -8,12 +8,11 @@ jobs:
       - image: maven:3.8.1-openjdk-17-slim
     environment:
       MAVEN_CLI_OPTS: "--batch-mode"
-      VAADIN_OFFLINE_KEY: '245f05ad-ec2f-4865-be9c-bc748ade3d8a'
+      VAADIN_OFFLINE_KEY: mid-ef05ac4a-a1ec5b44
 
     steps:
       - checkout
-      - run:
-          command: mvn $MAVEN_CLI_OPTS clean package -Pproduction -Dvaadin.productionMode -Dvaadin.offline -Dvaadin.offline.key=$VAADIN_OFFLINE_KEY -e
+      - run: mvn $MAVEN_CLI_OPTS clean package -Pproduction -Dvaadin.productionMode -Dvaadin.offline -Dvaadin.offline.key=$VAADIN_OFFLINE_KEY -e
       - store_artifacts:
           path: target
           destination: target
