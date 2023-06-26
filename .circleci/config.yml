@@ -1,6 +1,26 @@
 version: 2.1
 
+# GCP Orb for GCP deployment
+orbs:
+  gcp-cli: circleci/gcp-cli@3.1.0
+  cloud-run: circleci/gcp-cloud-run@1.0.2
+  gcp-gcr: circleci/gcp-gcr@0.15.1
+
+executors:
+  gcloud-executor:
+    docker:
+      - image: google/cloud-sdk
+
+  machine-executor:
+    machine: true
+
+master_only: &master_only
+  filters:
+    branches:
+      only: master
+
 jobs:
+
   build:
     docker:
       - image: maven:3.8.1-openjdk-17-slim
@@ -46,8 +66,49 @@ jobs:
           path: target/surefire-reports
           destination: test-results
 
+  build_push_image_gcr:
+    description: Build docker image and push to gcr registry
+    executor: gcp-gcr/default
+    machine:
+      image: ubuntu-2004:202010-01
+    steps:
+      - checkout
+      - gcp-gcr/gcr-auth
+      - gcp-gcr/build-image:
+          dockerfile: Dockerfile
+          google-project-id: GOOGLE_PROJECT_ID
+          image: error-annihilator
+          registry-url: 'eu.gcr.io'
+          tag: 'latest'
+      - gcp-gcr/push-image:
+          google-project-id: GOOGLE_PROJECT_ID
+          image: error-annihilator
+          registry-url: 'eu.gcr.io'
+          tag: 'latest'
+
+  gcp_cloud_run_deploy:
+    description: Deploy using cloud run
+    executor: machine-executor
+    steps:
+      - cloud-run/init
+      - cloud-run/deploy:
+          platform: 'managed'
+          image: eu.gcr.io/$GOOGLE_PROJECT_ID/sp-69-test:latest
+          service-name: 'error-annihilator'
+          region: 'europe-west1'
+          unauthenticated: true
+
 workflows:
-  Test-and-Build:
+  push-image-and-deploy-to-gcr:
+    jobs:
+      - build_push_image_gcr:
+          <<: *master_only
+      - gcp_cloud_run_deploy:
+          <<: *master_only
+          requires:
+            - build_push_image_gcr
+
+  build-and-test:
     jobs:
       - build
       - test:
