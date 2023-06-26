@@ -55,11 +55,13 @@ Create Table tickets (
     resolved timestamp,
     creator_id integer,
     urgency_id integer,
+    project_id integer,
     Primary Key (ticket_id),
     Foreign Key (status_id) References status(status_id),
     Foreign Key (creator_id) References users(user_id),
     Foreign Key (type_id) References types(type_id),
-    Foreign Key (urgency_id) References ticket_urgency(urgency_id)
+    Foreign Key (urgency_id) References ticket_urgency(urgency_id),
+    Foreign Key (project_id) References projects(project_id)
 );
 
 Create Table tickets_assigned_users (
@@ -83,10 +85,16 @@ Create Table comments (
 );
 
 
---Prepared Statements for use in Service-Layer
---Arguments for CreateTicket(Title, Description, Status-ID, Type-ID, Creator-ID, Priority-ID)
-Prepare CreateTicket(varchar(127), varchar(255), integer, integer, integer, integer) AS
-    Insert Into tickets Values(default, $1, $2, $3, $4, CURRENT_TIMESTAMP, NULL, $5, $6);
+--Postgresql Procedurs for use in Service-Layer
+--Arguments for CreateTicket(Title, Description, Status-ID, Type-ID, Creator-ID, Priority-ID, Project-ID)
+Create Or Replace Procedure CreateTicket(ticket_title text, ticket_description text, ticket_status integer,
+                                        ticket_type integer, ticket_creator integer, ticket_urgency integer,
+										project_id integer)
+AS $$
+    Begin
+        Insert Into tickets Values(default, ticket_title, ticket_description, ticket_status, ticket_type, CURRENT_TIMESTAMP, NULL, ticket_creator, ticket_urgency, project_id);
+    End;
+$$ Language plpgsql;
 
 --Arguments for CreateUser(first-name, last-name, username, email, passwordhash, role-id)
 Prepare CreateUser(varchar(50), varchar(50), varchar(100), varchar(150), varchar(255), integer) AS
