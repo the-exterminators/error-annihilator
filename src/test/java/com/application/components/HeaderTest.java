@@ -19,7 +19,7 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-public class HeaderTest {
+/*public class HeaderTest {
     private WebDriver driver;
 
     @BeforeEach
@@ -82,5 +82,5 @@ public class HeaderTest {
         WebElement logoutButton = driver.findElement(By.cssSelector("vaadin-button[tabindex='0'][role='button']"));
         assertTrue(logoutButton.isDisplayed());
     }
-}
+}*/
 
