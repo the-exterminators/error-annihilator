@@ -103,10 +103,10 @@ jobs:
 workflows:
   push-image-and-deploy-to-gcr:
     jobs:
-      - build_push_image_gcr
-          # <<: *master_only
+      - build_push_image_gcr:
+          <<: *master_only
       - gcp_cloud_run_deploy:
-          # <<: *master_only
+          <<: *master_only
 
           requires:
             - build_push_image_gcr
