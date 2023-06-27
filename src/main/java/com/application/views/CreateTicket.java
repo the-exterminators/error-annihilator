@@ -6,6 +6,7 @@ import com.vaadin.flow.component.avatar.Avatar;
 import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.datetimepicker.DateTimePicker;
 import com.vaadin.flow.component.formlayout.FormLayout;
+import com.vaadin.flow.component.html.H1;
 import com.vaadin.flow.component.menubar.MenuBar;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.NumberField;
@@ -18,7 +19,7 @@ import jakarta.annotation.security.PermitAll;
 
 @PermitAll
 @PageTitle("Create Ticket | Error Annihilator")
-@Route(value = "create-ticket-view")
+@Route(value = "") // create-ticket-view
 public class CreateTicket extends VerticalLayout {
 
     private final SecurityService securityService;
@@ -26,6 +27,8 @@ public class CreateTicket extends VerticalLayout {
     private NumberField ticketNumber = new NumberField();
     private ComboBox<String> ticketType = new ComboBox<>();
     private ComboBox<String> urgency = new ComboBox<>();
+
+    private ComboBox<String> projectType = new ComboBox<>();
     private TextArea description = new TextArea();
 
     private TextField ticketName = new TextField();
@@ -34,7 +37,7 @@ public class CreateTicket extends VerticalLayout {
 
     public CreateTicket(AuthenticationContext authenticationContext) {
         securityService = new SecurityService(authenticationContext);
-        Header header = new Header(securityService);
+        Header header = new Header(authenticationContext);
         header.setContent(getCreateTicketContent());
         add(header);
     }
@@ -43,6 +46,10 @@ public class CreateTicket extends VerticalLayout {
         VerticalLayout fullContent = new VerticalLayout();
         fullContent.setHeightFull();
         fullContent.setWidthFull();
+
+        // Main Page Title
+        H1 title = new H1("Create a Ticket");
+        fullContent.add(title);
 
         avatar.setName("Isabelle Mariacher");
         fullContent.add(avatar);
@@ -53,10 +60,12 @@ public class CreateTicket extends VerticalLayout {
 
         ticketNumber.setLabel("Ticket number");
         dateCreated.setLabel("Ticket created");
-        ticketName.setLabel("Ticket name");
-        ticketType.setLabel("Ticket Type");
+        ticketName.setLabel("Ticket title");
+        projectType.setLabel("Project Type");
+        ticketType.setLabel("Ticket type");
         urgency.setLabel("Urgency");
         description.setLabel("Description");
+
 
         //set the read only fields
         ticketNumber.setReadOnly(true);
@@ -65,22 +74,27 @@ public class CreateTicket extends VerticalLayout {
         //set sample items
         setUrgencyComboBoxSampleData(urgency);
         setTicketTypeComboBoxSampleData(ticketType);
+        setProjectTypeComboBoxSampleData(projectType);
 
 
         //set column spans
         formContent.setColspan(urgency, 1);
+        formContent.setColspan(projectType, 1);
         formContent.setColspan(ticketType, 1);
-        formContent.setColspan(ticketName, 2);
+        formContent.setColspan(ticketName, 1);
         formContent.setColspan(description, 2);
+
 
         //add components to form layout
 
         formContent.add(ticketNumber);
         formContent.add(dateCreated);
         formContent.add(ticketName);
+        formContent.add(projectType);
         formContent.add(ticketType);
         formContent.add(urgency);
         formContent.add(description);
+
 
 
         //add form to main layout
@@ -104,11 +118,15 @@ public class CreateTicket extends VerticalLayout {
         comboBox.setValue("defects");
     }
 
+    private void setProjectTypeComboBoxSampleData(ComboBox<String> comboBox) {
+        comboBox.setItems("Project 1", "Project 2", "Project 3");
+        comboBox.setValue("Project 3");
+    }
+
+
     //set sample data for the buttons bar
     private void setMenuBarSampleData(MenuBar menuBar) {
-        menuBar.addItem("Save");
         menuBar.addItem("Create");
-        menuBar.addItem("Delete");
     }
 }
 
