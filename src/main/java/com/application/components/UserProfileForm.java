@@ -25,15 +25,12 @@ public class UserProfileForm extends FormLayout {
     TextField lastName = new TextField("Last Name");
     EmailField email = new EmailField("Email");
     PasswordField dummyPassword = new PasswordField("Password");
-    ComboBox<String> userRole = new ComboBox<>("User Role"); // Combobox in future
 
     // Buttons
     Button save = new Button("Save");
     Button delete = new Button("Delete my Profile");
     public UserProfileForm() {
         addClassName("user-form");
-
-        setUserRoleSampleData(userRole);
 
         configureBind();
 
@@ -43,7 +40,6 @@ public class UserProfileForm extends FormLayout {
                 lastName,
                 email,
                 dummyPassword,
-                userRole,
                 createButtonsLayout()
         );
 
@@ -55,16 +51,11 @@ public class UserProfileForm extends FormLayout {
         binder.bind(lastName, "lastName");
         binder.bind(email, "email");
         binder.bind(dummyPassword, "dummyPassword");
-        binder.bind(userRole, "userRole");
     }
 
     public void setUser(User user){
         this.user = user;
         binder.readBean(user);
-    }
-
-    private void setUserRoleSampleData(ComboBox<String> comboBox){
-        comboBox.setItems("Manager", "Project Lead", "Developer", "User");
     }
 
     private HorizontalLayout createButtonsLayout() {

@@ -118,14 +118,14 @@ public class AssignedTickets extends VerticalLayout {
         testUsers.add(testUser);
 
         // Test ticket 1
-        Ticket ticketOne = new Ticket("1", "I need help", "bug", "test test test", new TicketStatus("open"), new TicketProject("Project 1"), testUser, testUsers);
+        Ticket ticketOne = new Ticket("1", "I need help", "bug", "test test test", new TicketStatus("open"), new TicketProject("Project 1", "test", testUser), testUser, testUsers);
         List<TicketComment> listOne = new ArrayList<>();
         listOne.add(new TicketComment("hello", testUser, ticketOne));
         ticketOne.setTicketComment(listOne);
         testTickets.add(ticketOne);
 
         // Test ticket 2
-        Ticket ticketTwo = new Ticket("2", "hello", "defect", "hallo hallo", new TicketStatus("unassigned"), new TicketProject("Project 2"), testUser, testUsers);
+        Ticket ticketTwo = new Ticket("2", "hello", "defect", "hallo hallo", new TicketStatus("unassigned"), new TicketProject("Project 2", "test", testUser), testUser, testUsers);
         List<TicketComment> listTwo = new ArrayList<>();
         listTwo.add(new TicketComment("hello", testUser, ticketTwo));
         ticketTwo.setTicketComment(listTwo);
