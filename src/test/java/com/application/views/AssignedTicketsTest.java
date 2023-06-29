@@ -5,6 +5,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.openqa.selenium.By;
+import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.chrome.ChromeDriver;
@@ -37,14 +38,42 @@ public class AssignedTicketsTest {
 
     @Test
     public void testAssignedTicketsView() {
-        // Open the view's URL in the web driver
-        driver.get("http://localhost:8080/");
 
-        WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(10)); // Adjust the timeout as needed
-        wait.until(ExpectedConditions.presenceOfElementLocated(By.cssSelector("h1")));
+        // Open the login page
+        driver.get("http://localhost:8080/login");
+
+        // Find the username and password input fields
+        WebDriverWait waitLogIn = new WebDriverWait(driver, Duration.ofSeconds(10));
+        WebElement usernameInput = waitLogIn.until(ExpectedConditions.visibilityOfElementLocated(By.cssSelector("input[name='username']")));
+        WebElement passwordInput = waitLogIn.until(ExpectedConditions.visibilityOfElementLocated(By.cssSelector("input[name='password']")));
+
+        // Enter the login credentials
+        usernameInput.sendKeys("admin");
+        passwordInput.sendKeys("password");
+
+        // Find and click the submit button
+        WebElement submitButton = driver.findElement(By.cssSelector("vaadin-button[theme~='primary'][theme~='contained'][theme~='submit']"));
+        JavascriptExecutor executor = (JavascriptExecutor) driver;
+        executor.executeScript("arguments[0].click();", submitButton);
+
+        // Wait for the redirect to the assigned tickets page
+        // Find and click on the drawer toggle
+        WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(10));
+        WebElement drawerToggle = wait.until(ExpectedConditions.visibilityOfElementLocated(By.cssSelector("vaadin-drawer-toggle[aria-expanded='false']")));
+        drawerToggle.click();
+
+        // Find and click on the "Assigned Tickets" link
+        WebDriverWait menu = new WebDriverWait(driver,Duration.ofSeconds(10));
+        WebElement assignedTicketsLink = menu.until(ExpectedConditions.visibilityOfElementLocated(By.cssSelector("vaadin-vertical-layout[slot='drawer'] a[router-link][href='assigned-tickets']")));
+        assignedTicketsLink.click();
+
+        // Find the parent vaadin-vertical-layout element
+        WebDriverWait waitView = new WebDriverWait(driver, Duration.ofSeconds(10)); // Adjust the timeout as needed
+        WebElement verticalLayout = waitView.until(ExpectedConditions.presenceOfElementLocated(By.cssSelector("vaadin-vertical-layout.assignedTickets-view")));
+
 
         // Find the title element and assert its text
-        WebElement titleElement = driver.findElement(By.tagName("h1"));
+        WebElement titleElement = verticalLayout.findElement(By.tagName("h1"));
         String titleText = titleElement.getText();
         assertEquals("Assigned Tickets", titleText);
 
@@ -83,11 +112,38 @@ public class AssignedTicketsTest {
     public void testTitleFilter() {
         String filterValue = "test";
 
-        // Open the view's URL in the web driver
-        driver.get("http://localhost:8080/");
+        // Open the login page
+        driver.get("http://localhost:8080/login");
 
-        WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(10)); // Adjust the timeout as needed
-        wait.until(ExpectedConditions.presenceOfElementLocated(By.cssSelector("h1")));
+        // Find the username and password input fields
+        WebDriverWait waitLogIn = new WebDriverWait(driver, Duration.ofSeconds(10));
+        WebElement usernameInput = waitLogIn.until(ExpectedConditions.visibilityOfElementLocated(By.cssSelector("input[name='username']")));
+        WebElement passwordInput = waitLogIn.until(ExpectedConditions.visibilityOfElementLocated(By.cssSelector("input[name='password']")));
+
+        // Enter the login credentials
+        usernameInput.sendKeys("admin");
+        passwordInput.sendKeys("password");
+
+        // Find and click the submit button
+        WebElement submitButton = driver.findElement(By.cssSelector("vaadin-button[theme~='primary'][theme~='contained'][theme~='submit']"));
+        JavascriptExecutor executor = (JavascriptExecutor) driver;
+        executor.executeScript("arguments[0].click();", submitButton);
+
+        // Wait for the redirect to the assigned tickets page
+        // Find and click on the drawer toggle
+        WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(10));
+        WebElement drawerToggle = wait.until(ExpectedConditions.visibilityOfElementLocated(By.cssSelector("vaadin-drawer-toggle[aria-expanded='false']")));
+        drawerToggle.click();
+
+        // Find and click on the "Assigned Tickets" link
+        WebDriverWait menu = new WebDriverWait(driver,Duration.ofSeconds(10));
+        WebElement assignedTicketsLink = menu.until(ExpectedConditions.visibilityOfElementLocated(By.cssSelector("vaadin-vertical-layout[slot='drawer'] a[router-link][href='assigned-tickets']")));
+        assignedTicketsLink.click();
+
+        // Find the parent vaadin-vertical-layout element
+        WebDriverWait waitView = new WebDriverWait(driver, Duration.ofSeconds(10)); // Adjust the timeout as needed
+        WebElement verticalLayout = waitView.until(ExpectedConditions.presenceOfElementLocated(By.cssSelector("vaadin-vertical-layout.assignedTickets-view")));
+
 
         // Find the title filter input element and enter the filter value
         WebElement titleFilterInput = driver.findElement(By.cssSelector("input[placeholder='Filter Title ...']"));
@@ -139,11 +195,38 @@ public class AssignedTicketsTest {
     public void testStatusFilter() {
         String filterValue = "test";
 
-        // Open the view's URL in the web driver
-        driver.get("http://localhost:8080/");
+        // Open the login page
+        driver.get("http://localhost:8080/login");
 
-        WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(10)); // Adjust the timeout as needed
-        wait.until(ExpectedConditions.presenceOfElementLocated(By.cssSelector("h1")));
+        // Find the username and password input fields
+        WebDriverWait waitLogIn = new WebDriverWait(driver, Duration.ofSeconds(10));
+        WebElement usernameInput = waitLogIn.until(ExpectedConditions.visibilityOfElementLocated(By.cssSelector("input[name='username']")));
+        WebElement passwordInput = waitLogIn.until(ExpectedConditions.visibilityOfElementLocated(By.cssSelector("input[name='password']")));
+
+        // Enter the login credentials
+        usernameInput.sendKeys("admin");
+        passwordInput.sendKeys("password");
+
+        // Find and click the submit button
+        WebElement submitButton = driver.findElement(By.cssSelector("vaadin-button[theme~='primary'][theme~='contained'][theme~='submit']"));
+        JavascriptExecutor executor = (JavascriptExecutor) driver;
+        executor.executeScript("arguments[0].click();", submitButton);
+
+        // Wait for the redirect to the assigned tickets page
+        // Find and click on the drawer toggle
+        WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(10));
+        WebElement drawerToggle = wait.until(ExpectedConditions.visibilityOfElementLocated(By.cssSelector("vaadin-drawer-toggle[aria-expanded='false']")));
+        drawerToggle.click();
+
+        // Find and click on the "Assigned Tickets" link
+        WebDriverWait menu = new WebDriverWait(driver,Duration.ofSeconds(10));
+        WebElement assignedTicketsLink = menu.until(ExpectedConditions.visibilityOfElementLocated(By.cssSelector("vaadin-vertical-layout[slot='drawer'] a[router-link][href='assigned-tickets']")));
+        assignedTicketsLink.click();
+
+        // Find the parent vaadin-vertical-layout element
+        WebDriverWait waitView = new WebDriverWait(driver, Duration.ofSeconds(10)); // Adjust the timeout as needed
+        WebElement verticalLayout = waitView.until(ExpectedConditions.presenceOfElementLocated(By.cssSelector("vaadin-vertical-layout.assignedTickets-view")));
+
 
         // Find the title filter input element and enter the filter value
         WebElement statusFilterInput = driver.findElement(By.cssSelector("input[placeholder='Filter Status ...']"));
