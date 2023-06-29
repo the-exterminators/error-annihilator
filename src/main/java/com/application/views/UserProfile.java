@@ -1,12 +1,9 @@
 package com.application.views;
 
-import com.application.components.EditTicketForm;
-import com.application.components.EditUserForm;
 import com.application.components.Header;
 import com.application.components.UserProfileForm;
 import com.application.data.entity.User;
 import com.application.security.SecurityService;
-import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.html.H1;
 import com.vaadin.flow.component.html.Paragraph;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
@@ -16,10 +13,6 @@ import com.vaadin.flow.spring.security.AuthenticationContext;
 import jakarta.annotation.security.PermitAll;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
-
-import java.nio.file.attribute.UserPrincipal;
-import java.util.Collections;
 
 @PermitAll // Declare roles dev or project lead
 @PageTitle("My Profile | Error Annihilator")
@@ -27,13 +20,11 @@ import java.util.Collections;
 public class UserProfile extends VerticalLayout {
     UserProfileForm userForm; // Form/Editor
     String currentPrincipalName ="test";
-
-    Object test;
     private final SecurityService securityService;
 
     // Constructor
     public UserProfile(AuthenticationContext authenticationContext) {
-        this.securityService = new SecurityService(authenticationContext);;
+        this.securityService = new SecurityService(authenticationContext);
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if(authentication != null) {
             currentPrincipalName = authentication.getName();

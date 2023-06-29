@@ -40,7 +40,7 @@ public class EditTicketForm extends FormLayout {
     TextField ticketName = new TextField("Title");
     TextField ticketNumber = new TextField("Ticket Number");
     TextArea description = new TextArea("Description");
-    ComboBox<String> ticketType = new ComboBox<String>("Type"); // I want this to be a dropdown of predefined types
+    ComboBox<String> ticketType = new ComboBox<>("Type"); // I want this to be a dropdown of predefined types
     ComboBox<String> ticketProject = new ComboBox<>("Project"); // Change it to Projects
     DateTimePicker createdTimeStamp = new DateTimePicker();
     ComboBox<TicketStatus> ticketStatus = new ComboBox<>("Status"); // I want this to be a dropdown of predefined statuses
@@ -201,17 +201,6 @@ public class EditTicketForm extends FormLayout {
         close.addClickShortcut(Key.ESCAPE);
 
         return new HorizontalLayout(save, close);
-    }
-
-    // Creates the button layout to just save the form
-    private HorizontalLayout createButtonsLayoutNoCancel() {
-        save.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
-
-        save.addClickListener(event -> validateAndSave());
-
-        save.addClickShortcut(Key.ENTER);
-
-        return new HorizontalLayout(save);
     }
 
     // this function validates and saves the ticket according to the form (comments are saved when written)

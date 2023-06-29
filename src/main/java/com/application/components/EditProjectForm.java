@@ -1,13 +1,12 @@
 package com.application.components;
 
-import com.application.data.entity.Ticket;
 import com.application.data.entity.TicketProject;
-import com.application.data.entity.TicketStatus;
 import com.vaadin.flow.component.ComponentEvent;
 import com.vaadin.flow.component.ComponentEventListener;
 import com.vaadin.flow.component.Key;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
+import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.formlayout.FormLayout;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.textfield.TextField;
@@ -17,9 +16,6 @@ import com.vaadin.flow.data.binder.ValidationException;
 import com.vaadin.flow.shared.Registration;
 import jakarta.annotation.security.PermitAll;
 
-import java.util.Collections;
-import java.util.List;
-
 @PermitAll
 public class EditProjectForm extends FormLayout {
     Binder<TicketProject> binder = new BeanValidationBinder<>(TicketProject.class); // to bind to Ticket Entity
@@ -28,7 +24,7 @@ public class EditProjectForm extends FormLayout {
     // Ticket entity fields
     TextField projectName = new TextField("Title");
     TextField projectDescription = new TextField("Description");
-    TextField projectLead = new TextField("Project Lead");
+    ComboBox<String> projectLead = new ComboBox<>("Project Lead");
 
     // Buttons
     Button save = new Button("Save");
@@ -43,6 +39,8 @@ public class EditProjectForm extends FormLayout {
         binder.bind(projectName, "projectName");
         binder.bind(projectDescription, "projectDescription");
         binder.bind(projectLead, "projectLead.userName");
+
+        setProjectLeadSampleData(projectLead);
 
         buttonSection = createButtonsLayout();
 
@@ -96,6 +94,10 @@ public class EditProjectForm extends FormLayout {
             super(source, false);
             this.ticketProject = ticketProject;
         }
+    }
+
+    private void setProjectLeadSampleData(ComboBox<String> comboBox){
+        comboBox.setItems("burnsjana", "stefanelabdellaoui", "isabellemariacher", "danielkihn", "manuelaudino");
     }
 
     // Save Event for saving ticket

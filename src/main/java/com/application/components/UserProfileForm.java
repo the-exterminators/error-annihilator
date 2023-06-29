@@ -6,7 +6,6 @@ import com.vaadin.flow.component.ComponentEventListener;
 import com.vaadin.flow.component.Key;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
-import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.formlayout.FormLayout;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.textfield.EmailField;
@@ -34,13 +33,16 @@ public class UserProfileForm extends FormLayout {
 
         configureBind();
 
+        HorizontalLayout buttonSection = createButtonsLayout();
+        setColspan(buttonSection, 2);
+
         // add to form layout
         add(userName,
                 firstName,
                 lastName,
                 email,
                 dummyPassword,
-                createButtonsLayout()
+                buttonSection
         );
 
     }
