@@ -73,7 +73,7 @@ public class Header extends AppLayout{
         content.add(new RouterLink ("Ticket History", TicketHistory.class ));
         content.add(new RouterLink("My Profile", UserProfile.class));
         content.add(new RouterLink("Help", Help.class));
-        content.add(new RouterLink("Dashboard", Dashboard.class));
+        content.add(new RouterLink("Project Overview", ProjectOverview.class));
 
 
         String u = securityService.getAuthenticatedUser().getUsername();
