@@ -1,8 +1,11 @@
 package com.application.views;
 
 
+import com.application.components.EditTicketForm;
 import com.application.components.Header;
+import com.application.data.entity.*;
 import com.application.security.SecurityService;
+import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.datepicker.DatePicker;
 import com.vaadin.flow.component.grid.Grid;
@@ -23,6 +26,7 @@ import com.vaadin.flow.data.renderer.NumberRenderer;
 import com.vaadin.flow.data.value.ValueChangeMode;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
+import com.vaadin.flow.component.avatar.Avatar;
 
 import java.text.NumberFormat;
 import java.time.LocalDate;
@@ -62,6 +66,9 @@ public class ProjectSingleView extends VerticalLayout {
         add(header); // adds Header with content into the View
     }
 
+    public void setProject(TicketProject ticketProject){
+        this.ticketProject = ticketProject;
+    }
     // Have all content be gathered in this function
     private VerticalLayout getContent(){
         VerticalLayout content = new VerticalLayout();
@@ -108,11 +115,11 @@ public class ProjectSingleView extends VerticalLayout {
         assignedUserColumn = grid.addColumn(new ComponentRenderer<>(assignedUser-> {
             HorizontalLayout hl = new HorizontalLayout();
             hl.setAlignItems(Alignment.CENTER);
-            Image img = new Image(assignedUser.getImg(), "");
+            Avatar avatar = new Avatar(assignedUser.getAssignedUser());
             Span span = new Span();
             span.setClassName("name");
             span.setText(assignedUser.getAssignedUser());
-            hl.add(img, span);
+            hl.add(avatar, span);
             return hl;
         })).setComparator(assignedUser -> assignedUser.getAssignedUser()).setHeader("Assigned User");
     }
@@ -248,10 +255,10 @@ public class ProjectSingleView extends VerticalLayout {
                 createAssignedUser(12923, "https://randomuser.me/api/portraits/men/16.jpg", "Jennifer Aniston", 1,
                         "mein vierzehntes Ticket","solved", "2019-02-21"));
     }
-    private AssignedUser createAssignedUser(int id, String img, String assignedUser, double project, String ticketTitle, String status, String date) {
+    private AssignedUser createAssignedUser(int id, String avatar, String assignedUser, double project, String ticketTitle, String status, String date) {
         AssignedUser a = new AssignedUser();
         a.setId(id);
-        a.setImg(img);
+        a.setAvatar(avatar);
         a.setAssignedUser(assignedUser);
         a.setProject(project);
         a.setTicketTitle(ticketTitle);
