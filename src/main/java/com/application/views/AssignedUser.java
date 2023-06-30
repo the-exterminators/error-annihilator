@@ -1,10 +1,15 @@
 package com.application.views;
 
+import com.vaadin.flow.component.avatar.Avatar;
 
 public class AssignedUser {
 
     private int id;
-    private String img;
+
+
+
+    //private String img;
+    private String avatar;
 
     private String assignedUser;
 
@@ -23,14 +28,20 @@ public class AssignedUser {
         this.id = id;
     }
 
-    public String getImg() {
-        return img;
+    //public String getImg() {
+        //return img;
+    //}
+
+    //public void setImg(String img) {
+        //this.img = img;
+    //}
+    public String getAvatar() {
+        return avatar;
     }
 
-    public void setImg(String img) {
-        this.img = img;
+    public void setAvatar(String avatar) {
+        this.avatar = avatar;
     }
-
     public String getAssignedUser() {
         return assignedUser;
     }
