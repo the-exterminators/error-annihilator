@@ -6,7 +6,6 @@ import com.vaadin.flow.component.ComponentEventListener;
 import com.vaadin.flow.component.Key;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
-import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.formlayout.FormLayout;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.textfield.EmailField;
@@ -25,7 +24,6 @@ public class UserProfileForm extends FormLayout {
     TextField lastName = new TextField("Last Name");
     EmailField email = new EmailField("Email");
     PasswordField dummyPassword = new PasswordField("Password");
-    ComboBox<String> userRole = new ComboBox<>("User Role"); // Combobox in future
 
     // Buttons
     Button save = new Button("Save");
@@ -33,9 +31,10 @@ public class UserProfileForm extends FormLayout {
     public UserProfileForm() {
         addClassName("user-form");
 
-        setUserRoleSampleData(userRole);
-
         configureBind();
+
+        HorizontalLayout buttonSection = createButtonsLayout();
+        setColspan(buttonSection, 2);
 
         // add to form layout
         add(userName,
@@ -43,8 +42,7 @@ public class UserProfileForm extends FormLayout {
                 lastName,
                 email,
                 dummyPassword,
-                userRole,
-                createButtonsLayout()
+                buttonSection
         );
 
     }
@@ -55,16 +53,11 @@ public class UserProfileForm extends FormLayout {
         binder.bind(lastName, "lastName");
         binder.bind(email, "email");
         binder.bind(dummyPassword, "dummyPassword");
-        binder.bind(userRole, "userRole");
     }
 
     public void setUser(User user){
         this.user = user;
         binder.readBean(user);
-    }
-
-    private void setUserRoleSampleData(ComboBox<String> comboBox){
-        comboBox.setItems("Manager", "Project Lead", "Developer", "User");
     }
 
     private HorizontalLayout createButtonsLayout() {

@@ -1,2 +1,66 @@
 @import url('./main-layout.css');
 @import url('./create-ticket-view-view.css');
+
+.drawer vaadin-menu-bar-item {
+    width: 100%;
+}
+
+.management-submenu{
+    padding: 0;
+    margin-bottom: 0;
+    cursor: default;
+}
+
+.management-submenu > p{
+    padding: 4px 0px 4px 1px;
+    border-radius: 4px;
+    width: 100%;
+}
+
+.management-submenu vaadin-icon{
+    display: inline-block;
+    width: 24px;
+    height: 24px;
+    padding: 4px;
+}
+
+.management-submenu p{
+    display: inline-block;
+    margin-bottom: 0;
+    margin-top: 0;
+}
+
+.management-submenu.open > p{
+    #color: #0e71bc;
+    font-weight: bold;
+    border-bottom: 1px solid rgba(0,0,0,0.1);
+    width: 100%;
+    padding-right: 0;
+}
+
+.management-submenu vaadin-menu-bar-item{
+    display: none;
+    padding-left: 16px;
+}
+
+.management-submenu.open vaadin-menu-bar-item{
+    display: block;
+}
+
+.management-submenu vaadin-menu-bar-item:hover,
+.management-submenu > p:hover{
+    background-color: rgba(51,139,255,0.15);
+}
+
+.navbar-container > .py-0{
+    width: 100%;
+}
+
+.navbar-container  > .py-0 > .logoutFlex{
+    justify-content: flex-end;
+    flex-grow: 2;
+}
+
+#vaadinLoginOverlayWrapper{
+    max-width: 600px;
+}

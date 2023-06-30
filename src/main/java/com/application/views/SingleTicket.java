@@ -85,7 +85,7 @@ public class SingleTicket extends VerticalLayout {
         testUsers.add(testUser);
 
         // Test ticket 1
-        ticket = new Ticket("1", "I need help", "bug", "test test test", new TicketStatus("open"), new TicketProject("Project 1"), testUser, testUsers);
+        ticket = new Ticket("1", "I need help", "bug", "test test test", new TicketStatus("open"), new TicketProject("Project 1", "test", testUser), testUser, testUsers);
         List<TicketComment> comments = new ArrayList<>();
         comments.add(new TicketComment("hello", testUser, ticket));
         ticket.setTicketComment(comments);
