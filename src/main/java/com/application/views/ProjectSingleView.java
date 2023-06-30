@@ -1,8 +1,8 @@
 package com.application.views;
 
 
-import com.application.views.MainLayout;
-import com.application.views.AssignedUser;
+import com.application.components.Header;
+import com.application.security.SecurityService;
 import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.datepicker.DatePicker;
 import com.vaadin.flow.component.grid.Grid;
@@ -11,10 +11,9 @@ import com.vaadin.flow.component.grid.GridVariant;
 import com.vaadin.flow.component.grid.HeaderRow;
 import com.vaadin.flow.component.grid.dataview.GridListDataView;
 import com.vaadin.flow.component.gridpro.GridPro;
-import com.vaadin.flow.component.html.Div;
+import com.vaadin.flow.component.html.H1;
 import com.vaadin.flow.component.html.Image;
 import com.vaadin.flow.component.html.Span;
-import com.vaadin.flow.component.orderedlayout.FlexComponent.Alignment;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextField;
@@ -24,7 +23,7 @@ import com.vaadin.flow.data.renderer.NumberRenderer;
 import com.vaadin.flow.data.value.ValueChangeMode;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
-import com.vaadin.flow.router.RouteAlias;
+
 import java.text.NumberFormat;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -33,29 +32,51 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
 
+import com.vaadin.flow.spring.security.AuthenticationContext;
 import jakarta.annotation.security.PermitAll;
 import org.apache.commons.lang3.StringUtils;
 
 @PermitAll
-@PageTitle("Project Overview")
+@PageTitle("Project Single View | Error Annihilator")
 @Route(value = "project-overview")
-public class ProjectOverview extends VerticalLayout {
+public class ProjectSingleView extends VerticalLayout {
 
     private Grid.Column<AssignedUser> ticketTitleColumn;
-
     private GridPro<AssignedUser> grid;
     private GridListDataView<AssignedUser> gridListDataView;
-
     private Grid.Column<AssignedUser> assignedUserColumn;
     private Grid.Column<AssignedUser> projectColumn;
     private Grid.Column<AssignedUser> statusColumn;
     private Grid.Column<AssignedUser> dateColumn;
 
-    public ProjectOverview() {
+    private final SecurityService securityService;
+
+    public ProjectSingleView(AuthenticationContext authenticationContext) {
+        this.securityService = new SecurityService(authenticationContext);
         addClassName("project-overview");
+
+        // This is how to implement the header
         setSizeFull();
+        Header header = new Header(authenticationContext);
+        header.setContent(getContent()); // getContent should contain all the pages contents
+        add(header); // adds Header with content into the View
+    }
+
+    // Have all content be gathered in this function
+    private VerticalLayout getContent(){
+        VerticalLayout content = new VerticalLayout();
+        content.addClassNames("content");
+        content.setSizeFull();
+
+        // Main Page Title
+        H1 title = new H1("Project Title");
+        content.add(title);
+
+        // Add grid and form to content
         createGrid();
-        add(grid);
+        content.add(grid);
+
+        return content;
     }
 
     private void createGrid() {
@@ -69,6 +90,7 @@ public class ProjectOverview extends VerticalLayout {
         grid.setSelectionMode(SelectionMode.MULTI);
         grid.addThemeVariants(GridVariant.LUMO_NO_BORDER, GridVariant.LUMO_COLUMN_BORDERS);
         grid.setHeight("100%");
+        grid.setWidth("90vw");
 
         List<AssignedUser> assignedUser = getAssignedUser();
         gridListDataView = grid.setItems(assignedUser);
