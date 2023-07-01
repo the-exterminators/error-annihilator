@@ -1,9 +1,11 @@
 package com.application.views;
 
 import com.application.components.Header;
+import com.application.data.service.TicketService;
 import com.application.security.SecurityService;
 import com.vaadin.flow.component.avatar.Avatar;
 import com.vaadin.flow.component.combobox.ComboBox;
+import com.vaadin.flow.component.contextmenu.MenuItem;
 import com.vaadin.flow.component.datetimepicker.DateTimePicker;
 import com.vaadin.flow.component.formlayout.FormLayout;
 import com.vaadin.flow.component.html.H1;
@@ -22,6 +24,7 @@ import jakarta.annotation.security.PermitAll;
 @Route(value = "") // create-ticket-view
 public class CreateTicket extends VerticalLayout {
 
+    private final TicketService ticketService;
     private final SecurityService securityService;
     private Avatar avatar = new Avatar();
     private NumberField ticketNumber = new NumberField();
@@ -35,7 +38,8 @@ public class CreateTicket extends VerticalLayout {
     private DateTimePicker dateCreated = new DateTimePicker();
     private MenuBar buttons = new MenuBar();
 
-    public CreateTicket(AuthenticationContext authenticationContext) {
+    public CreateTicket(TicketService ticketService, AuthenticationContext authenticationContext) {
+        this.ticketService = ticketService;
         securityService = new SecurityService(authenticationContext);
         Header header = new Header(authenticationContext);
         header.setContent(getCreateTicketContent());
@@ -126,7 +130,21 @@ public class CreateTicket extends VerticalLayout {
 
     //set sample data for the buttons bar
     private void setMenuBarSampleData(MenuBar menuBar) {
-        menuBar.addItem("Create");
+        MenuItem creatItem = menuBar.addItem("Create");
+        creatItem.addClickListener(event-> {
+            String title = ticketName.getValue();
+            String desc = description.getValue();
+
+            // added everything with id = 1 for now just to make sure it does something. Has to me changed later on.
+            int status = 1; // Set the status value as needed
+            int type = 1; // Set the type value as needed
+            int creator = 1; // Set the creator value as needed
+            int urgency = 1; // Set the creator value as needed
+            int projectId = 1;
+
+            ticketService.createTicket(title, desc, status, type, creator, urgency, projectId);
+            // Additional logic after creating the ticket (e.g., navigation or displaying a success message)
+        });
     }
 }
 
