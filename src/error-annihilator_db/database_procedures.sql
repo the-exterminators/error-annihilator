@@ -84,14 +84,26 @@ Call AssignUsersToTicket(2, 6);
 
 -- Update existing Values - Procedures ---------------------------------------------------------------------------------
 
-Create or Replace Procedure UpdateTicket(type_id integer, status_id integer, )
+Create or Replace Procedure UpdateTicket(arg_ticket_id integer, update_type_id integer, update_status_id integer, update_project_id integer, update_urgency_id integer)
+AS $$
+    Begin
+        Update tickets
+        Set
+            type_id = update_type_id,
+            status_id = update_status_id,
+            project_id = update_project_id,
+            urgency_id = update_urgency_id
+        Where ticket_id = arg_ticket_id;
+    End;
+$$ Language plpgsql;
 
+------------------------------------------------------------------------------------------------------------------------
+-- Update Procedures - Tests -------------------------------------------------------------------------------------------
+Call UpdateTicket(2, 2, 2, 2, 2);
 ------------------------------------------------------------------------------------------------------------------------
 
 
-
 -- Views ---------------------------------------------------------------------------------------------------------------
-
 Create or Replace Function GetAssignedTickets(assigned_user_id integer)
 returns Setof tickets
 AS $$
