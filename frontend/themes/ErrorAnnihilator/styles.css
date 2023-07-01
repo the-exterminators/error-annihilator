@@ -64,3 +64,8 @@
 #vaadinLoginOverlayWrapper{
     max-width: 600px;
 }
+
+.project-single .title-bar{
+    justify-content: space-between;
+    width: 100%;
+}

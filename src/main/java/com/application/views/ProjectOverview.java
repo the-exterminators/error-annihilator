@@ -1,16 +1,14 @@
 package com.application.views;
 
-import com.application.components.*;
-import com.application.data.entity.*;
+import com.application.components.Header;
+import com.application.data.entity.TicketProject;
+import com.application.data.entity.User;
 import com.application.security.SecurityService;
 import com.vaadin.flow.component.Component;
-import com.vaadin.flow.component.button.Button;
-import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.grid.HeaderRow;
 import com.vaadin.flow.component.grid.dataview.GridListDataView;
 import com.vaadin.flow.component.html.H1;
-import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.component.textfield.TextFieldVariant;
@@ -24,19 +22,21 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
 
-@PermitAll // Declare roles manager/admin
-@PageTitle("Project Management | Error Annihilator")
-@Route(value = "project-management")
-public class ProjectManagement extends VerticalLayout {
+@PermitAll // Declare roles dev or project lead
+@PageTitle("Project Overview | Error Annihilator")
+@Route(value = "project-overview")
+public class ProjectOverview extends VerticalLayout {
     Grid<TicketProject> grid = new Grid<>(TicketProject.class, false);
-    EditProjectForm editProjectForm; // Form/Editor
-    NewProjectForm newProjectForm = new NewProjectForm(); // Form/Editor for new users
-    Button newProject = new Button("New Project");
+    ProjectSingleView singleProject;
+    H1 title = new H1("Projects");
+
     private final SecurityService securityService;
 
-    public ProjectManagement(AuthenticationContext authenticationContext) {
+    // Constructor
+    public ProjectOverview(AuthenticationContext authenticationContext) {
         this.securityService = new SecurityService(authenticationContext);
-        addClassName("projectManagement-view");
+        addClassName("project-overview-view");
+        singleProject = new ProjectSingleView(authenticationContext);
 
         // This is how to implement the header
         setSizeFull();
@@ -45,94 +45,21 @@ public class ProjectManagement extends VerticalLayout {
         add(header); // adds Header with content into the View
     }
 
-    private Component getContent() {
+    // Have all content be gathered in this function
+    private VerticalLayout getContent(){
         VerticalLayout content = new VerticalLayout();
         content.addClassNames("content");
         content.setSizeFull();
 
-        HorizontalLayout horizontalContent = new HorizontalLayout();
-        horizontalContent.addClassNames("content");
-        horizontalContent.setSizeFull();
-        horizontalContent.setWidth("90vw");
-
         // Main Page Title
-        content.add(new H1("Project Management"));
-
-        // Create Project button
-        newProject.addClickListener(e -> newProjectNew());
-        newProject.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
-        content.add(newProject);
+        content.add(title);
 
         // Add grid and form to content
         configureGrid();
-        configureForm();
-
-        horizontalContent.add(editProjectForm, grid, newProjectForm);
-        content.add(horizontalContent);
-
-        closeEditor(); // standard closed form
+        content.add(singleProject, grid);
+        singleProject.getStyle().set("display", "none");
 
         return content;
-    }
-
-    // Closes the editor/form
-    private void closeEditor() {
-        editProjectForm.setProject(null);
-        removeClassName("editing");
-        grid.getStyle().set("display", "block");
-        newProject.getStyle().set("display", "block");
-        newProjectForm.getStyle().set("display", "none");
-        editProjectForm.getStyle().set("display", "none");
-        grid.asSingleSelect().clear(); // deselect ticket in grid
-    }
-
-    // Handles selected ticket from grid
-    private void editProject(TicketProject ticketProject) {
-        // If a ticket is selected or unselected open/close editor/form and set current ticket
-        if(ticketProject == null){
-            closeEditor();
-        } else {
-            editProjectForm.setProject(ticketProject);
-            editProjectForm.getStyle().set("display", "block");
-            newProjectForm.getStyle().set("display", "none");
-            newProject.getStyle().set("display", "none");
-            addClassName("editing");
-            grid.getStyle().set("display", "none");
-        }
-    }
-
-    // Handles new Project
-    private void newProjectNew() {
-        // If a project is selected or unselected open/close editor/form and set current ticket
-        addClassName("editing");
-        grid.getStyle().set("display", "block");
-        newProjectForm.getStyle().set("display", "block");
-        editProjectForm.getStyle().set("display", "none");
-    }
-
-    // Saves project, updates the grid and closes editor/form
-    private void saveProject(EditProjectForm.SaveEvent event) {
-        //service.saveTicket(event.getTicket()); // After DB integration
-        updateList();
-        closeEditor();
-    }
-
-    // update the grid
-    private void updateList() {
-        // grid.setItems(service.findallTickets(filterText.getValue())); // After DB integration
-    }
-
-    // FORM =======================================
-    // Configure the editor/form
-    private void configureForm() {
-        editProjectForm = new EditProjectForm(); // Replace with actual lists
-        editProjectForm.setSizeFull();
-        editProjectForm.addCloseListener(e -> closeEditor()); // add listener to close form
-        editProjectForm.addSaveListener(this::saveProject); // add listener to save ticket - doesn't work yet
-
-        newProjectForm.setSizeFull();
-        newProjectForm.addCloseListener(e -> closeEditor()); // add listener to close form
-        //newProjectForm.addSaveListener(this::saveProject); // add listener to save ticket - doesn't work yet
     }
 
     // GRID ====================================
@@ -151,7 +78,13 @@ public class ProjectManagement extends VerticalLayout {
         Grid.Column<TicketProject> leaderColumn = grid.addColumn("projectLead").setHeader("Project Lead");
 
         // Add listeners
-        grid.asSingleSelect().addValueChangeListener(e -> editProject(e.getValue()));
+        grid.asSingleSelect().addValueChangeListener(e -> {
+            String customRoute = e.getValue().getProjectName().replace(" ", "-").toLowerCase();
+            grid.getUI().flatMap(ui -> ui.navigate(ProjectSingleView.class, customRoute)).ifPresent(editor -> editor.setProject(e.getValue()));
+        });
+
+
+
 
         // Set items for grid
         GridListDataView<TicketProject> dataView = grid.setItems(testProjects); // replace with dataservice.getTickets()
@@ -169,8 +102,6 @@ public class ProjectManagement extends VerticalLayout {
         grid.addClassName("projectManagement-grid");
         grid.setWidth("90vw");
         grid.getColumns().forEach(col -> col.setAutoWidth(true));
-        grid.getStyle().set("display", "block");
-        newProjectForm.getStyle().set("display", "none");
     }
 
     // FILTER ==================================
@@ -229,4 +160,5 @@ public class ProjectManagement extends VerticalLayout {
                     || value.toLowerCase().contains(searchTerm.toLowerCase());
         }
     }
+
 }
