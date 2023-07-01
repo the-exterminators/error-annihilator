@@ -104,6 +104,7 @@ public class Header extends AppLayout{
         //admin.add(adminSubMenu);
         content.add(adminSubMenu);
 
+        addMenuItemToContent(content, VaadinIcon.CLIPBOARD_TEXT, "Project Overview", ProjectOverview.class);
         addMenuItemToContent(content, VaadinIcon.USER, "My Profile", UserProfile.class);
         addMenuItemToContent(content, VaadinIcon.FLAG, "My Assigned Tickets", AssignedTickets.class);
         addMenuItemToContent(content, VaadinIcon.TICKET, "My Submitted Tickets", TicketHistory.class);
@@ -155,10 +156,8 @@ public class Header extends AppLayout{
 
     public void buttonClick() {
         if(ticketSearch.getValue() != null){
-            searchButton.getUI().flatMap(ui -> ui.navigate(SingleTicket.class)).ifPresent(editor -> {
-                editor.setup((int) Math.round(ticketSearch.getValue()));
-                editor.reroute();
-            });
+            searchButton.getUI().flatMap(ui -> ui.navigate(SingleTicket.class, (int) Math.round(ticketSearch.getValue())))
+                    .ifPresent(editor -> editor.setTitle((int) Math.round(ticketSearch.getValue())));
         }
     }
 }

@@ -41,7 +41,8 @@
     "@vaadin/field-base": "24.0.3",
     "@vaadin/field-highlighter": "24.0.3",
     "@vaadin/form-layout": "24.0.3",
-    "@vaadin/grid": "24.0.3",
+    "@vaadin/grid": "24.1.1",
+    "@vaadin/grid-pro": "24.0.0",
     "@vaadin/horizontal-layout": "24.0.3",
     "@vaadin/icon": "24.0.3",
     "@vaadin/icons": "24.0.3",
@@ -71,7 +72,7 @@
     "@vaadin/text-area": "24.0.3",
     "@vaadin/text-field": "24.0.3",
     "@vaadin/time-picker": "24.0.3",
-    "@vaadin/tooltip": "24.0.3",
+    "@vaadin/tooltip": "24.1.1",
     "@vaadin/upload": "24.0.3",
     "@vaadin/vaadin-development-mode-detector": "2.0.6",
     "@vaadin/vaadin-lumo-styles": "24.0.3",
@@ -126,7 +127,8 @@
       "@vaadin/field-base": "24.0.3",
       "@vaadin/field-highlighter": "24.0.3",
       "@vaadin/form-layout": "24.0.3",
-      "@vaadin/grid": "24.0.3",
+      "@vaadin/grid": "24.1.1",
+      "@vaadin/grid-pro": "24.0.0",
       "@vaadin/horizontal-layout": "24.0.3",
       "@vaadin/icon": "24.0.3",
       "@vaadin/icons": "24.0.3",
@@ -156,7 +158,7 @@
       "@vaadin/text-area": "24.0.3",
       "@vaadin/text-field": "24.0.3",
       "@vaadin/time-picker": "24.0.3",
-      "@vaadin/tooltip": "24.0.3",
+      "@vaadin/tooltip": "24.1.1",
       "@vaadin/upload": "24.0.3",
       "@vaadin/vaadin-development-mode-detector": "2.0.6",
       "@vaadin/vaadin-lumo-styles": "24.0.3",
@@ -185,7 +187,7 @@
       "workbox-core": "6.5.4",
       "workbox-precaching": "6.5.4"
     },
-    "hash": "08a13a3d7bf1e7eb02fd7797e4a57a97160c685382b102a339abec0648f23087"
+    "hash": "31c582af000893343c4bb32206ab8625005ab949b3849185dc6f5d9c56d68909"
   },
   "overrides": {
     "@vaadin/bundles": "$@vaadin/bundles",
@@ -253,6 +255,7 @@
     "@polymer/polymer": "$@polymer/polymer",
     "@vaadin/vaadin-themable-mixin": "$@vaadin/vaadin-themable-mixin",
     "date-fns": "$date-fns",
-    "@vaadin/charts": "$@vaadin/charts"
+    "@vaadin/charts": "$@vaadin/charts",
+    "@vaadin/grid-pro": "$@vaadin/grid-pro"
   }
 }
