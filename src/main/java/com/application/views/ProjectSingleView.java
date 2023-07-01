@@ -5,15 +5,12 @@ import com.application.components.EditTicketForm;
 import com.application.components.Header;
 import com.application.data.entity.*;
 import com.application.security.SecurityService;
-import com.google.common.base.Ticker;
 import com.vaadin.flow.component.Component;
-import com.vaadin.flow.component.avatar.Avatar;
 import com.vaadin.flow.component.avatar.AvatarGroup;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.datepicker.DatePicker;
 import com.vaadin.flow.component.grid.Grid;
-import com.vaadin.flow.component.grid.GridSelectionColumn;
 import com.vaadin.flow.component.grid.HeaderRow;
 import com.vaadin.flow.component.grid.dataview.GridListDataView;
 import com.vaadin.flow.component.html.H1;
@@ -24,23 +21,17 @@ import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextField;
-import com.vaadin.flow.component.textfield.TextFieldVariant;
 import com.vaadin.flow.data.renderer.ComponentRenderer;
 import com.vaadin.flow.data.renderer.LocalDateRenderer;
-import com.vaadin.flow.data.renderer.LocalDateTimeRenderer;
 import com.vaadin.flow.data.value.ValueChangeMode;
 import com.vaadin.flow.router.*;
 
-import java.sql.Timestamp;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.function.Consumer;
 
 import com.vaadin.flow.spring.security.AuthenticationContext;
 import jakarta.annotation.security.PermitAll;
-import org.apache.commons.codec.binary.StringUtils;
 
 @PermitAll
 @PageTitle("Project Single View | Error Annihilator")
@@ -272,9 +263,7 @@ public class ProjectSingleView extends VerticalLayout implements HasUrlParameter
         comboBox.setWidth("100%");
         comboBox.setItems(items);
 
-        comboBox.addValueChangeListener(e -> {
-            consumer.accept(e.getValue());
-        });
+        comboBox.addValueChangeListener(e -> consumer.accept(e.getValue()));
         headerRow.getCell(gridColumn).setComponent(comboBox);
 
         return comboBox;
@@ -329,11 +318,11 @@ public class ProjectSingleView extends VerticalLayout implements HasUrlParameter
             boolean matchesTitle = matches(ticket.getTicketName(), title);
             boolean matchesType = matches(ticket.getTicketType(), type);
             boolean matchesStatus = matches(ticket.getTicketStatus().getStatusName(), status);
-            String userSpan = "";
+            StringBuilder userSpan = new StringBuilder();
             for(User user : ticket.getAssignedUsers()){
-                userSpan = userSpan + (user.getFirstName()+" "+user.getLastName());
+                userSpan.append(user.getFirstName()).append(" ").append(user.getLastName());
             }
-            boolean matchesAssigned = matches(userSpan, assignedUsers);
+            boolean matchesAssigned = matches(userSpan.toString(), assignedUsers);
 
             return matchesTitle && matchesStatus && matchesNumber && matchesType && matchesAssigned;
         }
