@@ -1,8 +1,6 @@
 package com.application.views;
 
-import com.application.components.EditTicketForm;
 import com.application.components.Header;
-import com.application.data.entity.Ticket;
 import com.application.data.entity.TicketProject;
 import com.application.data.entity.User;
 import com.application.security.SecurityService;
@@ -58,7 +56,7 @@ public class ProjectOverview extends VerticalLayout {
 
         // Add grid and form to content
         configureGrid();
-        content.add(grid,singleProject);
+        content.add(singleProject, grid);
         singleProject.getStyle().set("display", "none");
 
         return content;
@@ -80,7 +78,13 @@ public class ProjectOverview extends VerticalLayout {
         Grid.Column<TicketProject> leaderColumn = grid.addColumn("projectLead").setHeader("Project Lead");
 
         // Add listeners
-        grid.asSingleSelect().addValueChangeListener(e -> editProject(e.getValue()));
+        grid.asSingleSelect().addValueChangeListener(e -> {
+            String customRoute = e.getValue().getProjectName().replace(" ", "-").toLowerCase();
+            grid.getUI().flatMap(ui -> ui.navigate(ProjectSingleView.class, customRoute)).ifPresent(editor -> editor.setProject(e.getValue()));
+        });
+
+
+
 
         // Set items for grid
         GridListDataView<TicketProject> dataView = grid.setItems(testProjects); // replace with dataservice.getTickets()
@@ -98,15 +102,6 @@ public class ProjectOverview extends VerticalLayout {
         grid.addClassName("projectManagement-grid");
         grid.setWidth("90vw");
         grid.getColumns().forEach(col -> col.setAutoWidth(true));
-    }
-
-
-
-    private void editProject(TicketProject ticketProject){
-        singleProject.setProject(ticketProject);
-        singleProject.getStyle().set("display", "block");
-        grid.getStyle().set("display", "none");
-        title.getStyle().set("display", "none");
     }
 
     // FILTER ==================================

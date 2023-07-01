@@ -5,59 +5,61 @@ import com.application.components.EditTicketForm;
 import com.application.components.Header;
 import com.application.data.entity.*;
 import com.application.security.SecurityService;
+import com.google.common.base.Ticker;
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.avatar.Avatar;
+import com.vaadin.flow.component.avatar.AvatarGroup;
+import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.datepicker.DatePicker;
 import com.vaadin.flow.component.grid.Grid;
-import com.vaadin.flow.component.grid.Grid.SelectionMode;
-import com.vaadin.flow.component.grid.GridVariant;
+import com.vaadin.flow.component.grid.GridSelectionColumn;
 import com.vaadin.flow.component.grid.HeaderRow;
 import com.vaadin.flow.component.grid.dataview.GridListDataView;
-import com.vaadin.flow.component.gridpro.GridPro;
 import com.vaadin.flow.component.html.H1;
-import com.vaadin.flow.component.html.Image;
+import com.vaadin.flow.component.html.Paragraph;
 import com.vaadin.flow.component.html.Span;
+import com.vaadin.flow.component.icon.Icon;
+import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextField;
+import com.vaadin.flow.component.textfield.TextFieldVariant;
 import com.vaadin.flow.data.renderer.ComponentRenderer;
 import com.vaadin.flow.data.renderer.LocalDateRenderer;
-import com.vaadin.flow.data.renderer.NumberRenderer;
+import com.vaadin.flow.data.renderer.LocalDateTimeRenderer;
 import com.vaadin.flow.data.value.ValueChangeMode;
-import com.vaadin.flow.router.PageTitle;
-import com.vaadin.flow.router.Route;
-import com.vaadin.flow.component.avatar.Avatar;
+import com.vaadin.flow.router.*;
 
-import java.text.NumberFormat;
+import java.sql.Timestamp;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.Arrays;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Locale;
+import java.util.*;
+import java.util.function.Consumer;
 
 import com.vaadin.flow.spring.security.AuthenticationContext;
 import jakarta.annotation.security.PermitAll;
-import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.codec.binary.StringUtils;
 
 @PermitAll
 @PageTitle("Project Single View | Error Annihilator")
-@Route(value = "project-overview")
-public class ProjectSingleView extends VerticalLayout {
-
-    private Grid.Column<AssignedUser> ticketTitleColumn;
-    private GridPro<AssignedUser> grid;
-    private GridListDataView<AssignedUser> gridListDataView;
-    private Grid.Column<AssignedUser> assignedUserColumn;
-    private Grid.Column<AssignedUser> projectColumn;
-    private Grid.Column<AssignedUser> statusColumn;
-    private Grid.Column<AssignedUser> dateColumn;
-
+@Route(value = "project")
+public class ProjectSingleView extends VerticalLayout implements HasUrlParameter<String> {
     private final SecurityService securityService;
+
+    Grid<Ticket> grid = new Grid<>(Ticket.class, false);
+    EditTicketForm ticketForm; // Form/Editor
+    TicketProject ticketProject = new TicketProject();
+    Button backToOverview = new Button("Project Overview", new Icon(VaadinIcon.ARROW_LEFT));
+    public H1 title = new H1("Project");
+    public Paragraph description = new Paragraph("");
 
     public ProjectSingleView(AuthenticationContext authenticationContext) {
         this.securityService = new SecurityService(authenticationContext);
-        addClassName("project-overview");
+        addClassName("project-single");
+
+        backToOverview.setIconAfterText(false);
 
         // This is how to implement the header
         setSizeFull();
@@ -68,203 +70,278 @@ public class ProjectSingleView extends VerticalLayout {
 
     public void setProject(TicketProject ticketProject){
         this.ticketProject = ticketProject;
+        getUI().flatMap(ui -> {
+            ui.access(() -> title.setText(ticketProject.getProjectName()));
+            ui.access(() -> description.setText(ticketProject.getProjectDescription()));
+            return Optional.empty();
+        });
     }
+
     // Have all content be gathered in this function
     private VerticalLayout getContent(){
         VerticalLayout content = new VerticalLayout();
         content.addClassNames("content");
         content.setSizeFull();
 
+        backToOverview.addClickListener(e -> getUI().flatMap(ui -> {
+            ui.navigate(ProjectOverview.class);
+            return Optional.empty();
+        }));
+
+        HorizontalLayout horizontalContent = new HorizontalLayout(title, backToOverview);
+        horizontalContent.addClassName("title-bar");
+
         // Main Page Title
-        H1 title = new H1("Project Title");
-        content.add(title);
+        content.add(horizontalContent);
+        content.add(description);
 
         // Add grid and form to content
-        createGrid();
-        content.add(grid);
+        configureGrid();
+        configureForm();
+        content.add(grid, ticketForm);
+
+        closeEditor(); // standard closed form
 
         return content;
     }
 
-    private void createGrid() {
-        createGridComponent();
-        addColumnsToGrid();
-        addFiltersToGrid();
+    // FORM =======================================
+    // Configure the editor/form
+    private void configureForm() {
+        ticketForm = new EditTicketForm(Collections.emptyList()); // Replace with actual lists
+        ticketForm.setSizeFull();
+        ticketForm.addCloseListener(e -> closeEditor()); // add listener to close form
+        ticketForm.addSaveListener(this::saveTicket); // add listener to save ticket - doesn't work yet
     }
 
-    private void createGridComponent() {
-        grid = new GridPro<>();
-        grid.setSelectionMode(SelectionMode.MULTI);
-        grid.addThemeVariants(GridVariant.LUMO_NO_BORDER, GridVariant.LUMO_COLUMN_BORDERS);
-        grid.setHeight("100%");
-        grid.setWidth("90vw");
-
-        List<AssignedUser> assignedUser = getAssignedUser();
-        gridListDataView = grid.setItems(assignedUser);
+    // Handles selected ticket from grid
+    private void editTicket(Ticket ticket) {
+        // If a ticket is selected or unselected open/close editor/form and set current ticket
+        if(ticket == null){
+            closeEditor();
+        } else {
+            ticketForm.setTicket(ticket);
+            ticketForm.setVisible(true);
+            description.setVisible(false);
+            backToOverview.setVisible(false);
+            addClassName("editing");
+            grid.getStyle().set("display", "none");
+        }
     }
 
-    private void addColumnsToGrid() {
-        createAssignedUserColumn();
-        createTicketTitleColumn();
-        createProjectColumn();
-        createStatusColumn();
-        createDateColumn();
+    // Closes the editor/form
+    private void closeEditor() {
+        ticketForm.setTicket(null);
+        ticketForm.setVisible(false);
+        description.setVisible(true);
+        backToOverview.setVisible(true);
+        removeClassName("editing");
+        grid.getStyle().set("display", "block");
+        grid.asSingleSelect().clear(); // deselect ticket in grid
     }
 
-    private void createAssignedUserColumn() {
-        assignedUserColumn = grid.addColumn(new ComponentRenderer<>(assignedUser-> {
-            HorizontalLayout hl = new HorizontalLayout();
-            hl.setAlignItems(Alignment.CENTER);
-            Avatar avatar = new Avatar(assignedUser.getAssignedUser());
+    // Saves ticket, updates the grid and closes editor/form
+    private void saveTicket(EditTicketForm.SaveEvent event) {
+        //service.saveTicket(event.getTicket()); // After DB integration
+        updateList();
+        closeEditor();
+    }
+
+    // update the grid
+    private void updateList() {
+        // grid.setItems(service.findallTickets(filterText.getValue())); // After DB integration
+    }
+
+    // GRID ====================================
+    // Configure the grid
+    private void configureGrid() {
+        // Test users
+        List<Ticket> testTickets = new ArrayList<>();
+        List<User> testUsers = new LinkedList<>();
+        List<User> testUsers2 = new LinkedList<>();
+        User testUser = new User("Jana", "Burns", "Burnsjana", "email", "1234", "dev");
+        User testUser2 = new User("Isabelle", "Mariacher", "MariacherIsabelle", "email", "1234", "dev");
+        testUsers.add(testUser);
+        testUsers2.add(testUser);
+        testUsers2.add(testUser2);
+
+        // Test ticket 1
+        Ticket ticketOne = new Ticket("1", "I need help", "bug", "test test test", new TicketStatus("open"), new TicketProject("Project 1", "test", testUser), testUser, testUsers2);
+        List<TicketComment> listOne = new ArrayList<>();
+        listOne.add(new TicketComment("hello", testUser, ticketOne));
+        ticketOne.setTicketComment(listOne);
+        testTickets.add(ticketOne);
+
+        // Test ticket 2
+        Ticket ticketTwo = new Ticket("2", "hello", "defect", "hallo hallo", new TicketStatus("unassigned"), new TicketProject("Project 2", "test", testUser), testUser, testUsers);
+        List<TicketComment> listTwo = new ArrayList<>();
+        listTwo.add(new TicketComment("hello", testUser, ticketTwo));
+        ticketTwo.setTicketComment(listTwo);
+        testTickets.add(ticketTwo);
+
+        // Columns
+        Grid.Column<Ticket> numberColumn = grid.addColumn("ticketNumber").setHeader("Number");
+        Grid.Column<Ticket> createdColumn = grid.addColumn(new LocalDateRenderer<>(ticket -> ticket.getCreatedTimeStamp().toLocalDateTime().toLocalDate())).setHeader("Created");
+        createdColumn.setSortable(true);
+        Grid.Column<Ticket> titleColumn = grid.addColumn("ticketName").setHeader("Title");
+        Grid.Column<Ticket> typeColumn = grid.addColumn("ticketType").setHeader("Type");
+        Grid.Column<Ticket> statusColumn = grid.addColumn(new ComponentRenderer<>(ticket -> {
             Span span = new Span();
-            span.setClassName("name");
-            span.setText(assignedUser.getAssignedUser());
-            hl.add(avatar, span);
-            return hl;
-        })).setComparator(assignedUser -> assignedUser.getAssignedUser()).setHeader("Assigned User");
-    }
-    private void createProjectColumn() {
-        projectColumn = grid
-                .addEditColumn(AssignedUser::getProject,
-                        new NumberRenderer<>(AssignedUser::getProject, NumberFormat.getNumberInstance(Locale.US)))
-                .text((item, newValue) -> item.setProject(Double.parseDouble(newValue)))
-                .setComparator(AssignedUser::getProject)
-                .setHeader("Projects");
-    }
+            span.setText(ticket.getTicketStatus().getStatusName());
+            span.getElement().setAttribute("theme", "badge " + ticket.getTicketStatus().getStatusName().toLowerCase());
+            return span;
+        })).setHeader("Status");
+        Grid.Column<Ticket> assignedColumn = grid.addColumn(new ComponentRenderer<>(ticket -> {
+            AvatarGroup avatarGroup = new AvatarGroup();
+            for(User user : ticket.getAssignedUsers()){
+                String name = user.getFirstName() + " " + user.getLastName();
+                avatarGroup.add(new AvatarGroup.AvatarGroupItem(name));
+            }
+            return avatarGroup;
+        })).setHeader("Assigned Users");
 
+        // Add listeners
+        grid.asSingleSelect().addValueChangeListener(e -> editTicket(e.getValue()));
+        grid.asSingleSelect().addValueChangeListener(e -> ticketForm.validateAndUpdate());
+        grid.asSingleSelect().addValueChangeListener(e -> ticketForm.updateAssignedUsers());
 
+        // Set items for grid
+        GridListDataView<Ticket> dataView = grid.setItems(testTickets); // replace with dataservice.getTickets()
 
+        // Filter - https://vaadin.com/docs/latest/components/grid
+        TicketFilter ticketFilter = new TicketFilter(dataView);
+        grid.getHeaderRows().clear();
+        HeaderRow headerRow = grid.appendHeaderRow();
+        headerRow.getCell(numberColumn).setComponent(createFilterHeader(ticketFilter::setNumber));
+        headerRow.getCell(titleColumn).setComponent(createFilterHeader(ticketFilter::setTitle));
+        editComboFilter(headerRow, assignedColumn, Arrays.asList("Jana Burns", "Isabelle Mariacher", "Daniel Kihn"), ticketFilter::setAssignedUsers);
+        editComboFilter(headerRow, typeColumn, Arrays.asList("bug", "defect", "error"), ticketFilter::setType);
+        editComboFilter(headerRow, statusColumn, Arrays.asList("unassigned", "open", "waiting for approval","resolved"), ticketFilter::setStatus);
+        createDateHeader(headerRow, createdColumn, dataView);
 
-    private void createStatusColumn() {
-        statusColumn = grid.addEditColumn(AssignedUser::getAssignedUser, new ComponentRenderer<>(AssignedUser -> {
-                    Span span = new Span();
-                    span.setText(AssignedUser.getStatus());
-                    span.getElement().setAttribute("theme", "badge " + AssignedUser.getStatus().toLowerCase());
-                    return span;
-                })).select((item, newValue) -> item.setStatus(newValue), Arrays.asList("solved", "in progress", "error", "opened"))
-                .setComparator(assignedUser -> assignedUser.getStatus()).setHeader("Status");
-    }
-
-    private void createTicketTitleColumn() {
-        ticketTitleColumn = grid.addColumn(AssignedUser::getTicketTitle)
-                .setHeader("Ticket Title")
-                .setKey("Ticket Title")
-                .setComparator(Comparator.comparing(AssignedUser::getTicketTitle));
-    }
-    private void createDateColumn() {
-        dateColumn = grid
-                .addColumn(new LocalDateRenderer<>(assignedUser-> LocalDate.parse(assignedUser.getDate()),
-                        () -> DateTimeFormatter.ofPattern("M/d/yyyy")))
-                .setComparator(assignedUser -> assignedUser.getDate()).setHeader("Date").setWidth("180px").setFlexGrow(0);
+        // Grid Size Settings
+        grid.setSizeFull();
+        grid.addClassName("assignedTickets-grid");
+        grid.setWidth("90vw");
+        //grid.getColumns().forEach(col -> col.setAutoWidth(true));
     }
 
-    private void addFiltersToGrid() {
-        HeaderRow filterRow = grid.appendHeaderRow();
+    // FILTER ==================================
+    // This creates the filter header with the textfield etc
+    private static Component createFilterHeader(Consumer<String> filterChangeConsumer) {
+        TextField textField = new TextField();
+        textField.setPlaceholder("Filter");
+        textField.addClassName("filter-header-item");
+        textField.getStyle().set("font-size", "var(--lumo-font-size-xs)");
+        textField.setValueChangeMode(ValueChangeMode.EAGER);
+        textField.setClearButtonVisible(true);
+        textField.getStyle().set("max-width", "100%");
+        textField.addValueChangeListener(
+                e -> filterChangeConsumer.accept(e.getValue()));
+        return textField;
+    }
 
-        TextField assignedUserFilter = new TextField();
-        assignedUserFilter.setPlaceholder("Filter");
-        assignedUserFilter.setClearButtonVisible(true);
-        assignedUserFilter.setWidth("100%");
-        assignedUserFilter.setValueChangeMode(ValueChangeMode.EAGER);
-        assignedUserFilter.addValueChangeListener(event -> gridListDataView
-                .addFilter(assignedUser -> StringUtils.containsIgnoreCase(assignedUser.getAssignedUser(), assignedUserFilter.getValue())));
-        filterRow.getCell(assignedUserColumn).setComponent(assignedUserFilter);
-
-        TextField projectFilter = new TextField();
-        projectFilter.setPlaceholder("Filter");
-        projectFilter.setClearButtonVisible(true);
-        projectFilter.setWidth("100%");
-        projectFilter.setValueChangeMode(ValueChangeMode.EAGER);
-        projectFilter.addValueChangeListener(event -> gridListDataView.addFilter(assignedUser -> StringUtils
-                .containsIgnoreCase(Double.toString(assignedUser.getProject()), projectFilter.getValue())));
-        filterRow.getCell(projectColumn).setComponent(projectFilter);
-
-
-        TextField ticketTitleFilter = new TextField();
-        ticketTitleFilter.setPlaceholder("Filter");
-        ticketTitleFilter.setClearButtonVisible(true);
-        ticketTitleFilter.setWidth("100%");
-        ticketTitleFilter.setValueChangeMode(ValueChangeMode.EAGER);
-        ticketTitleFilter.addValueChangeListener(event -> gridListDataView
-                .addFilter(assignedUser -> StringUtils.containsIgnoreCase(assignedUser.getTicketTitle(), ticketTitleFilter.getValue())));
-        filterRow.getCell(ticketTitleColumn).setComponent(ticketTitleFilter);
-
-        ComboBox<String> statusFilter = new ComboBox<>();
-        statusFilter.setItems(Arrays.asList("solved", "in progress", "error", "opened"));
-        statusFilter.setPlaceholder("Filter");
-        statusFilter.setClearButtonVisible(true);
-        statusFilter.setWidth("100%");
-        statusFilter.addValueChangeListener(
-                event -> gridListDataView.addFilter(assignedUser -> areStatusesEqual(assignedUser, statusFilter)));
-        filterRow.getCell(statusColumn).setComponent(statusFilter);
-
+    private static Component createDateHeader(HeaderRow headerRow, Grid.Column<Ticket> column, GridListDataView<Ticket> dataView) {
         DatePicker dateFilter = new DatePicker();
         dateFilter.setPlaceholder("Filter");
+        dateFilter.addClassName("filter-header-item");
+        dateFilter.getStyle().set("font-size", "var(--lumo-font-size-xs)");
+        dateFilter.getStyle().set("max-width", "100%");
         dateFilter.setClearButtonVisible(true);
-        dateFilter.setWidth("100%");
         dateFilter.addValueChangeListener(
-                event -> gridListDataView.addFilter(assignedUser -> areDatesEqual(assignedUser, dateFilter)));
-        filterRow.getCell(dateColumn).setComponent(dateFilter);
+                event -> dataView.addFilter(ticket -> areDatesEqual(ticket, dateFilter)));
+        headerRow.getCell(column).setComponent(dateFilter);
+        return dateFilter;
     }
 
-    private boolean areStatusesEqual(AssignedUser assignedUser, ComboBox<String> statusFilter) {
-        String statusFilterValue = statusFilter.getValue();
-        if (statusFilterValue != null) {
-            return StringUtils.equals(assignedUser.getStatus(), statusFilterValue);
-        }
-        return true;
-    }
-
-    private boolean areDatesEqual(AssignedUser assignedUser, DatePicker dateFilter) {
+    private static boolean areDatesEqual(Ticket ticket, DatePicker dateFilter) {
         LocalDate dateFilterValue = dateFilter.getValue();
         if (dateFilterValue != null) {
-            LocalDate assignedUserDate = LocalDate.parse(assignedUser.getDate());
-            return dateFilterValue.equals(assignedUserDate);
+            LocalDate createdDate = ticket.getCreatedTimeStamp().toLocalDateTime().toLocalDate();
+            return dateFilterValue.equals(createdDate);
         }
         return true;
     }
 
-    private List<AssignedUser> getAssignedUser() {
-        return Arrays.asList(
-                createAssignedUser(4957, "https://randomuser.me/api/portraits/women/42.jpg", "Lisa Eppstein", 1,
-                        "mein erstes Ticket", "solved", "2019-05-09"),
-                createAssignedUser(675, "https://randomuser.me/api/portraits/women/24.jpg", "Stefan Schatzmann", 2,
-                        "mein zweites Ticket","in progress", "2019-05-09"),
-                createAssignedUser(6816, "https://randomuser.me/api/portraits/men/42.jpg", "Deborah Fleischmann", 5,
-                        "mein drittes Ticket","error", "2019-05-07"),
-                createAssignedUser(5144, "https://randomuser.me/api/portraits/women/76.jpg", "Jacqueline Kühne", 6,
-                        "mein viertes Ticket","solved", "2019-04-25"),
-                createAssignedUser(9800, "https://randomuser.me/api/portraits/men/24.jpg", "Heinz Weingard", 1,
-                        "mein fünftes Ticket","open", "2019-04-20"),
-                createAssignedUser(223, "https://randomuser.me/api/portraits/women/42.jpg", "Valerie Mark", 1,
-                        "mein sechstes Ticket","solved", "2019-05-09"),
-                createAssignedUser(224, "https://randomuser.me/api/portraits/women/24.jpg", "Andreas Danner", 1,
-                        "mein siebtes Ticket","in progress", "2019-05-09"),
-                createAssignedUser(228, "https://randomuser.me/api/portraits/men/42.jpg", "Dietlind Grabowski", 2,
-                        "mein achtes Ticket","error", "2019-05-07"),
-                createAssignedUser(5299, "https://randomuser.me/api/portraits/women/76.jpg", "Claudia Auer", 6,
-                        "mein neuntes Ticket","solved", "2019-04-25"),
-                createAssignedUser(1920, "https://randomuser.me/api/portraits/men/24.jpg", "Franz Fuchs", 1,
-                        "mein zehntes Ticket","in progress", "2019-04-22"),
-                createAssignedUser(120, "https://randomuser.me/api/portraits/women/94.jpg", "Steven Davis", 2,
-                        "mein elftes Ticket","open", "2019-04-17"),
-                createAssignedUser(1029, "https://randomuser.me/api/portraits/men/76.jpg", "Hugh Grant", 4, "Pending",
-                        "mein zwölftes Ticket","2019-04-17"),
-                createAssignedUser(10029, "https://randomuser.me/api/portraits/men/94.jpg", "Carol Bing", 3,
-                        "mein dreizehntes Ticket","open", "2019-02-26"),
-                createAssignedUser(12923, "https://randomuser.me/api/portraits/men/16.jpg", "Jennifer Aniston", 1,
-                        "mein vierzehntes Ticket","solved", "2019-02-21"));
-    }
-    private AssignedUser createAssignedUser(int id, String avatar, String assignedUser, double project, String ticketTitle, String status, String date) {
-        AssignedUser a = new AssignedUser();
-        a.setId(id);
-        a.setAvatar(avatar);
-        a.setAssignedUser(assignedUser);
-        a.setProject(project);
-        a.setTicketTitle(ticketTitle);
-        a.setStatus(status);
-        a.setDate(date);
+    private ComboBox editComboFilter(HeaderRow headerRow, Grid.Column<Ticket> gridColumn, List items, Consumer<String> consumer) {
+        ComboBox<String> comboBox = new ComboBox<>();
+        comboBox.addClassName("filter-header-item");
+        comboBox.setPlaceholder("Filter");
+        comboBox.setClearButtonVisible(true);
+        comboBox.getStyle().set("font-size", "var(--lumo-font-size-xs)");
+        comboBox.setWidth("100%");
+        comboBox.setItems(items);
 
-        return a;
+        comboBox.addValueChangeListener(e -> {
+            consumer.accept(e.getValue());
+        });
+        headerRow.getCell(gridColumn).setComponent(comboBox);
+
+        return comboBox;
     }
-};
+
+    @Override
+    public void setParameter(BeforeEvent event, String parameter) {
+
+    }
+
+    // Class to filter tickets in grid
+    private static class TicketFilter {
+        private final GridListDataView<Ticket> dataView;
+        private String title;
+        private String status;
+        private String number;
+        private String type;
+        private String assignedUsers;
+
+        public TicketFilter(GridListDataView<Ticket> dataView) {
+            this.dataView = dataView;
+            this.dataView.addFilter(this::test);
+        }
+
+        public void setNumber(String number) {
+            this.number = number;
+            this.dataView.refreshAll();
+        }
+
+        public void setTitle(String title) {
+            this.title = title;
+            this.dataView.refreshAll();
+        }
+
+        public void setType(String type) {
+            this.type = type;
+            this.dataView.refreshAll();
+        }
+
+        public void setStatus(String status) {
+            this.status = status;
+            this.dataView.refreshAll();
+        }
+
+        public void setAssignedUsers(String assignedUsers){
+            this.assignedUsers = assignedUsers;
+            this.dataView.refreshAll();
+        }
+
+        public boolean test(Ticket ticket) {
+            boolean matchesNumber = matches(ticket.getTicketNumber(), number);
+            boolean matchesTitle = matches(ticket.getTicketName(), title);
+            boolean matchesType = matches(ticket.getTicketType(), type);
+            boolean matchesStatus = matches(ticket.getTicketStatus().getStatusName(), status);
+            String userSpan = "";
+            for(User user : ticket.getAssignedUsers()){
+                userSpan = userSpan + (user.getFirstName()+" "+user.getLastName());
+            }
+            boolean matchesAssigned = matches(userSpan, assignedUsers);
+
+            return matchesTitle && matchesStatus && matchesNumber && matchesType && matchesAssigned;
+        }
+
+        private boolean matches(String value, String searchTerm) {
+            return searchTerm == null || searchTerm.isEmpty()
+                    || value.toLowerCase().contains(searchTerm.toLowerCase());
+        }
+    }
+
+}

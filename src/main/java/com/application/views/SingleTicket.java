@@ -6,16 +6,11 @@ import com.application.data.entity.*;
 import com.application.security.SecurityService;
 import com.vaadin.flow.component.html.H1;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
-import com.vaadin.flow.router.PageTitle;
-import com.vaadin.flow.router.Route;
-import com.vaadin.flow.router.RouteConfiguration;
+import com.vaadin.flow.router.*;
 import com.vaadin.flow.spring.security.AuthenticationContext;
 import jakarta.annotation.security.PermitAll;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.*;
 
 /*
 * Only problem I have is on reload it doesn't reload the content correctly
@@ -26,12 +21,13 @@ import java.util.List;
 */
 @PermitAll // all roles
 @PageTitle("Searched Ticket | Error Annihilator")
-@Route(value = "single-ticket")
-public class SingleTicket extends VerticalLayout {
+@Route(value = "ticket")
+public class SingleTicket extends VerticalLayout implements HasUrlParameter<Integer> {
     public SingleTicketForm ticketForm; // Form/Editor
     private final SecurityService securityService;
     Ticket ticket; // set this ticket when searched
     long ticketNumber;
+    H1 title = new H1("Ticket # " + (int) ticketNumber);
     Header header;
 
     public SingleTicket(AuthenticationContext authenticationContext) {
@@ -45,28 +41,12 @@ public class SingleTicket extends VerticalLayout {
         add(header); // adds Header with content into the View
     }
 
-    public void setup(long ticketNumber){
-        this.ticketNumber = ticketNumber;
-        RouteConfiguration configuration = RouteConfiguration.forApplicationScope();
-        configuration.setRoute("single-ticket-"+ticketNumber, SingleTicket.class);
-        updateInfo();
-    }
-
-    public void reroute(){
-        this.getUI().ifPresent(ui -> ui.navigate("single-ticket-"+ticketNumber));
-    }
-
-    private void updateInfo() {
-        header.setContent(getContent());
-    }
-
     public VerticalLayout getContent() {
         VerticalLayout content = new VerticalLayout();
         content.addClassNames("content");
         content.setSizeFull();
 
         // Main Page Title
-        H1 title = new H1("Ticket # " + (int) ticketNumber);
         content.add(title);
 
         // Add grid and form to content
@@ -93,5 +73,19 @@ public class SingleTicket extends VerticalLayout {
         ticketForm = new SingleTicketForm(Collections.emptyList()); // Replace with actual lists of status
         ticketForm.setTicket(ticket); // find ticket based on search term
         ticketForm.setSizeFull();
+    }
+
+    public void setTitle(Integer param){
+        getUI().ifPresent(ui -> {
+            ui.access(() -> title.setText("Ticket # " + param));
+        });
+    }
+
+    @Override
+    public void setParameter(BeforeEvent event, Integer parameter) {
+        getUI().flatMap(ui -> {
+            ui.access(() -> title.setText("Ticket # " + parameter));
+            return Optional.empty();
+        });
     }
 }
