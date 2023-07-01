@@ -1,7 +1,7 @@
 package com.application.views;
 
 import com.application.components.Header;
-import com.application.data.service.TicketService;
+import com.application.data.service.DatabaseService;
 import com.application.security.SecurityService;
 import com.vaadin.flow.component.avatar.Avatar;
 import com.vaadin.flow.component.combobox.ComboBox;
@@ -10,6 +10,7 @@ import com.vaadin.flow.component.datetimepicker.DateTimePicker;
 import com.vaadin.flow.component.formlayout.FormLayout;
 import com.vaadin.flow.component.html.H1;
 import com.vaadin.flow.component.menubar.MenuBar;
+import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.NumberField;
 import com.vaadin.flow.component.textfield.TextArea;
@@ -19,12 +20,14 @@ import com.vaadin.flow.router.Route;
 import com.vaadin.flow.spring.security.AuthenticationContext;
 import jakarta.annotation.security.PermitAll;
 
+import java.util.List;
+
 @PermitAll
 @PageTitle("Create Ticket | Error Annihilator")
 @Route(value = "") // create-ticket-view
 public class CreateTicket extends VerticalLayout {
 
-    private final TicketService ticketService;
+    private final DatabaseService databaseService;
     private final SecurityService securityService;
     private Avatar avatar = new Avatar();
     private NumberField ticketNumber = new NumberField();
@@ -38,8 +41,8 @@ public class CreateTicket extends VerticalLayout {
     private DateTimePicker dateCreated = new DateTimePicker();
     private MenuBar buttons = new MenuBar();
 
-    public CreateTicket(TicketService ticketService, AuthenticationContext authenticationContext) {
-        this.ticketService = ticketService;
+    public CreateTicket(DatabaseService databaseService, AuthenticationContext authenticationContext) {
+        this.databaseService = databaseService;
         securityService = new SecurityService(authenticationContext);
         Header header = new Header(authenticationContext);
         header.setContent(getCreateTicketContent());
@@ -55,6 +58,7 @@ public class CreateTicket extends VerticalLayout {
         H1 title = new H1("Create a Ticket");
         fullContent.add(title);
 
+        // Avatar needs to be changed to the real user later on
         avatar.setName("Isabelle Mariacher");
         fullContent.add(avatar);
 
@@ -75,10 +79,10 @@ public class CreateTicket extends VerticalLayout {
         ticketNumber.setReadOnly(true);
         dateCreated.setReadOnly(true);
 
-        //set sample items
-        setUrgencyComboBoxSampleData(urgency);
-        setTicketTypeComboBoxSampleData(ticketType);
-        setProjectTypeComboBoxSampleData(projectType);
+        //set the combo boxes
+        setUrgencyComboBox(urgency);
+        setTicketTypeComboBox(ticketType);
+        setProjectTypeComboBox(projectType);
 
 
         //set column spans
@@ -105,45 +109,77 @@ public class CreateTicket extends VerticalLayout {
         fullContent.add(formContent);
 
         //add buttons to main layout
-        setMenuBarSampleData(buttons);
+        setMenuBar(buttons);
         fullContent.add(buttons);
 
         return fullContent;
     }
 
-    //set sample data for urgency
-    private void setUrgencyComboBoxSampleData(ComboBox<String> comboBox) {
-        comboBox.setItems("Low", "Medium", "High");
-        comboBox.setValue("Medium");
-    }
-
-    private void setTicketTypeComboBoxSampleData(ComboBox<String> comboBox) {
-        comboBox.setItems("bugs", "defects", "errors");
-        comboBox.setValue("defects");
-    }
-
-    private void setProjectTypeComboBoxSampleData(ComboBox<String> comboBox) {
-        comboBox.setItems("Project 1", "Project 2", "Project 3");
-        comboBox.setValue("Project 3");
+    private void setUrgencyComboBox(ComboBox<String> comboBox) {
+        List<String> urgencyItems = databaseService.getAllUrgencyItems();
+        comboBox.setItems(urgencyItems);
+        comboBox.setValue(urgencyItems.get(0));
     }
 
 
-    //set sample data for the buttons bar
-    private void setMenuBarSampleData(MenuBar menuBar) {
+    private void setTicketTypeComboBox(ComboBox<String> comboBox) {
+        List<String> ticketTypes = databaseService.getAllTicketTypes();
+        comboBox.setItems(ticketTypes);
+        comboBox.setValue(ticketTypes.get(0));
+    }
+
+    private void setProjectTypeComboBox(ComboBox<String> comboBox) {
+        List<String> projectTypes = databaseService.getAllProjectItems();
+        comboBox.setItems(projectTypes);
+        comboBox.setValue(projectTypes.get(0));
+    }
+
+
+
+     //Button bar containing a Create button
+    private void setMenuBar(MenuBar menuBar) {
         MenuItem creatItem = menuBar.addItem("Create");
         creatItem.addClickListener(event-> {
+
+            // Get the ticketName and description as added by the user
             String title = ticketName.getValue();
             String desc = description.getValue();
 
-            // added everything with id = 1 for now just to make sure it does something. Has to me changed later on.
-            int status = 1; // Set the status value as needed
-            int type = 1; // Set the type value as needed
-            int creator = 1; // Set the creator value as needed
-            int urgency = 1; // Set the creator value as needed
-            int projectId = 1;
+            // Always sets the status of a newly created ticket to "New"
+            int statusId = 1;
 
-            ticketService.createTicket(title, desc, status, type, creator, urgency, projectId);
-            // Additional logic after creating the ticket (e.g., navigation or displaying a success message)
+            // Get the ticket type
+            String selectedTicketType = ticketType.getValue();
+            int typeId = databaseService.getTicketTypeId(selectedTicketType);
+
+            // Get the urgency
+            String selectedUrgency = urgency.getValue();
+            int urgencyId = databaseService.getUrgencyId(selectedUrgency);
+
+
+            // Get the project type
+            String selectedProjectItem = projectType.getValue();
+            int projectId = databaseService.getProjectId(selectedProjectItem);
+
+            // Get the id of the user that created the ticket, added later on
+            int creatorId = 1; // Defined later on
+
+            databaseService.createTicket(title, desc, statusId, typeId, creatorId, urgencyId, projectId);
+
+            // Provide feedback after creating the ticket
+            Notification notification = new Notification(
+                    "Ticket created successfully!",
+                    5000,
+                    Notification.Position.MIDDLE);
+            notification.open();
+
+            // Clear the data in the title and description fields and reset the combo boxes to the first value in the list
+            ticketName.clear();
+            description.clear();
+            ticketType.setValue(databaseService.getTicketTypeName(1));
+            urgency.setValue(databaseService.getUrgencyName(1));
+            projectType.setValue(databaseService.getProjectName(1));
+
         });
     }
 }
