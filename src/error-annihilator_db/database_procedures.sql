@@ -119,10 +119,32 @@ AS $$
         Where project_id = arg_project_id;
     End;
 $$ Language plpgsql;
+
+-- Procedure 1.2.3 - SetProjectInactive --
+Create Or Replace Procedure SetProjectInactive(arg_project_id integer)
+AS $$
+    Begin
+        Update projects
+        Set is_active = false;
+        Where project_id = arg_project_id;
+    End;
+$$ Language plpgsql;
+
+-- Procedure 1.2.4 - SetProjectActive --
+Create Or Replace Procedure SetProjectActive(arg_project_Id integer)
+AS $$
+    Begin
+        Update projects
+        Set is_active = true;
+        Where project_id = arg_project_id;
+    End;
+$$ Language plpgsql;
 ------------------------------------------------------------------------------------------------------------------------
 -- Update Procedures - Tests -------------------------------------------------------------------------------------------
 Call UpdateTicket(2, 2, 2, 2, 2);
 Call UpdateProject(2, 'Update Test', 'DB Project Update Procedure Testing', 2, false);
+Call SetProjectActive(2);
+Call SetProjectInactive(2);
 ------------------------------------------------------------------------------------------------------------------------
 
 
