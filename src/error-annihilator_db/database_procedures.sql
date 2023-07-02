@@ -139,12 +139,78 @@ AS $$
         Where project_id = arg_project_id;
     End;
 $$ Language plpgsql;
+
+-- Procedure 1.2.5 - UpdateCurrentUserInfo --
+Create Or Replace Procedure UpdateCurrentUserInfo(arg_user_id integer, arg_firstname text, arg_lastname text, arg_username text, arg_email text)
+AS $$
+    Begin
+        Update users
+            Set
+                first_name = arg_firstname,
+                last_name = arg_lastname,
+                username = arg_username,
+                email = arg_email
+            Where user_id = arg_user_id;
+        End;
+$$ Language plpgsql;
+
+-- Procedure 1.2.6 - UpdateCurrentUserPasswordhash --
+Create Or Replace Procedure UpdateCurrentUserPasswordhash(arg_user_id integer, arg_passwordhash text)
+AS $$
+    Begin
+        Update users
+            Set passwordhash = arg_passwordhash
+        Where user_id = arg_user_id;
+    End;
+$$ Language plpgsql;
+
+-- Procedure 1.2.7 - SetUserInactive --
+Create Or Replace Procedure SetUserInactive(arg_user_id integer)
+AS $$
+    Begin
+        Update users
+            Set is_active = false
+        Where user_id = arg_user_id;
+    End;
+$$ Language plpgsql;
+
+-- Procedure 1.2.8 - SetUserActive --
+Create Or Replace Procedure SetUserActive(arg_user_id integer)
+AS $$
+    Begin
+        Update users
+            Set is_active = true
+        Where user_id = arg_user_id;
+    End;
+$$ Language plpgsql;
+
+-- Procedure 1.2.9 - ManageUpdateUser --
+Create Or Replace Procedure ManageUpdateUser(arg_user_id integer, arg_firstname text, arg_lastname text, arg_username text,
+                                            arg_email text, arg_role_id integer)
+AS $$
+    Begin
+        Update users
+            Set
+                first_name = arg_firstname,
+                last_name = arg_lastname,
+                username = arg_username,
+                email = arg_email,
+                role_id = arg_role_id
+        Where user_id = arg_user_id;
+    End;
+$$ Language plpgsql;
+
 ------------------------------------------------------------------------------------------------------------------------
 -- Update Procedures - Tests -------------------------------------------------------------------------------------------
 Call UpdateTicket(2, 2, 2, 2, 2);
 Call UpdateProject(2, 'Update Test', 'DB Project Update Procedure Testing', 2, false);
 Call SetProjectActive(2);
 Call SetProjectInactive(2);
+Call UpdateCurrentUserInfo(6, 'Jane', 'Döe', 'jaDöe', 'jane@doee.com');
+Call UpdateCurrentUserPasswordhash(6, '4321');
+Call SetUserInactive(6);
+Call SetUserActive(6);
+Call ManageUpdateUser(6, 'John', 'Doe', 'joDoe', 'john@doe.com', 3);
 ------------------------------------------------------------------------------------------------------------------------
 
 
