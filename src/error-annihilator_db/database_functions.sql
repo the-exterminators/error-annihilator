@@ -48,7 +48,7 @@ AS $$
     End;
 $$ Language plpgsql;
 
---Function 1.4 - LoginGetUsernamePasswordhash --------------------------------------------------------------------------
+--Function 1.4 - LoginGetUsernamePasswordhash --
 Create Or Replace Function LoginGetUsernamePasswordhash(arg_username text)
 Returns varchar(255)
 AS $$
@@ -62,6 +62,54 @@ AS $$
         Return return_passwordhash;
     End;
 $$ Language plpgsql;
+
+--Function 1.5 - GetAllUsers --
+Create Or Replace Function GetAllUsers()
+Returns Setof users
+AS $$
+    Declare
+        result users%ROWTYPE;
+    Begin
+        For result in Select *
+            From users
+        Loop
+            Return Next result;
+        End Loop;
+        Return;
+    End;
+$$ Language plpgsql;
+
+-- Function 1.6 - GetAllUserRoles --
+Create Or Replace Function GetAllUserRoles()
+Returns Setof roles
+AS $$
+    Declare
+        result roles%ROWTYPE;
+    Begin
+        For result in Select*
+            From roles
+        Loop
+            Return Next result;
+        End Loop;
+        Return;
+    End;
+$$ Language plpgsql;
+
+-- Function 1.7 GetCurrentUserRole --
+Create Or Replace Function GetCurrentUserRole(arg_user_id integer)
+Returns varchar(50)
+AS $$
+    Declare
+        result varchar(50);
+    Begin
+        Select roles.role_name
+        Into result From roles
+        Left Join users
+        On roles.role_id = users.role_id
+        Where user_id = arg_user_id;
+        Return result;
+    End;
+$$ Language plpgsql;
 ------------------------------------------------------------------------------------------------------------------------
 -- Views - Tests -------------------------------------------------------------------------------------------------------
 -- Gets Tickets Assigned to User: John Doe
@@ -69,4 +117,7 @@ Select * From GetAssignedTickets(6);
 Select * From GetAllProjects();
 Select * From GetCurrentUserInfo(6);
 Select * From LoginGetUsernamePasswordhash('jaDoe');
+Select * From GetAllUsers();
+Select * From GetAllUserRoles();
+Select * From GetCurrentUserRole(6);
 ------------------------------------------------------------------------------------------------------------------------
