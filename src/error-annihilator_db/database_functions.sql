@@ -110,6 +110,23 @@ AS $$
         Return result;
     End;
 $$ Language plpgsql;
+
+-- Function 1.8 GetAllCreatedTickets --
+Create Or Replace Function GetAllCreatedTickets(arg_user_id integer)
+Returns Setof tickets
+AS $$
+    Declare
+        result tickets%ROWTYPE;
+    Begin
+        For result in Select *
+            From tickets
+            Where creator_id = arg_user_id
+        Loop
+            Return Next result;
+        End Loop;
+        Return;
+    End;
+$$ Language plpgsql;
 ------------------------------------------------------------------------------------------------------------------------
 -- Views - Tests -------------------------------------------------------------------------------------------------------
 -- Gets Tickets Assigned to User: John Doe
@@ -120,4 +137,5 @@ Select * From LoginGetUsernamePasswordhash('jaDoe');
 Select * From GetAllUsers();
 Select * From GetAllUserRoles();
 Select * From GetCurrentUserRole(6);
+Select * From GetAllCreatedTickets(1);
 ------------------------------------------------------------------------------------------------------------------------
