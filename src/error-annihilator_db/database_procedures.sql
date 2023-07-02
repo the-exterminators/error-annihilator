@@ -153,6 +153,16 @@ AS $$
             Where user_id = arg_user_id;
         End;
 $$ Language plpgsql;
+
+-- Procedure 1.2.6 - UpdateCurrentUserPasswordhash --
+Create Or Replace Procedure UpdateCurrentUserPasswordhash(arg_user_id integer, arg_passwordhash text)
+AS $$
+    Begin
+        Update users
+            Set passwordhash = arg_passwordhash
+        Where user_id = arg_user_id;
+    End;
+$$ Language plpgsql;
 ------------------------------------------------------------------------------------------------------------------------
 -- Update Procedures - Tests -------------------------------------------------------------------------------------------
 Call UpdateTicket(2, 2, 2, 2, 2);
@@ -160,6 +170,7 @@ Call UpdateProject(2, 'Update Test', 'DB Project Update Procedure Testing', 2, f
 Call SetProjectActive(2);
 Call SetProjectInactive(2);
 Call UpdateCurrentUserInfo(6, 'Jane', 'Döe', 'jaDöe', 'jane@doee.com');
+Call UpdateCurrentUserPasswordhash(6, '4321');
 ------------------------------------------------------------------------------------------------------------------------
 
 

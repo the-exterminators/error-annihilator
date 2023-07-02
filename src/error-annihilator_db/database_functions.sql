@@ -1,4 +1,4 @@
--- Views ---------------------------------------------------------------------------------------------------------------
+-- Stored Functions ----------------------------------------------------------------------------------------------------
 
 -- Function 1.1 -- GetAssignedTickets --
 Create or Replace Function GetAssignedTickets(assigned_user_id integer)
@@ -48,10 +48,25 @@ AS $$
     End;
 $$ Language plpgsql;
 
+--Function 1.4 - LoginGetUsernamePasswordhash --------------------------------------------------------------------------
+Create Or Replace Function LoginGetUsernamePasswordhash(arg_username text)
+Returns varchar(255)
+AS $$
+    Declare
+        return_passwordhash varchar(255);
+    Begin
+        Select users.passwordhash
+        Into return_passwordhash
+        From users
+        Where users.username = arg_username;
+        Return return_passwordhash;
+    End;
+$$ Language plpgsql;
 ------------------------------------------------------------------------------------------------------------------------
 -- Views - Tests -------------------------------------------------------------------------------------------------------
 -- Gets Tickets Assigned to User: John Doe
 Select * From GetAssignedTickets(6);
 Select * From GetAllProjects();
 Select * From GetCurrentUserInfo(6);
+Select * From LoginGetUsernamePasswordhash('jaDoe');
 ------------------------------------------------------------------------------------------------------------------------
