@@ -92,15 +92,7 @@ public class HeaderTest {
         WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(10));
         WebElement drawerToggle = wait.until(ExpectedConditions.visibilityOfElementLocated(By.cssSelector("vaadin-drawer-toggle[aria-expanded='false']")));
         drawerToggle.click();
-
-        /*driver.get("http://localhost:8080"); // Replace with your actual URL
-
-        WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(10)); // Adjust the timeout as needed
-        wait.until(ExpectedConditions.presenceOfElementLocated(By.id("input-vaadin-text-field-12")));
-
-        // Expand the toggle
-        WebElement toggleButton = driver.findElement(By.xpath("//vaadin-drawer-toggle[@aria-expanded='false']")); // Replace "toggle-button" with the actual class name of the toggle button
-        toggleButton.click();*/
+        
 
         // Wait for the toggle to expand and the ticket search input to become visible
         wait.until(ExpectedConditions.visibilityOfElementLocated(By.cssSelector("input[slot='input'][placeholder='Ticket Number']")));
