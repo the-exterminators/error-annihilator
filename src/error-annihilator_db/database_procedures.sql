@@ -140,12 +140,26 @@ AS $$
     End;
 $$ Language plpgsql;
 
+-- Procedure 1.2.5 - UpdateCurrentUserInfo --
+Create Or Replace Procedure UpdateCurrentUserInfo(arg_user_id integer, arg_firstname text, arg_lastname text, arg_username text, arg_email text)
+AS $$
+    Begin
+        Update users
+            Set
+                first_name = arg_firstname,
+                last_name = arg_lastname,
+                username = arg_username,
+                email = arg_email
+            Where user_id = arg_user_id;
+        End;
+$$ Language plpgsql;
 ------------------------------------------------------------------------------------------------------------------------
 -- Update Procedures - Tests -------------------------------------------------------------------------------------------
 Call UpdateTicket(2, 2, 2, 2, 2);
 Call UpdateProject(2, 'Update Test', 'DB Project Update Procedure Testing', 2, false);
 Call SetProjectActive(2);
 Call SetProjectInactive(2);
+Call UpdateCurrentUserInfo(6, 'Jane', 'Döe', 'jaDöe', 'jane@doee.com');
 ------------------------------------------------------------------------------------------------------------------------
 
 
