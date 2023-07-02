@@ -95,7 +95,7 @@ AS $$
     End;
 $$ Language plpgsql;
 
--- Function 1.7 GetCurrentUserRole --
+-- Function 1.7 - GetCurrentUserRole --
 Create Or Replace Function GetCurrentUserRole(arg_user_id integer)
 Returns varchar(50)
 AS $$
@@ -111,7 +111,7 @@ AS $$
     End;
 $$ Language plpgsql;
 
--- Function 1.8 GetAllCreatedTickets --
+-- Function 1.8 - GetAllCreatedTickets --
 Create Or Replace Function GetAllCreatedTickets(arg_user_id integer)
 Returns Setof tickets
 AS $$
@@ -128,7 +128,7 @@ AS $$
     End;
 $$ Language plpgsql;
 
--- Function 1.9 GetAllUsersAssignedToTicket --
+-- Function 1.9 - GetAllUsersAssignedToTicket --
 Create Or Replace Function GetAllUsersAssignedToTicket(arg_ticket_id integer)
 Returns Table(user_id integer, username varchar(100))
 AS $$
@@ -139,6 +139,19 @@ AS $$
             Left Join tickets_assigned_users
             On users.user_id = tickets_assigned_users.user_id
             Where ticket_id = arg_ticket_id;
+        Return;
+    End;
+$$ Language plpgsql;
+
+-- Function 1.10 - GetProject --
+Create Or Replace Function GetProject(arg_project_id integer)
+Returns Table(project_title varchar(50), project_description varchar(255), project_lead_user integer, project_isactive boolean)
+AS $$
+    Begin
+        Return Query
+            Select projects.title, projects.description, projects.project_lead, projects.is_active
+            From projects
+            Where project_id = arg_project_id;
         Return;
     End;
 $$ Language plpgsql;
@@ -154,4 +167,5 @@ Select * From GetAllUserRoles();
 Select * From GetCurrentUserRole(6);
 Select * From GetAllCreatedTickets(1);
 Select * From GetAllUsersAssignedToTicket(1);
+Select * From GetProject(1);
 ------------------------------------------------------------------------------------------------------------------------
