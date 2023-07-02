@@ -155,6 +155,23 @@ AS $$
         Return;
     End;
 $$ Language plpgsql;
+
+-- Function 1.11 - GetAllTicketsFromProject --
+Create Or Replace Function GetAllTicketsFromProject(arg_project_id integer)
+Returns Setof tickets
+AS $$
+    Declare
+        result tickets%ROWTYPE;
+    Begin
+        For result in Select *
+            From tickets
+            Where project_id = arg_project_id
+        Loop
+            Return Next result;
+        End Loop;
+        Return;
+    End;
+$$ Language plpgsql;
 ------------------------------------------------------------------------------------------------------------------------
 -- Views - Tests -------------------------------------------------------------------------------------------------------
 -- Gets Tickets Assigned to User: John Doe
@@ -168,4 +185,5 @@ Select * From GetCurrentUserRole(6);
 Select * From GetAllCreatedTickets(1);
 Select * From GetAllUsersAssignedToTicket(1);
 Select * From GetProject(1);
+Select * From GetAllTicketsFromProject(2);
 ------------------------------------------------------------------------------------------------------------------------
