@@ -6,11 +6,13 @@
         <sourceOutputDir name="target/generated-sources/annotations" />
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
-        <module name="ErrorAnnihilator" />
         <module name="troubleshooting-ticketing-system" />
         <module name="error-annihilator" />
       </profile>
     </annotationProcessing>
+    <bytecodeTargetLevel>
+      <module name="ErrorAnnihilator" target="17" />
+    </bytecodeTargetLevel>
   </component>
   <component name="JavacSettings">
     <option name="ADDITIONAL_OPTIONS_OVERRIDE">
