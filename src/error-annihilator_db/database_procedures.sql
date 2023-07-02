@@ -1,4 +1,6 @@
 --Postgresql Procedures for use in Service-Layer -----------------------------------------------------------------------
+
+-- Procedure 1.1.1 - CreateTicket --
 --Arguments for CreateTicket(Title, Description, Status-ID, Type-ID, Creator-ID, Priority-ID, Project-ID)
 Create Or Replace Procedure CreateTicket(ticket_title text, ticket_description text, ticket_status integer,
                                         ticket_type integer, ticket_creator integer, ticket_urgency integer,
@@ -15,6 +17,8 @@ AS $$
     End;
 $$ Language plpgsql;
 
+
+-- Procedure 1.1.2 - Create User --
 --Arguments for CreateUser(first-name, last-name, username, email, passwordhash, role-id)
 Create or Replace Procedure CreateUser(user_first_name text, user_last_name text, user_username text,
                                         user_email text, user_passwordhash text, user_role_id integer)
@@ -30,6 +34,8 @@ As $$
     End;
 $$ Language plpgsql;
 
+
+-- Procedure 1.1.3 - Create Project --
 --Arguments for CreateProject(Title, Description, Project-Lead-User)
 Create or Replace Procedure CreateProject(project_title text, project_description text, lead_user_id integer)
 AS $$
@@ -44,6 +50,7 @@ AS $$
     End;
 $$ Language plpgsql;
 
+-- Procedure 1.1.4 - CreateComment --
 --Arguments for CreateComment(Text, Ticket-ID, Creator-ID)
 Create or Replace Procedure CreateComment(comment_text text, ticket_id integer, user_id integer)
 AS $$
@@ -58,6 +65,7 @@ AS $$
     End;
 $$ Language plpgsql;
 
+-- Procedure 1.1.5 - AssignUsersToTicket --
 --Arguments for AssignUsersToTicket(Ticket-ID, User-ID)
 Create or Replace Procedure AssignUsersToTicket(ticket_id integer, user_id integer)
 AS $$
@@ -84,6 +92,7 @@ Call AssignUsersToTicket(2, 6);
 
 -- Update existing Values - Procedures ---------------------------------------------------------------------------------
 
+-- Procedure 1.2.1 - UpdateTicket --
 Create or Replace Procedure UpdateTicket(arg_ticket_id integer, update_type_id integer, update_status_id integer, update_project_id integer, update_urgency_id integer)
 AS $$
     Begin
@@ -97,34 +106,45 @@ AS $$
     End;
 $$ Language plpgsql;
 
-------------------------------------------------------------------------------------------------------------------------
--- Update Procedures - Tests -------------------------------------------------------------------------------------------
-Call UpdateTicket(2, 2, 2, 2, 2);
-------------------------------------------------------------------------------------------------------------------------
-
-
--- Views ---------------------------------------------------------------------------------------------------------------
-Create or Replace Function GetAssignedTickets(assigned_user_id integer)
-returns Setof tickets
+-- Procedure 1.2.2 - UpdateProject --
+Create Or Replace Procedure UpdateProject(arg_project_id integer, project_title text, project_description text, user_id integer, project_active boolean)
 AS $$
-    Declare
-        result tickets%ROWTYPE;
     Begin
-        For result In Select *
-            From tickets
-            Left Join tickets_assigned_users
-            On tickets.ticket_id = tickets_assigned_users.ticket_id
-            Where tickets_assigned_users.user_id = assigned_user_id
-        Loop
-            Return Next result;
-        End Loop;
-        Return;
+        Update projects
+        Set
+            title = project_title,
+            description = project_description,
+            project_lead = user_id,
+            is_active = project_active
+        Where project_id = arg_project_id;
     End;
 $$ Language plpgsql;
 
+-- Procedure 1.2.3 - SetProjectInactive --
+Create Or Replace Procedure SetProjectInactive(arg_project_id integer)
+AS $$
+    Begin
+        Update projects
+        Set is_active = false;
+        Where project_id = arg_project_id;
+    End;
+$$ Language plpgsql;
 
+-- Procedure 1.2.4 - SetProjectActive --
+Create Or Replace Procedure SetProjectActive(arg_project_Id integer)
+AS $$
+    Begin
+        Update projects
+        Set is_active = true;
+        Where project_id = arg_project_id;
+    End;
+$$ Language plpgsql;
 ------------------------------------------------------------------------------------------------------------------------
--- Views - Tests -------------------------------------------------------------------------------------------------------
--- Gets Tickets Assigned to User: John Doe
-Select * From GetAssignedTickets(6);
+-- Update Procedures - Tests -------------------------------------------------------------------------------------------
+Call UpdateTicket(2, 2, 2, 2, 2);
+Call UpdateProject(2, 'Update Test', 'DB Project Update Procedure Testing', 2, false);
+Call SetProjectActive(2);
+Call SetProjectInactive(2);
 ------------------------------------------------------------------------------------------------------------------------
+
+
