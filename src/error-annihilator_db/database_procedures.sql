@@ -163,6 +163,26 @@ AS $$
         Where user_id = arg_user_id;
     End;
 $$ Language plpgsql;
+
+-- Procedure 1.2.7 - SetUserInactive --
+Create Or Replace Procedure SetUserInactive(arg_user_id integer)
+AS $$
+    Begin
+        Update users
+            Set is_active = false
+        Where user_id = arg_user_id;
+    End;
+$$ Language plpgsql;
+
+-- Procedure 1.2.8 - SetUserActive --
+Create Or Replace Procedure SetUserActive(arg_user_id integer)
+AS $$
+    Begin
+        Update users
+            Set is_active = true
+        Where user_id = arg_user_id;
+    End;
+$$ Language plpgsql;
 ------------------------------------------------------------------------------------------------------------------------
 -- Update Procedures - Tests -------------------------------------------------------------------------------------------
 Call UpdateTicket(2, 2, 2, 2, 2);
@@ -171,6 +191,8 @@ Call SetProjectActive(2);
 Call SetProjectInactive(2);
 Call UpdateCurrentUserInfo(6, 'Jane', 'Döe', 'jaDöe', 'jane@doee.com');
 Call UpdateCurrentUserPasswordhash(6, '4321');
+Call SetUserInactive(6);
+Call SetUserActive(6);
 ------------------------------------------------------------------------------------------------------------------------
 
 
