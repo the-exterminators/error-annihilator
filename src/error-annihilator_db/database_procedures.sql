@@ -80,3 +80,51 @@ Call CreateProject('Test-Project', 'DB testing Project', 6);
 Call CreateComment('comment for DB-testing', 2, 6);
 Call AssignUsersToTicket(2, 6);
 ------------------------------------------------------------------------------------------------------------------------
+
+
+-- Update existing Values - Procedures ---------------------------------------------------------------------------------
+
+Create or Replace Procedure UpdateTicket(arg_ticket_id integer, update_type_id integer, update_status_id integer, update_project_id integer, update_urgency_id integer)
+AS $$
+    Begin
+        Update tickets
+        Set
+            type_id = update_type_id,
+            status_id = update_status_id,
+            project_id = update_project_id,
+            urgency_id = update_urgency_id
+        Where ticket_id = arg_ticket_id;
+    End;
+$$ Language plpgsql;
+
+------------------------------------------------------------------------------------------------------------------------
+-- Update Procedures - Tests -------------------------------------------------------------------------------------------
+Call UpdateTicket(2, 2, 2, 2, 2);
+------------------------------------------------------------------------------------------------------------------------
+
+
+-- Views ---------------------------------------------------------------------------------------------------------------
+Create or Replace Function GetAssignedTickets(assigned_user_id integer)
+returns Setof tickets
+AS $$
+    Declare
+        result tickets%ROWTYPE;
+    Begin
+        For result In Select *
+            From tickets
+            Left Join tickets_assigned_users
+            On tickets.ticket_id = tickets_assigned_users.ticket_id
+            Where tickets_assigned_users.user_id = assigned_user_id
+        Loop
+            Return Next result;
+        End Loop;
+        Return;
+    End;
+$$ Language plpgsql;
+
+
+------------------------------------------------------------------------------------------------------------------------
+-- Views - Tests -------------------------------------------------------------------------------------------------------
+-- Gets Tickets Assigned to User: John Doe
+Select * From GetAssignedTickets(6);
+------------------------------------------------------------------------------------------------------------------------
