@@ -86,7 +86,7 @@ public class DatabaseService {
         String sql = "SELECT * FROM USERS";
         List<String> usernames = new ArrayList<>();
         List<Map<String, Object>> rows = jdbcTemplate.queryForList(sql);
-        
+
         for (Map row : rows) {
             usernames.add(row.get("first_name").toString() + " " + row.get("last_name").toString());
         }

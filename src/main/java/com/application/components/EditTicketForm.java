@@ -94,6 +94,7 @@ public class EditTicketForm extends FormLayout {
         setStatusSampleData(ticketStatus);
 
         HorizontalLayout formRow = new HorizontalLayout(createdTimeStamp, ticketCreator, creatorMail);
+        formRow.addClassName("formRow");
         setColspan(formRow, 2);
 
         configureFormLayout();

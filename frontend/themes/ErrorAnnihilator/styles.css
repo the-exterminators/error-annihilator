@@ -130,3 +130,21 @@ vaadin-combo-box.filter-header-item input,
 vaadin-grid-cell-content vaadin-text-field{
     width: 100%;
 }
+
+@media screen and (max-width:1024px){
+    h1{
+        font-size: 30px;
+    }
+    .editing .projectManagement-grid,
+    .editing .assignedTickets-grid,
+    .editing vaadin-vertical-layout.content > vaadin-button{
+        display: none !important;
+    }
+    vaadin-app-layout.navbar-container{
+        width: 100%;
+    }
+
+    .formRow{
+        flex-direction: column !important;
+    }
+}
