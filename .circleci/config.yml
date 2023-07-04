@@ -95,7 +95,7 @@ jobs:
       - cloud-run/init
       - cloud-run/deploy:
           platform: 'managed'
-          image: eu.gcr.io/$GOOGLE_PROJECT_ID/master:latest
+          image: eu.gcr.io/$GOOGLE_PROJECT_ID/error-annihilator:latest
           service-name: 'error-annihilator'
           region: 'europe-west1'
           unauthenticated: true
