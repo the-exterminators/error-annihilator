@@ -191,6 +191,27 @@ AS $$
 	End;
 $$ Language plpgsql;
 
+-- Function 1.13 - GetTicketsCreatedDateInterval --
+Create Or Replace Function GetTicketsCreatedDateInterval()
+Returns integer
+AS $$
+	Declare
+		result Interval;
+		min_created TIMESTAMP;
+		max_created TIMESTAMP;
+	Begin
+		Select min(created)::date
+		Into min_created
+		From tickets;
+
+		Select max(created)::date
+		Into max_created
+		From tickets;
+
+		result := max_created - min_created;
+		Return Extract(epoch from result)::integer;
+	End;
+$$ Language plpgsql;
 ------------------------------------------------------------------------------------------------------------------------
 -- Views - Tests -------------------------------------------------------------------------------------------------------
 -- Gets Tickets Assigned to User: John Doe
