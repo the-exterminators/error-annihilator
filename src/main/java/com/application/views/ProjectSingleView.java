@@ -4,6 +4,7 @@ package com.application.views;
 import com.application.components.EditTicketForm;
 import com.application.components.Header;
 import com.application.data.entity.*;
+import com.application.data.service.DatabaseService;
 import com.application.security.SecurityService;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.avatar.AvatarGroup;
@@ -38,6 +39,7 @@ import jakarta.annotation.security.PermitAll;
 @Route(value = "project")
 public class ProjectSingleView extends VerticalLayout implements HasUrlParameter<String> {
     private final SecurityService securityService;
+    private final DatabaseService databaseService;
 
     Grid<Ticket> grid = new Grid<>(Ticket.class, false);
     EditTicketForm ticketForm; // Form/Editor
@@ -46,7 +48,8 @@ public class ProjectSingleView extends VerticalLayout implements HasUrlParameter
     public H1 title = new H1("Project");
     public Paragraph description = new Paragraph("");
 
-    public ProjectSingleView(AuthenticationContext authenticationContext) {
+    public ProjectSingleView(DatabaseService databaseService, AuthenticationContext authenticationContext) {
+        this.databaseService = databaseService;
         this.securityService = new SecurityService(authenticationContext);
         addClassName("project-single");
 
@@ -99,7 +102,7 @@ public class ProjectSingleView extends VerticalLayout implements HasUrlParameter
     // FORM =======================================
     // Configure the editor/form
     private void configureForm() {
-        ticketForm = new EditTicketForm(Collections.emptyList()); // Replace with actual lists
+        ticketForm = new EditTicketForm(databaseService); // Replace with actual lists
         ticketForm.setSizeFull();
         ticketForm.addCloseListener(e -> closeEditor()); // add listener to close form
         ticketForm.addSaveListener(this::saveTicket); // add listener to save ticket - doesn't work yet
@@ -117,6 +120,7 @@ public class ProjectSingleView extends VerticalLayout implements HasUrlParameter
             backToOverview.setVisible(false);
             addClassName("editing");
             grid.getStyle().set("display", "none");
+            getUI().ifPresent(ui -> ui.access(() -> title.setText("Edit Ticket")));
         }
     }
 
@@ -129,6 +133,7 @@ public class ProjectSingleView extends VerticalLayout implements HasUrlParameter
         removeClassName("editing");
         grid.getStyle().set("display", "block");
         grid.asSingleSelect().clear(); // deselect ticket in grid
+        getUI().ifPresent(ui -> ui.access(() -> title.setText(ticketProject.getProjectName())));
     }
 
     // Saves ticket, updates the grid and closes editor/form
@@ -150,43 +155,50 @@ public class ProjectSingleView extends VerticalLayout implements HasUrlParameter
         List<Ticket> testTickets = new ArrayList<>();
         List<User> testUsers = new LinkedList<>();
         List<User> testUsers2 = new LinkedList<>();
-        User testUser = new User("Jana", "Burns", "Burnsjana", "email", "1234", "dev");
-        User testUser2 = new User("Isabelle", "Mariacher", "MariacherIsabelle", "email", "1234", "dev");
+        User testUser = new User("Jana", "Burns", "Burnsjana", "bj4780@mci4me.at", "1234", "dev");
+        User testUser2 = new User("Isabelle", "Mariacher", "MariacherIsabelle", "mi4780@mci4me.at", "1234", "dev");
         testUsers.add(testUser);
         testUsers2.add(testUser);
         testUsers2.add(testUser2);
 
         // Test ticket 1
-        Ticket ticketOne = new Ticket("1", "I need help", "bug", "test test test", new TicketStatus("open"), new TicketProject("Project 1", "test", testUser), testUser, testUsers2);
+        Ticket ticketOne = new Ticket("1", "I need help", "bug", "test test test", new TicketStatus("resolved"), new TicketProject(1L, "Project 1", "test", testUser), testUser, testUsers2);
         List<TicketComment> listOne = new ArrayList<>();
         listOne.add(new TicketComment("hello", testUser, ticketOne));
         ticketOne.setTicketComment(listOne);
         testTickets.add(ticketOne);
 
         // Test ticket 2
-        Ticket ticketTwo = new Ticket("2", "hello", "defect", "hallo hallo", new TicketStatus("unassigned"), new TicketProject("Project 2", "test", testUser), testUser, testUsers);
-        List<TicketComment> listTwo = new ArrayList<>();
-        listTwo.add(new TicketComment("hello", testUser, ticketTwo));
-        ticketTwo.setTicketComment(listTwo);
+        Ticket ticketTwo = new Ticket("2", "hello", "defect", "hallo hallo", new TicketStatus("waiting for approval"), new TicketProject(2L, "Project 2", "test", testUser), testUser, testUsers);
         testTickets.add(ticketTwo);
 
         // Columns
-        Grid.Column<Ticket> numberColumn = grid.addColumn("ticketNumber").setHeader("Number");
+        Grid.Column<Ticket> numberColumn = grid.addColumn("ticketNumber").setHeader("Number").setWidth("0.5em");
         Grid.Column<Ticket> createdColumn = grid.addColumn(new LocalDateRenderer<>(ticket -> ticket.getCreatedTimeStamp().toLocalDateTime().toLocalDate())).setHeader("Created");
         createdColumn.setSortable(true);
         Grid.Column<Ticket> titleColumn = grid.addColumn("ticketName").setHeader("Title");
         Grid.Column<Ticket> typeColumn = grid.addColumn("ticketType").setHeader("Type");
         Grid.Column<Ticket> statusColumn = grid.addColumn(new ComponentRenderer<>(ticket -> {
             Span span = new Span();
-            span.setText(ticket.getTicketStatus().getStatusName());
-            span.getElement().setAttribute("theme", "badge " + ticket.getTicketStatus().getStatusName().toLowerCase());
+            String text = ticket.getTicketStatus().getStatusName();
+            span.setText(text);
+            span.getElement().setAttribute("theme", "badge " + text.toLowerCase());
+            switch (text.toLowerCase()) {
+                case "new" -> span.getElement().getThemeList().add("badge");
+                case "in progress" -> span.getElement().getThemeList().add("badge success");
+                case "waiting for approval" -> span.getElement().getThemeList().add("badge contrast");
+                case "resolved" -> span.getElement().getThemeList().add("badge success primary");
+                case "reopened" -> span.getElement().getThemeList().add("badge primary");
+                case "rejected" -> span.getElement().getThemeList().add("badge error");
+            }
             return span;
         })).setHeader("Status");
         Grid.Column<Ticket> assignedColumn = grid.addColumn(new ComponentRenderer<>(ticket -> {
             AvatarGroup avatarGroup = new AvatarGroup();
             for(User user : ticket.getAssignedUsers()){
                 String name = user.getFirstName() + " " + user.getLastName();
-                avatarGroup.add(new AvatarGroup.AvatarGroupItem(name));
+                AvatarGroup.AvatarGroupItem item = new AvatarGroup.AvatarGroupItem(name);
+                avatarGroup.add(item);
             }
             return avatarGroup;
         })).setHeader("Assigned Users");
@@ -197,7 +209,8 @@ public class ProjectSingleView extends VerticalLayout implements HasUrlParameter
         grid.asSingleSelect().addValueChangeListener(e -> ticketForm.updateAssignedUsers());
 
         // Set items for grid
-        GridListDataView<Ticket> dataView = grid.setItems(testTickets); // replace with dataservice.getTickets()
+        GridListDataView<Ticket> dataView = grid.setItems(testTickets);
+        //GridListDataView<Ticket> dataView = grid.setItems(databaseService.getTicketsByProjectId(ticketProject.getProjectId()));
 
         // Filter - https://vaadin.com/docs/latest/components/grid
         TicketFilter ticketFilter = new TicketFilter(dataView);
@@ -207,7 +220,7 @@ public class ProjectSingleView extends VerticalLayout implements HasUrlParameter
         headerRow.getCell(titleColumn).setComponent(createFilterHeader(ticketFilter::setTitle));
         editComboFilter(headerRow, assignedColumn, Arrays.asList("Jana Burns", "Isabelle Mariacher", "Daniel Kihn"), ticketFilter::setAssignedUsers);
         editComboFilter(headerRow, typeColumn, Arrays.asList("bug", "defect", "error"), ticketFilter::setType);
-        editComboFilter(headerRow, statusColumn, Arrays.asList("unassigned", "open", "waiting for approval","resolved"), ticketFilter::setStatus);
+        editComboFilter(headerRow, statusColumn, Arrays.asList("New", "In Progress", "Waiting For Approval","Resolved", "Rejected", "Reopened"), ticketFilter::setStatus);
         createDateHeader(headerRow, createdColumn, dataView);
 
         // Grid Size Settings
@@ -232,7 +245,7 @@ public class ProjectSingleView extends VerticalLayout implements HasUrlParameter
         return textField;
     }
 
-    private static Component createDateHeader(HeaderRow headerRow, Grid.Column<Ticket> column, GridListDataView<Ticket> dataView) {
+    private static void createDateHeader(HeaderRow headerRow, Grid.Column<Ticket> column, GridListDataView<Ticket> dataView) {
         DatePicker dateFilter = new DatePicker();
         dateFilter.setPlaceholder("Filter");
         dateFilter.addClassName("filter-header-item");
@@ -242,7 +255,6 @@ public class ProjectSingleView extends VerticalLayout implements HasUrlParameter
         dateFilter.addValueChangeListener(
                 event -> dataView.addFilter(ticket -> areDatesEqual(ticket, dateFilter)));
         headerRow.getCell(column).setComponent(dateFilter);
-        return dateFilter;
     }
 
     private static boolean areDatesEqual(Ticket ticket, DatePicker dateFilter) {
@@ -254,7 +266,7 @@ public class ProjectSingleView extends VerticalLayout implements HasUrlParameter
         return true;
     }
 
-    private ComboBox editComboFilter(HeaderRow headerRow, Grid.Column<Ticket> gridColumn, List items, Consumer<String> consumer) {
+    private void editComboFilter(HeaderRow headerRow, Grid.Column<Ticket> gridColumn, List items, Consumer<String> consumer) {
         ComboBox<String> comboBox = new ComboBox<>();
         comboBox.addClassName("filter-header-item");
         comboBox.setPlaceholder("Filter");
@@ -266,7 +278,6 @@ public class ProjectSingleView extends VerticalLayout implements HasUrlParameter
         comboBox.addValueChangeListener(e -> consumer.accept(e.getValue()));
         headerRow.getCell(gridColumn).setComponent(comboBox);
 
-        return comboBox;
     }
 
     @Override

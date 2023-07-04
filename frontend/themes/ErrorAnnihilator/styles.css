@@ -1,5 +1,49 @@
 @import url('./main-layout.css');
 @import url('./create-ticket-view-view.css');
+@import url('./fonts.css');
+
+:root{
+    --lumo-primary-color: #0e71bc;
+    --_lumo-button-color: #0e71bc;
+    --lumo-primary-text-color: #0e71bc;
+
+    --vaadin-charts-color-0: #5ac2f7;
+    --vaadin-charts-color-1: #1676f3;
+    --vaadin-charts-color-2: #3b32be;
+    --vaadin-charts-color-3: #07d3cb;
+    --vaadin-charts-color-4: #15c15d;
+    --vaadin-charts-color-5: #0e8151;
+    --vaadin-charts-color-6: #947ad3;
+    --vaadin-charts-color-7: #9233b3;
+    --vaadin-charts-color-8: #0cff13;
+    --vaadin-charts-color-9: #0174af;
+    --vaadin-charts-color-positive: var(--vaadin-charts-color-4, #15c15d);
+    --vaadin-charts-color-negative: var(--vaadin-charts-color-9, #0174af);
+
+    --vaadin-user-color-0: #15c15d;
+    --vaadin-user-color-1: #0174af;
+    --vaadin-user-color-2: #1676f3;
+    --vaadin-user-color-3: #3b32be;
+    --vaadin-user-color-4: #bf16f3;
+    --vaadin-user-color-5: #947ad3;
+    --vaadin-user-color-6: #9233b3;
+}
+
+body *,
+span,
+p,
+text{
+    font-family: 'Montserrat' !important;
+}
+
+[part='brand'] h1,
+[part='brand'] p{
+    text-align: center;
+}
+
+[part='brand']{
+    background-color: #0e71bc;
+}
 
 .drawer vaadin-menu-bar-item {
     width: 100%;
@@ -67,5 +111,22 @@
 
 .project-single .title-bar{
     justify-content: space-between;
+    width: 100%;
+}
+
+
+vaadin-combo-box.filter-header-item,
+vaadin-combo-box.filter-header-item input,
+.filter-header-item,
+.filter-header-item > input{
+    height: 30px;
+    min-height: unset;
+}
+
+.filter-header-item{
+    width: 100%;
+}
+
+vaadin-grid-cell-content vaadin-text-field{
     width: 100%;
 }

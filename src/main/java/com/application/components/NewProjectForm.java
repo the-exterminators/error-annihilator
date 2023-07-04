@@ -1,5 +1,6 @@
 package com.application.components;
 
+import com.application.data.service.DatabaseService;
 import com.vaadin.flow.component.ComponentEvent;
 import com.vaadin.flow.component.ComponentEventListener;
 import com.vaadin.flow.component.Key;
@@ -7,29 +8,32 @@ import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.formlayout.FormLayout;
+import com.vaadin.flow.component.html.H2;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
+import com.vaadin.flow.component.textfield.TextArea;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.shared.Registration;
 
-
-
 public class NewProjectForm extends FormLayout {
     TextField projectName = new TextField("Title");
-    TextField projectDescription = new TextField("Description");
+    TextArea projectDescription = new TextArea("Description");
     ComboBox<String> projectLead = new ComboBox<>("Project Lead");
 
     // Buttons
     Button save = new Button("Save");
     Button close = new Button("Cancel");
-    public NewProjectForm() {
+    private final DatabaseService databaseService;
+    public NewProjectForm(DatabaseService databaseService) {
+        this.databaseService = databaseService;
         addClassName("new-project-form");
 
         setProjectLeadSampleData(projectLead);
 
         // add to form layout
-        add(projectName,
-            projectDescription,
+        add(new H2("New Project"),
+            projectName,
             projectLead,
+            projectDescription,
             createButtonsLayout()
         );
 
@@ -39,7 +43,9 @@ public class NewProjectForm extends FormLayout {
         save.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
         close.addThemeVariants(ButtonVariant.LUMO_TERTIARY);
 
-        save.addClickListener(event -> validateAndSave());
+        /*save.addClickListener(event -> {
+            databaseService.createProject(projectName.getValue(), projectDescription.getValue(), projectLead.getValue();
+        });*/
         close.addClickListener(event -> fireEvent(new NewProjectForm.CloseEvent(this)));
 
         save.addClickShortcut(Key.ENTER);
@@ -49,7 +55,7 @@ public class NewProjectForm extends FormLayout {
     }
 
     private void setProjectLeadSampleData(ComboBox<String> comboBox){
-        comboBox.setItems("burnsjana", "stefanelabdellaoui", "isabellemariacher", "danielkihn", "manuelaudino");
+        comboBox.setItems(databaseService.getAllUsernames());
     }
 
     // this function validates and saves the user according to the form

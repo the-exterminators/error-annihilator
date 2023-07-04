@@ -5,7 +5,6 @@ import com.application.components.UserProfileForm;
 import com.application.data.entity.User;
 import com.application.security.SecurityService;
 import com.vaadin.flow.component.html.H1;
-import com.vaadin.flow.component.html.Paragraph;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
@@ -19,7 +18,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 @Route(value = "my-profile")
 public class UserProfile extends VerticalLayout {
     UserProfileForm userForm; // Form/Editor
-    String currentPrincipalName ="test";
+    String currentPrincipalName ="";
     private final SecurityService securityService;
 
     // Constructor
@@ -31,6 +30,8 @@ public class UserProfile extends VerticalLayout {
         }
 
         addClassName("myProfile-view");
+
+        userForm = new UserProfileForm(authenticationContext);
 
         // This is how to implement the header
         setSizeFull();
@@ -47,7 +48,6 @@ public class UserProfile extends VerticalLayout {
         // Main Page Title
         H1 title = new H1("Hello "+currentPrincipalName+"!");
         content.add(title);
-        content.add(new Paragraph("Here you can edit your details"));
 
         // Add grid and form to content
         configureForm();
@@ -57,7 +57,6 @@ public class UserProfile extends VerticalLayout {
     }
 
     private void configureForm() {
-        userForm = new UserProfileForm(); // Replace with actual lists
         userForm.setUser(new User("Jana", "Burns", "Burnsjana", "bj4780@mci4me.at", "1234", "Manager")); // change to current user
         userForm.setSizeFull();
         userForm.addSaveListener(this::saveUser); // add listener to save ticket - doesn't work yet
