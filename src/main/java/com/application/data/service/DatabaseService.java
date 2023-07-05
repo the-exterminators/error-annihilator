@@ -5,6 +5,7 @@ import com.application.data.entity.User;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -18,11 +19,92 @@ public class DatabaseService {
         this.jdbcTemplate = jdbcTemplate;
     }
 
-    // Calling the createTicket Procedure from the db
+
+    /**
+     * Getters for the tickets: getTicketTitle, description, etc. (all the columns)
+     * AND: getAllCreatedTickets, getAllUsersAssignedToTicket, getTicketResolvedDeltaCreated and getTicketsCreatedDateInterval - All DB functions
+     * Setters for the tickets: crateticket and updateticket - All DB procedures
+     */
+
+    public String getTicketTitle(int ticketId) {
+        String query = "SELECT title FROM tickets WHERE ticket_id = ?";
+        return jdbcTemplate.queryForObject(query, String.class, ticketId);
+    }
+
+    public String getTicketDescription(int ticketId) {
+        String query = "SELECT description FROM tickets WHERE ticket_id = ?";
+        return jdbcTemplate.queryForObject(query, String.class, ticketId);
+    }
+
+    public int getTicketStatusId(int ticketId) {
+        String query = "SELECT status_id FROM tickets WHERE ticket_id = ?";
+        return jdbcTemplate.queryForObject(query, Integer.class, ticketId);
+    }
+
+    public int getTicketTypeId(int ticketId) {
+        String query = "SELECT type_id FROM tickets WHERE ticket_id = ?";
+        return jdbcTemplate.queryForObject(query, Integer.class, ticketId);
+    }
+
+    public Timestamp getTicketCreated(int ticketId) {
+        String query = "SELECT created FROM tickets WHERE ticket_id = ?";
+        return jdbcTemplate.queryForObject(query, Timestamp.class, ticketId);
+    }
+
+    public Timestamp getTicketResolved(int ticketId) {
+        String query = "SELECT resolved FROM tickets WHERE ticket_id = ?";
+        return jdbcTemplate.queryForObject(query, Timestamp.class, ticketId);
+    }
+
+    public int getTicketCreatorId(int ticketId) {
+        String query = "SELECT creator_id FROM tickets WHERE ticket_id = ?";
+        return jdbcTemplate.queryForObject(query, Integer.class, ticketId);
+    }
+
+    public int getTicketUrgencyId(int ticketId) {
+        String query = "SELECT urgency_id FROM tickets WHERE ticket_id = ?";
+        return jdbcTemplate.queryForObject(query, Integer.class, ticketId);
+    }
+
+    public int getTicketProjectId(int ticketId) {
+        String query = "SELECT project_id FROM tickets WHERE ticket_id = ?";
+        return jdbcTemplate.queryForObject(query, Integer.class, ticketId);
+    }
+
+    public List<Map<String, Object>> getAllCreatedTickets(int userId) {
+        String query = "SELECT * FROM getallcreatedtickets(?)";
+        return jdbcTemplate.queryForList(query, userId);
+    }
+
+    public List<Map<String, Object>> getAllUsersAssignedToTicket(int ticketId) {
+        String query = "SELECT * FROM getallusersassignedtoticket(?)";
+        return jdbcTemplate.queryForList(query, ticketId);
+    }
+
+    public double getTicketResolvedDeltaCreated(int ticketId) {
+        String query = "SELECT * FROM getticketresolveddeltacreated(?)";
+        return jdbcTemplate.queryForObject(query, Double.class, ticketId);
+    }
+
+    public int getTicketsCreatedDateInterval() {
+        String query = "SELECT * FROM getticketscreateddateinterval()";
+        return jdbcTemplate.queryForObject(query, Integer.class);
+    }
+
+
+    // Setters
+
     public void createTicket(String title, String description, int statusId, int typeId, int creatorId, int urgencyId, int projectId) {
         String query = "CALL createticket(?, ?, ?, ?, ?, ?, ?)";
         jdbcTemplate.update(query, title, description, statusId, typeId, creatorId, urgencyId, projectId);
     }
+
+
+    public void updateTicket(int ticketId, int updateTypeId, int updateStatusId, int updateProjectId, int updateUrgencyId) {
+        String query = "CALL updateticket(?, ?, ?, ?, ?)";
+        jdbcTemplate.update(query, ticketId, updateTypeId, updateStatusId, updateProjectId, updateUrgencyId);
+    }
+
 
     /**
      * Getters for the roles: getRoleById and getAllRoles
@@ -44,8 +126,10 @@ public class DatabaseService {
 
     /**
      * Getters for the users: getUserByID, getAllUsers and getAllUsernames
-     * Setters not needed at the moment, contents are static
-     * All by Jana, so might need some updating
+     * AND: getAllUserRoles, getAllUsersDB, getCurrentUserInfo, getAssignedTickets...
+     * ...and loginGetUsernamePasswordHash - All DB functions
+     * Setters for the users: createuser, manageUpdateUser, setuseractiv, setUserInactive, ...
+     * ...updateCurrentUserInfo and updateCurrentUserPasswordHash - All DB procedures
      */
 
     // Using this to get a single user by ID (using entity)
@@ -63,6 +147,7 @@ public class DatabaseService {
     }
 
     // Using this to get a list of users (using entity)
+    // Second getAllUsersDB() --> Uses DB instead of Entity, look below
     public List<User> getAllUsers() {
         String sql = "SELECT * FROM USERS";
         List<User> users = new ArrayList<>();
@@ -81,7 +166,12 @@ public class DatabaseService {
         return users;
     }
 
-    // using this to get a list of users (just their usernames
+    public List<Map<String, Object>> getAllUsersDB() {
+        String query = "SELECT * FROM getallusers()";
+        return jdbcTemplate.queryForList(query);
+    }
+
+    // using this to get a list of users (just their usernames)
     public List<String> getAllUsernames() {
         String sql = "SELECT * FROM USERS";
         List<String> usernames = new ArrayList<>();
@@ -93,6 +183,77 @@ public class DatabaseService {
 
         return usernames;
     }
+
+    public List<Map<String, Object>> getAllUserRoles() {
+        String query = "SELECT * FROM getalluserroles()";
+        return jdbcTemplate.queryForList(query);
+    }
+
+    public Map<String, Object> getCurrentUserInfo(int userId) {
+        String query = "SELECT * FROM getcurrentuserinfo(?)";
+        return jdbcTemplate.queryForMap(query, userId);
+    }
+
+    public List<Map<String, Object>> getAssignedTickets(int assignedUserId) {
+        String query = "SELECT * FROM getassignedtickets(?)";
+        return jdbcTemplate.queryForList(query, assignedUserId);
+    }
+
+    public String getCurrentUserRole(int userId) {
+        String query = "SELECT * FROM getcurrentuserrole(?)";
+        return jdbcTemplate.queryForObject(query, String.class, userId);
+    }
+
+    public String loginGetUsernamePasswordHash(String username) {
+        String query = "SELECT * FROM logingetusernamepasswordhash(?)";
+        return jdbcTemplate.queryForObject(query, String.class, username);
+    }
+
+    // Setters
+
+    // Calling the creatuser Procedure from the db
+    public void createUser(String firstName, String lastName, String username, String email, String passwordHash, int roleId) {
+        String query = "CALL createuser(?, ?, ?, ?, ?, ?)";
+        jdbcTemplate.update(query, firstName, lastName, username, email, passwordHash, roleId);
+    }
+
+    public void manageUpdateUser(int userId, String firstName, String lastName, String username, String email, int roleId) {
+        String query = "CALL manageupdateuser(?, ?, ?, ?, ?, ?)";
+        jdbcTemplate.update(query, userId, firstName, lastName, username, email, roleId);
+    }
+
+    public void setUserActive(int userId) {
+        String query = "CALL setuseractive(?)";
+        jdbcTemplate.update(query, userId);
+    }
+
+    public void setUserInactive(int userId) {
+        String query = "CALL setuserinactive(?)";
+        jdbcTemplate.update(query, userId);
+    }
+
+    public void updateCurrentUserInfo(int userId, String firstName, String lastName, String username, String email) {
+        String query = "CALL updatecurrentuserinfo(?, ?, ?, ?, ?)";
+        jdbcTemplate.update(query, userId, firstName, lastName, username, email);
+    }
+
+    public void updateCurrentUserPasswordHash(int userId, String passwordHash) {
+        String query = "CALL updatecurrentuserpasswordhash(?, ?)";
+        jdbcTemplate.update(query, userId, passwordHash);
+    }
+
+
+    /**
+     * Getters for the comments: NEED TO BE ADDED
+     * Setters: createcomment - Nothing else needed normally
+     */
+
+    // Calling the createcomment Procedure from the db
+    public void createComment(String commentText, int ticketId, int userId) {
+        String query = "CALL createcomment(?, ?, ?)";
+        jdbcTemplate.update(query, commentText, ticketId, userId);
+    }
+
 
 
     /**
@@ -140,7 +301,8 @@ public class DatabaseService {
     /**
      * Getters for the project: getAll, getId and getName
      * Getters for description, project_lead and is_active missing at the moment, since not yet used
-     * Setters probably better be added as procedures directly in the db
+     * AND: getAllProjects, getallticketsfromproject and getProject - All DB functions
+     * Setters for project: createproject, setprojectactive, setprojectinactive and updateproject - All DB procedures
      */
 
     public List<String> getAllProjectItems() {
@@ -171,5 +333,43 @@ public class DatabaseService {
                         ));
     }
 
+    // Calling the creatproject Procedure from the db
+    public void createProject(String projectTitle, String projectDescription, int leadUserId) {
+        String query = "CALL createproject(?, ?, ?)";
+        jdbcTemplate.update(query, projectTitle, projectDescription, leadUserId);
+    }
+
+    // Calling the setprojectactive Procedure from the db
+    public void setProjectActive(int projectId) {
+        String query = "CALL setprojectactive(?)";
+        jdbcTemplate.update(query, projectId);
+    }
+
+    // Calling the setprojectinactive Procedure from the db
+    public void setProjectInactive(int projectId) {
+        String query = "CALL setprojectinactive(?)";
+        jdbcTemplate.update(query, projectId);
+    }
+
+    // Calling the updateproject Procedure from the db
+    public void updateProject(int projectId, String projectTitle, String projectDescription, int userId, boolean projectActive) {
+        String query = "CALL updateproject(?, ?, ?, ?, ?)";
+        jdbcTemplate.update(query, projectId, projectTitle, projectDescription, userId, projectActive);
+    }
+
+    public List<Map<String, Object>> getAllProjects() {
+        String query = "SELECT * FROM getallprojects()";
+        return jdbcTemplate.queryForList(query);
+    }
+
+    public List<Map<String, Object>> getAllTicketsFromProject(int projectId) {
+        String query = "SELECT * FROM getallticketsfromproject(?)";
+        return jdbcTemplate.queryForList(query, projectId);
+    }
+
+    public Map<String, Object> getProject(int projectId) {
+        String query = "SELECT * FROM getproject(?)";
+        return jdbcTemplate.queryForMap(query, projectId);
+    }
 
 }
