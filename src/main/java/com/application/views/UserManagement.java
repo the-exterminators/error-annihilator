@@ -4,10 +4,12 @@ import com.application.components.EditUserForm;
 import com.application.components.Header;
 import com.application.components.NewUserForm;
 import com.application.data.entity.User;
+import com.application.data.service.DatabaseService;
 import com.application.security.SecurityService;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
+import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.grid.HeaderRow;
 import com.vaadin.flow.component.grid.dataview.GridListDataView;
@@ -22,7 +24,6 @@ import com.vaadin.flow.router.Route;
 import com.vaadin.flow.spring.security.AuthenticationContext;
 import jakarta.annotation.security.PermitAll;
 
-import java.util.LinkedList;
 import java.util.List;
 import java.util.function.Consumer;
 
@@ -38,8 +39,10 @@ public class UserManagement extends VerticalLayout {
     Button newUser = new Button("New User");
 
     private final SecurityService securityService;
+    private final DatabaseService databaseService;
 
-    public UserManagement(AuthenticationContext authenticationContext) {
+    public UserManagement(DatabaseService databaseService, AuthenticationContext authenticationContext) {
+        this.databaseService = databaseService;
         this.securityService = new SecurityService(authenticationContext);
         addClassName("userManagement-view");
 
@@ -89,6 +92,9 @@ public class UserManagement extends VerticalLayout {
         newUser.getStyle().set("display", "block");
         newUserForm.getStyle().set("display", "none");
         grid.asSingleSelect().clear(); // deselect ticket in grid
+        getUI().ifPresent(ui -> {
+            ui.access(() -> title.setText("User Management"));
+        });
     }
 
     // Handles selected user from grid
@@ -103,6 +109,9 @@ public class UserManagement extends VerticalLayout {
             userForm.setUser(user);
             userForm.setVisible(true);
             addClassName("editing");
+            getUI().ifPresent(ui -> {
+                ui.access(() -> title.setText("Edit User"));
+            });
         }
     }
 
@@ -139,13 +148,6 @@ public class UserManagement extends VerticalLayout {
     }
 
     private void configureGrid() {
-        // Test users
-        List<User> testUsers = new LinkedList<>();
-        User testUser = new User("Jana", "Burns", "Burnsjana", "bj4780@mci4me.at", "1234", "Manager");
-        User testUser2 = new User("Isabelle", "Mariacher", "IsabelleM", "mi4780@mci4me.at", "hallo", "Developer");
-        testUsers.add(testUser);
-        testUsers.add(testUser2);
-
         //Columns
         Grid.Column<User> titleColumn = grid.addColumn("userName").setHeader("Username");
         Grid.Column<User> firstNameColumn = grid.addColumn("firstName").setHeader("First Name");
@@ -157,17 +159,17 @@ public class UserManagement extends VerticalLayout {
         grid.asSingleSelect().addValueChangeListener(e -> editUser(e.getValue()));
 
         // Set items for grid
-        GridListDataView<User> dataView = grid.setItems(testUsers); // replace with dataservice.getUsers()
+        GridListDataView<User> dataView = grid.setItems(databaseService.getAllUsers());
 
         // Filter - https://vaadin.com/docs/latest/components/grid
         UserManagement.UserFilter userFilter = new UserManagement.UserFilter(dataView);
         grid.getHeaderRows().clear();
         HeaderRow headerRow = grid.appendHeaderRow();
-        headerRow.getCell(titleColumn).setComponent(createFilterHeader("Filter Username", userFilter::setUserName));
-        headerRow.getCell(firstNameColumn).setComponent(createFilterHeader("Filter First Name", userFilter::setFirstName));
-        headerRow.getCell(lastNameColumn).setComponent(createFilterHeader("Filter Last Name", userFilter::setLastName));
-        headerRow.getCell(emailColumn).setComponent(createFilterHeader("Filter Email", userFilter::setEmail));
-        headerRow.getCell(userRoleColumn).setComponent(createFilterHeader("Filter User Role", userFilter::setUserRole));
+        headerRow.getCell(titleColumn).setComponent(createFilterHeader(userFilter::setUserName));
+        headerRow.getCell(firstNameColumn).setComponent(createFilterHeader(userFilter::setFirstName));
+        headerRow.getCell(lastNameColumn).setComponent(createFilterHeader(userFilter::setLastName));
+        headerRow.getCell(emailColumn).setComponent(createFilterHeader(userFilter::setEmail));
+        editComboFilter(headerRow, userRoleColumn, databaseService.getAllRoles(), userFilter::setUserRole);
 
         // Grid Size Settings
         grid.setSizeFull();
@@ -180,9 +182,9 @@ public class UserManagement extends VerticalLayout {
 
     // FILTER ==================================
     // This creates the filter header with the textfield etc
-    private static Component createFilterHeader(String labelText, Consumer<String> filterChangeConsumer) {
+    private static Component createFilterHeader(Consumer<String> filterChangeConsumer) {
         TextField textField = new TextField();
-        textField.setPlaceholder(labelText + " ...");
+        textField.setPlaceholder("Filter");
         textField.getStyle().set("font-size", "var(--lumo-font-size-xs)");
         textField.setValueChangeMode(ValueChangeMode.EAGER);
         textField.setClearButtonVisible(true);
@@ -191,6 +193,21 @@ public class UserManagement extends VerticalLayout {
         textField.addValueChangeListener(
                 e -> filterChangeConsumer.accept(e.getValue()));
         return textField;
+    }
+
+    private ComboBox editComboFilter(HeaderRow headerRow, Grid.Column<User> gridColumn, List items, Consumer<String> consumer) {
+        ComboBox<String> comboBox = new ComboBox<>();
+        comboBox.addClassName("filter-header-item");
+        comboBox.setPlaceholder("Filter");
+        comboBox.setClearButtonVisible(true);
+        comboBox.getStyle().set("font-size", "var(--lumo-font-size-xs)");
+        comboBox.setWidth("100%");
+        comboBox.setItems(items);
+
+        comboBox.addValueChangeListener(e -> consumer.accept(e.getValue()));
+        headerRow.getCell(gridColumn).setComponent(comboBox);
+
+        return comboBox;
     }
 
     // Class to filter tickets in grid

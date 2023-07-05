@@ -1,9 +1,7 @@
 package com.application.components;
 
-import com.application.data.entity.Ticket;
-import com.application.data.entity.TicketComment;
-import com.application.data.entity.TicketStatus;
-import com.application.data.entity.User;
+import com.application.data.entity.*;
+import com.application.data.service.DatabaseService;
 import com.vaadin.flow.component.*;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
@@ -18,12 +16,14 @@ import com.vaadin.flow.component.messages.MessageListItem;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
+import com.vaadin.flow.component.textfield.EmailField;
 import com.vaadin.flow.component.textfield.TextArea;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.binder.BeanValidationBinder;
 import com.vaadin.flow.data.binder.Binder;
 import com.vaadin.flow.data.binder.Setter;
 import com.vaadin.flow.data.binder.ValidationException;
+import com.vaadin.flow.data.validator.RegexpValidator;
 import com.vaadin.flow.function.ValueProvider;
 import com.vaadin.flow.shared.Registration;
 import jakarta.annotation.security.PermitAll;
@@ -41,66 +41,91 @@ public class TicketHistoryForm extends FormLayout {
 
     // Ticket entity fields
     TextField ticketName = new TextField("Title");
+    TextField ticketNumber = new TextField("Ticket Number");
     TextArea description = new TextArea("Description");
-    TextField ticketType = new TextField("Type"); // I want this to be a dropdown of predefined types
-    DateTimePicker createdTimeStamp = new DateTimePicker();
+    ComboBox<String> ticketType = new ComboBox<>("Type"); // I want this to be a dropdown of predefined types
+    ComboBox<String> ticketProject = new ComboBox<>("Project"); // Change it to Projects
+    DateTimePicker createdTimeStamp = new DateTimePicker("Date Created");
     ComboBox<TicketStatus> ticketStatus = new ComboBox<>("Status"); // I want this to be a dropdown of predefined statuses
     TextField ticketCreator = new TextField("Creator");
+    EmailField creatorMail = new EmailField("Creator Email");
     ComboBox<List<User>> assignedUsers = new ComboBox<>("Assignees"); // for binding
     MultiSelectComboBox<String> assignedUsersMulti = new MultiSelectComboBox<>("Assignees"); // for display
 
     // Comment variables
     MessageList ticketComments = new MessageList(); // The end display
     ComboBox<List<TicketComment>> ticketComment = new ComboBox<>("Comments"); // to bind
+    MessageInput input = new MessageInput();
     List<TicketComment> commentList = new ArrayList<>(); // temp List
 
     // Buttons
-    Button reopen = new Button("reopen");
-
-
-    Button save = new Button("save");
-
-    Button close = new Button("close");
-
-    // buttons
-    HorizontalLayout buttonSection = createButtonsLayout();
+    Button reopen = new Button("Reopen");
+    Button close = new Button("Close");
 
     // comments
     Component commentSection = createCommentsLayout();
+    // buttons
+    HorizontalLayout buttonSection;
 
+    DatabaseService databaseService;
 
     // Constructor
-    public TicketHistoryForm(List<TicketStatus> statuses, List<User> assignees, List<TicketComment> comments) {
+    public TicketHistoryForm(DatabaseService databaseService) {
+        this.databaseService = databaseService;
         addClassName("ticket-form");
+
+        ticketNumber.setPattern("\\d*");
 
         configureBind();
 
+        buttonSection = createButtonsLayout();
+
         // set items and labels for lists
-        ticketStatus.setItems(statuses);
         ticketStatus.setItemLabelGenerator(TicketStatus::getStatusName);
-        ticketComment.setItems(comments);
+        ticketComment.setItems(Collections.emptyList());
 
         // set items Assigned Users
-        assignedUsers.setItems(assignees);
+        assignedUsers.setItems(Collections.emptyList());
         updateAssignedUsers();
         assignedUsers.addValueChangeListener(event -> updateAssignedUsers());
+
+        setProjectSampleData(ticketProject);
+        setTypeSampleData(ticketType);
+        setStatusSampleData(ticketStatus);
+
+        HorizontalLayout formRow = new HorizontalLayout(createdTimeStamp, ticketCreator, creatorMail);
+        formRow.addClassName("formRow");
+        setColspan(formRow, 2);
 
         configureFormLayout();
 
         // add to form layout
-        add(
-                buttonSection,
-                ticketName,
-                description,
-                createdTimeStamp,
-                ticketCreator,
-                ticketType,
-                ticketStatus,
-                assignedUsersMulti,
-                commentSection
-
+        add(buttonSection,
+            ticketNumber,
+            ticketName,
+            description,
+            formRow,
+            ticketType,
+            ticketStatus,
+            ticketProject,
+            assignedUsersMulti,
+            commentSection
         );
 
+    }
+    // Sample data for project, type and status
+    private void setProjectSampleData(ComboBox<String> comboBox){
+        List<String> projects = databaseService.getAllProjectItems();
+        comboBox.setItems(projects);
+        comboBox.setValue(projects.get(0));
+    }
+    private void setTypeSampleData(ComboBox<String> comboBox){
+        List<String> ticketTypes = databaseService.getAllTicketTypes();
+        comboBox.setItems(ticketTypes);
+        comboBox.setValue(ticketTypes.get(0));
+    }
+    private void setStatusSampleData(ComboBox<TicketStatus> comboBox){
+        comboBox.setItems(new TicketStatus("unassigned"), new TicketStatus("open"), new TicketStatus("in progress"), new TicketStatus("waiting for approval"), new TicketStatus("closed"));
     }
 
     // Update Assigned Users on select in grid
@@ -128,32 +153,32 @@ public class TicketHistoryForm extends FormLayout {
         );
 
         // Bind rest
+        //binder.bind(ticketNumber, "ticketNumber");
+        binder.forField(ticketNumber)
+                .withValidator(new RegexpValidator("Only numbers allowed!", "\\d*"))
+                .bind(Ticket::getTicketNumber, Ticket::setTicketNumber);
         binder.bind(ticketName, "ticketName");
         binder.bind(description, "description");
         binder.bind(ticketType, "ticketType");
         binder.bind(ticketStatus, "ticketStatus");
+        binder.bind(ticketProject, "ticketProject.projectName");
         binder.bind(ticketCreator, "ticketCreator.userName");
+        binder.bind(creatorMail, "ticketCreator.email");
         binder.bind(assignedUsers, "assignedUsers");
         binder.bind(ticketComment, "ticketComment");
     }
 
     // Style and Design stuff
     private void configureFormLayout() {
-        // Only Type, Status and Assignee should be editable
-        ticketName.setReadOnly(true);
-        description.setReadOnly(true);
-        createdTimeStamp.setReadOnly(true);
-        ticketCreator.setReadOnly(true);
-        assignedUsers.setReadOnly(true);
-        ticketStatus.setReadOnly(true);
-        ticketType.setReadOnly(true);
+        // Styles
+        createdTimeStamp.getStyle().set("flex", "1");
+        ticketCreator.getStyle().set("flex", "1");
+        creatorMail.getStyle().set("flex", "1");
 
         // Layout reform
         setColspan(buttonSection, 2);
-        setColspan(ticketName, 2);
         setColspan(description, 2);
         setColspan(commentSection, 2);
-
     }
 
     // This sets the currently selected ticket to be used in all functions and updates the comments
@@ -165,7 +190,6 @@ public class TicketHistoryForm extends FormLayout {
 
     // Creates the comments layout and updates the comments
     private Component createCommentsLayout() {
-        MessageInput input = new MessageInput();
         input.addSubmitListener(submitEvent -> {
             User user = new User();
             user.setUserName("UserName");
@@ -176,25 +200,22 @@ public class TicketHistoryForm extends FormLayout {
     }
 
     // Creates the button layout to save and cancel the form
-
     private HorizontalLayout createButtonsLayout() {
-        reopen.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
-        save.addThemeVariants(ButtonVariant.LUMO_TERTIARY);
-        close.addThemeVariants(ButtonVariant.LUMO_TERTIARY);
+        reopen.addThemeVariants(ButtonVariant.LUMO_TERTIARY);
+        close.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
 
         reopen.addClickListener(event -> validateAndSave());
-        close.addClickListener(event -> fireEvent(new CloseEvent( this)));
-
-        save.addClickListener(event -> validateAndSave());
         close.addClickListener(event -> fireEvent(new CloseEvent(this)));
 
-        save.addClickShortcut(Key.ENTER);
+        reopen.addClickShortcut(Key.ENTER);
         close.addClickShortcut(Key.ESCAPE);
-        HorizontalLayout buttonLayout = new HorizontalLayout(reopen, save, close);
-        buttonLayout.setJustifyContentMode(FlexComponent.JustifyContentMode.END); // Move buttons to the right side
-        return buttonLayout;
-    }
 
+        HorizontalLayout content = new HorizontalLayout(reopen, close);
+
+        content.setJustifyContentMode(FlexComponent.JustifyContentMode.END);
+
+        return content;
+    }
 
     // this function validates and saves the ticket according to the form (comments are saved when written)
     private void validateAndSave() {
@@ -220,28 +241,63 @@ public class TicketHistoryForm extends FormLayout {
                 }
             }
             this.ticketComments.setItems(realComments);
+            getUI().ifPresent(ui -> {
+                ui.access(() -> {
+                    if(ticket.getTicketStatus().getStatusName().endsWith("esolved") ||
+                        ticket.getTicketStatus().getStatusName().endsWith("ejected")) {
+                        reopen.setVisible(true);
+                        input.setVisible(false);
+                    } else {
+                        reopen.setVisible(false);
+                        input.setVisible(true);
+                    }
+                    if(!ticket.getTicketStatus().getStatusName().equalsIgnoreCase("new")){
+                        ticketName.setReadOnly(true);
+                        description.setReadOnly(true);
+                        createdTimeStamp.setReadOnly(true);
+                        ticketCreator.setReadOnly(true);
+                        creatorMail.setReadOnly(true);
+                        ticketNumber.setReadOnly(true);
+                        ticketType.setReadOnly(true);
+                        ticketStatus.setReadOnly(true);
+                        ticketProject.setReadOnly(true);
+                        assignedUsersMulti.setReadOnly(true);
+                    } else {
+                        ticketName.setReadOnly(false);
+                        description.setReadOnly(false);
+                        createdTimeStamp.setReadOnly(true);
+                        ticketCreator.setReadOnly(true);
+                        creatorMail.setReadOnly(true);
+                        ticketNumber.setReadOnly(false);
+                        ticketType.setReadOnly(false);
+                        ticketStatus.setReadOnly(true);
+                        ticketProject.setReadOnly(false);
+                        assignedUsersMulti.setReadOnly(true);
+                    }
+                });
+            });
         }
     }
 
     // Parent Class of Save and Cancel Events
-    public static abstract class TicketHistoryFormEvent extends ComponentEvent<TicketHistoryForm> {
+    public static abstract class TicketHistoryFormFormEvent extends ComponentEvent<TicketHistoryForm> {
         public Ticket ticket;
 
-        protected TicketHistoryFormEvent(TicketHistoryForm source, Ticket ticket) {
+        protected TicketHistoryFormFormEvent(TicketHistoryForm source, Ticket ticket) {
             super(source, false);
             this.ticket = ticket;
         }
     }
 
     // Save Event for saving ticket
-    public static class SaveEvent extends TicketHistoryFormEvent{
+    public static class SaveEvent extends TicketHistoryFormFormEvent{
         SaveEvent(TicketHistoryForm source, Ticket ticket){
             super(source, ticket);
         }
     }
 
     // Close Event for closing form
-    public static class CloseEvent extends TicketHistoryFormEvent{
+    public static class CloseEvent extends TicketHistoryFormFormEvent{
         CloseEvent(TicketHistoryForm source){
             super(source, null);
         }
