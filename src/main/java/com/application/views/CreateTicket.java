@@ -145,41 +145,54 @@ public class CreateTicket extends VerticalLayout {
             String title = ticketName.getValue();
             String desc = description.getValue();
 
-            // Always sets the status of a newly created ticket to "New"
-            int statusId = 1;
+            // Validate inputs
+            if (title.isEmpty() || desc.isEmpty()) {
+                Notification.show("Please enter a title and description!.",
+                        5000,
+                        Notification.Position.MIDDLE);
+                return;
+            }
 
-            // Get the ticket type
-            String selectedTicketType = ticketType.getValue();
-            int typeId = databaseService.getTicketTypeId(selectedTicketType);
+            try {
+                // Always sets the status of a newly created ticket to "New"
+                int statusId = 1;
 
-            // Get the urgency
-            String selectedUrgency = urgency.getValue();
-            int urgencyId = databaseService.getUrgencyId(selectedUrgency);
+                // Get the ticket type
+                String selectedTicketType = ticketType.getValue();
+                int typeId = databaseService.getTicketTypeId(selectedTicketType);
 
+                // Get the urgency
+                String selectedUrgency = urgency.getValue();
+                int urgencyId = databaseService.getUrgencyId(selectedUrgency);
 
-            // Get the project type
-            String selectedProjectItem = projectType.getValue();
-            int projectId = databaseService.getProjectId(selectedProjectItem);
+                // Get the project type
+                String selectedProjectItem = projectType.getValue();
+                int projectId = databaseService.getProjectId(selectedProjectItem);
 
-            // Get the id of the user that created the ticket, added later on
-            int creatorId = 1; // Defined later on
+                // Get the id of the user that created the ticket, added later on
+                int creatorId = 1; // Defined later on
 
-            databaseService.createTicket(title, desc, statusId, typeId, creatorId, urgencyId, projectId);
+                // Create the ticket
+                databaseService.createTicket(title, desc, statusId, typeId, creatorId, urgencyId, projectId);
 
-            // Provide feedback after creating the ticket
-            Notification notification = new Notification(
-                    "Ticket created successfully!",
-                    5000,
-                    Notification.Position.MIDDLE);
-            notification.open();
+                // Provide success feedback after creating the ticket
+                Notification.show("Ticket created successfully!",
+                        5000,
+                        Notification.Position.MIDDLE);
 
-            // Clear the data in the title and description fields and reset the combo boxes to the first value in the list
-            ticketName.clear();
-            description.clear();
-            ticketType.setValue(databaseService.getTicketTypeName(1));
-            urgency.setValue(databaseService.getUrgencyName(1));
-            projectType.setValue(databaseService.getProjectName(1));
-
+                // Clear the data in the title and description fields and reset the combo boxes to the first value in the list
+                ticketName.clear();
+                description.clear();
+                ticketType.setValue(databaseService.getTicketTypeName(1));
+                urgency.setValue(databaseService.getUrgencyName(1));
+                projectType.setValue(databaseService.getProjectName(1));
+            } catch (Exception e) {
+                e.printStackTrace();
+                // Handle database connection error
+                Notification.show("Failed to create ticket. No connection to the database. Please try again later.",
+                        8000,
+                        Notification.Position.MIDDLE);
+            }
         });
     }
 }
