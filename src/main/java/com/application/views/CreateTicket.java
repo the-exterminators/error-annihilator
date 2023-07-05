@@ -1,6 +1,7 @@
 package com.application.views;
 
 import com.application.components.Header;
+import com.application.data.service.DatabaseManager;
 import com.application.data.service.DatabaseService;
 import com.application.security.SecurityService;
 import com.vaadin.flow.component.avatar.Avatar;
@@ -19,6 +20,7 @@ import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.spring.security.AuthenticationContext;
 import jakarta.annotation.security.PermitAll;
+import org.springframework.jdbc.core.JdbcTemplate;
 
 import java.util.List;
 
@@ -42,7 +44,7 @@ public class CreateTicket extends VerticalLayout {
     private MenuBar buttons = new MenuBar();
 
     public CreateTicket(DatabaseService databaseService, AuthenticationContext authenticationContext) {
-        this.databaseService = databaseService;
+        this.databaseService = DatabaseManager.getDatabaseService();
         securityService = new SecurityService(authenticationContext);
         Header header = new Header(authenticationContext);
         header.setContent(getCreateTicketContent());

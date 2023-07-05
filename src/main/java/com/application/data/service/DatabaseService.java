@@ -1,5 +1,6 @@
 package com.application.data.service;
 
+import com.vaadin.flow.component.notification.Notification;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 
@@ -8,10 +9,28 @@ import java.util.List;
 @Service
 public class DatabaseService {
 
-    private final JdbcTemplate jdbcTemplate;
+    private JdbcTemplate jdbcTemplate;
+    private static DatabaseService instance;
 
     public DatabaseService(JdbcTemplate jdbcTemplate) {
         this.jdbcTemplate = jdbcTemplate;
+    }
+
+    public static synchronized DatabaseService getInstance(JdbcTemplate jdbcTemplate) {
+        if (instance == null) {
+            try {
+                establishConnection(jdbcTemplate);
+            } catch (Exception e) {
+                throw new RuntimeException("Failed to create DatabaseService", e);
+            }
+        }
+        return instance;
+    }
+
+    private static void establishConnection(JdbcTemplate jdbcTemplate) {
+        if (instance == null) {
+            instance = new DatabaseService(jdbcTemplate);
+        }
     }
 
     // Calling the createTicket Procedure from the db
