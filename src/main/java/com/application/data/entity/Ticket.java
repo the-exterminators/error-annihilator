@@ -41,6 +41,30 @@ public class Ticket extends AbstractEntity {
         this.progressPercent = 0;
     }
 
+    // Created a new constructor with ticket number and ticket project, so it doesnt mess with any existing in memory stuff
+    public Ticket(String tickerNumber, String ticketName, String ticketType, String description, TicketStatus ticketStatus,
+                  TicketProject ticketProject, @NotNull User ticketCreator, @Nullable List<User> assignedUsers, Timestamp created, Timestamp resolved, String urgency ) {
+
+        this.ticketNumber = tickerNumber;
+        this.ticketName = ticketName;
+        this.ticketType = ticketType;
+        this.description = description;
+
+        if (ticketStatus != null) {
+            this.ticketStatus = ticketStatus;
+        } else this.ticketStatus = new TicketStatus("New");
+
+        this.ticketProject = ticketProject;
+
+        this.ticketCreator = ticketCreator;
+        this.assignedUsers = assignedUsers;
+        this.urgency = urgency;
+
+        this.createdTimeStamp = created;
+        this.resolvedTimeStamp = resolved;
+        this.progressPercent = 0;
+    }
+
     public Ticket(String ticketName, String ticketType, String description, TicketStatus ticketStatus,
                   @NotNull User ticketCreator, @Nullable List<User> assignedUsers) {
 
@@ -69,6 +93,9 @@ public class Ticket extends AbstractEntity {
 
     @NotEmpty
     private String ticketType = "";
+
+    @NotEmpty
+    private String urgency = "";
 
     @Nullable
     private String description = "";
@@ -107,6 +134,15 @@ public class Ticket extends AbstractEntity {
     public void setTicketNumber(String ticketNumber){
         this.ticketNumber = ticketNumber;
     }
+
+    public String getUrgency() {
+        return urgency;
+    }
+
+    public void setUrgency(String urgency) {
+        this.urgency = urgency;
+    }
+
     public TicketProject getTicketProject() {
         return ticketProject;
     }

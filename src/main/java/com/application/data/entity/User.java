@@ -27,6 +27,21 @@ public class User extends AbstractEntity implements UserDetails {
         this.userRole = userRole;
     }
 
+    public User(Integer id, String firstName, String lastName, String userName, String email, String dummyPassword, String userRole) {
+        this.user_id = id;
+        this.firstName = firstName;
+        this.lastName = lastName;
+        this.userName = userName;
+        this.email = email;
+        this.dummyPassword = dummyPassword;
+        this.userRole = userRole;
+    }
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "idgenerator")
+    @SequenceGenerator(name = "idgenerator")
+    private Integer user_id;
+
     @NotEmpty
     private String firstName = "";
 
@@ -56,10 +71,17 @@ public class User extends AbstractEntity implements UserDetails {
     @ManyToOne
     private Ticket ticket;
 
-
     @Override
     public String toString() {
         return firstName + " " + lastName;
+    }
+
+    public Integer getUser_id() {
+        return user_id;
+    }
+
+    public void setUser_id(Integer user_id) {
+        this.user_id = user_id;
     }
 
     public String getFirstName() {
