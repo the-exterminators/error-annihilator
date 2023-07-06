@@ -3,6 +3,7 @@ package com.application.views;
 import com.application.components.Header;
 import com.application.components.SingleTicketForm;
 import com.application.data.entity.*;
+import com.application.data.service.DatabaseService;
 import com.application.security.SecurityService;
 import com.vaadin.flow.component.html.H1;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
@@ -29,8 +30,10 @@ public class SingleTicket extends VerticalLayout implements HasUrlParameter<Inte
     long ticketNumber;
     H1 title = new H1("Ticket # " + (int) ticketNumber);
     Header header;
+    DatabaseService databaseService;
 
-    public SingleTicket(AuthenticationContext authenticationContext) {
+    public SingleTicket(DatabaseService databaseService, AuthenticationContext authenticationContext) {
+        this.databaseService = databaseService;
         this.securityService =  new SecurityService(authenticationContext);
         addClassName("assignedTickets-view");
 
@@ -61,24 +64,22 @@ public class SingleTicket extends VerticalLayout implements HasUrlParameter<Inte
     private void configureForm() {
         // Test users
         List<User> testUsers = new LinkedList<>();
-        User testUser = new User("Jana", "Burns", "Burnsjana", "email", "1234", "dev");
+        User testUser = new User("Jana", "Burns", "Burnsjana", "bj4780@mci4me.at", "1234", "dev");
         testUsers.add(testUser);
 
         // Test ticket 1
-        ticket = new Ticket("1", "I need help", "bug", "test test test", new TicketStatus("open"), new TicketProject("Project 1", "test", testUser), testUser, testUsers);
+        ticket = new Ticket("1", "I need help", "bug", "test test test", new TicketStatus("open"), new TicketProject(1L, "Project 1", "test", testUser), testUser, testUsers);
         List<TicketComment> comments = new ArrayList<>();
         comments.add(new TicketComment("hello", testUser, ticket));
         ticket.setTicketComment(comments);
 
-        ticketForm = new SingleTicketForm(Collections.emptyList()); // Replace with actual lists of status
+        ticketForm = new SingleTicketForm(databaseService); // Replace with actual lists of status
         ticketForm.setTicket(ticket); // find ticket based on search term
         ticketForm.setSizeFull();
     }
 
     public void setTitle(Integer param){
-        getUI().ifPresent(ui -> {
-            ui.access(() -> title.setText("Ticket # " + param));
-        });
+        getUI().ifPresent(ui -> ui.access(() -> title.setText("Ticket # " + param)));
     }
 
     @Override

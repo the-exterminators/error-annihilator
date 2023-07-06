@@ -2,10 +2,12 @@ package com.application.views;
 
 import com.application.components.*;
 import com.application.data.entity.*;
+import com.application.data.service.DatabaseService;
 import com.application.security.SecurityService;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
+import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.grid.HeaderRow;
 import com.vaadin.flow.component.grid.dataview.GridListDataView;
@@ -20,7 +22,6 @@ import com.vaadin.flow.router.Route;
 import com.vaadin.flow.spring.security.AuthenticationContext;
 import jakarta.annotation.security.PermitAll;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
 
@@ -30,13 +31,17 @@ import java.util.function.Consumer;
 public class ProjectManagement extends VerticalLayout {
     Grid<TicketProject> grid = new Grid<>(TicketProject.class, false);
     EditProjectForm editProjectForm; // Form/Editor
-    NewProjectForm newProjectForm = new NewProjectForm(); // Form/Editor for new users
+    NewProjectForm newProjectForm; // Form/Editor for new users
     Button newProject = new Button("New Project");
     private final SecurityService securityService;
+    private final DatabaseService databaseService;
+    H1 title = new H1("Project Management");
 
-    public ProjectManagement(AuthenticationContext authenticationContext) {
+    public ProjectManagement(DatabaseService databaseService, AuthenticationContext authenticationContext) {
+        this.databaseService = databaseService;
         this.securityService = new SecurityService(authenticationContext);
         addClassName("projectManagement-view");
+        newProjectForm = new NewProjectForm(databaseService);
 
         // This is how to implement the header
         setSizeFull();
@@ -56,7 +61,7 @@ public class ProjectManagement extends VerticalLayout {
         horizontalContent.setWidth("90vw");
 
         // Main Page Title
-        content.add(new H1("Project Management"));
+        content.add(title);
 
         // Create Project button
         newProject.addClickListener(e -> newProjectNew());
@@ -84,6 +89,7 @@ public class ProjectManagement extends VerticalLayout {
         newProjectForm.getStyle().set("display", "none");
         editProjectForm.getStyle().set("display", "none");
         grid.asSingleSelect().clear(); // deselect ticket in grid
+        getUI().ifPresent(ui -> ui.access(() -> title.setText("Project Management")));
     }
 
     // Handles selected ticket from grid
@@ -98,6 +104,7 @@ public class ProjectManagement extends VerticalLayout {
             newProject.getStyle().set("display", "none");
             addClassName("editing");
             grid.getStyle().set("display", "none");
+            getUI().ifPresent(ui -> ui.access(() -> title.setText("Edit Project")));
         }
     }
 
@@ -108,6 +115,7 @@ public class ProjectManagement extends VerticalLayout {
         grid.getStyle().set("display", "block");
         newProjectForm.getStyle().set("display", "block");
         editProjectForm.getStyle().set("display", "none");
+        getUI().ifPresent(ui -> ui.access(() -> title.setText("Project Management")));
     }
 
     // Saves project, updates the grid and closes editor/form
@@ -125,7 +133,7 @@ public class ProjectManagement extends VerticalLayout {
     // FORM =======================================
     // Configure the editor/form
     private void configureForm() {
-        editProjectForm = new EditProjectForm(); // Replace with actual lists
+        editProjectForm = new EditProjectForm(databaseService); // Replace with actual lists
         editProjectForm.setSizeFull();
         editProjectForm.addCloseListener(e -> closeEditor()); // add listener to close form
         editProjectForm.addSaveListener(this::saveProject); // add listener to save ticket - doesn't work yet
@@ -138,13 +146,6 @@ public class ProjectManagement extends VerticalLayout {
     // GRID ====================================
     // Configure the grid
     private void configureGrid() {
-        // Test projects
-        User user = new User("Jana", "Burns", "Burnsjana", "email", "1234", "dev");
-        List<TicketProject> testProjects = new ArrayList<>();
-        testProjects.add(new TicketProject("Project 1", "Test Description 1",user));
-        testProjects.add(new TicketProject("Project 2", "Test Description 2", user));
-        testProjects.add(new TicketProject("Project 3", "Test Description 3", user));
-
         // Columns
         Grid.Column<TicketProject> titleColumn = grid.addColumn("projectName").setHeader("Title");
         Grid.Column<TicketProject> descriptionColumn = grid.addColumn("projectDescription").setHeader("Description");
@@ -154,15 +155,16 @@ public class ProjectManagement extends VerticalLayout {
         grid.asSingleSelect().addValueChangeListener(e -> editProject(e.getValue()));
 
         // Set items for grid
-        GridListDataView<TicketProject> dataView = grid.setItems(testProjects); // replace with dataservice.getTickets()
+        GridListDataView<TicketProject> dataView = grid.setItems(databaseService.getAllProjectItems2());
 
         // Filter - https://vaadin.com/docs/latest/components/grid
         ProjectFilter projectFilter = new ProjectFilter(dataView);
         grid.getHeaderRows().clear();
         HeaderRow headerRow = grid.appendHeaderRow();
-        headerRow.getCell(titleColumn).setComponent(createFilterHeader("Filter Title", projectFilter::setTitle));
-        headerRow.getCell(descriptionColumn).setComponent(createFilterHeader("Filter Description", projectFilter::setDescription));
-        headerRow.getCell(leaderColumn).setComponent(createFilterHeader("Filter Project Leader", projectFilter::setLead));
+        headerRow.getCell(titleColumn).setComponent(createFilterHeader(projectFilter::setTitle));
+        headerRow.getCell(descriptionColumn).setComponent(createFilterHeader(projectFilter::setDescription));
+        editComboFilter(headerRow, leaderColumn, databaseService.getAllUsernames(), projectFilter::setLead);
+
 
         // Grid Size Settings
         grid.setSizeFull();
@@ -175,9 +177,9 @@ public class ProjectManagement extends VerticalLayout {
 
     // FILTER ==================================
     // This creates the filter header with the textfield etc
-    private static Component createFilterHeader(String labelText, Consumer<String> filterChangeConsumer) {
+    private static Component createFilterHeader(Consumer<String> filterChangeConsumer) {
         TextField textField = new TextField();
-        textField.setPlaceholder(labelText + " ...");
+        textField.setPlaceholder("Filter");
         textField.getStyle().set("font-size", "var(--lumo-font-size-xs)");
         textField.setValueChangeMode(ValueChangeMode.EAGER);
         textField.setClearButtonVisible(true);
@@ -186,6 +188,21 @@ public class ProjectManagement extends VerticalLayout {
         textField.addValueChangeListener(
                 e -> filterChangeConsumer.accept(e.getValue()));
         return textField;
+    }
+
+    private ComboBox editComboFilter(HeaderRow headerRow, Grid.Column<TicketProject> gridColumn, List items, Consumer<String> consumer) {
+        ComboBox<String> comboBox = new ComboBox<>();
+        comboBox.addClassName("filter-header-item");
+        comboBox.setPlaceholder("Filter");
+        comboBox.setClearButtonVisible(true);
+        comboBox.getStyle().set("font-size", "var(--lumo-font-size-xs)");
+        comboBox.setWidth("100%");
+        comboBox.setItems(items);
+
+        comboBox.addValueChangeListener(e -> consumer.accept(e.getValue()));
+        headerRow.getCell(gridColumn).setComponent(comboBox);
+
+        return comboBox;
     }
 
     // Class to filter projects in grid
@@ -226,7 +243,7 @@ public class ProjectManagement extends VerticalLayout {
 
         private boolean matches(String value, String searchTerm) {
             return searchTerm == null || searchTerm.isEmpty()
-                    || value.toLowerCase().contains(searchTerm.toLowerCase());
+                    || value.toLowerCase().replace(" ", "").contains(searchTerm.toLowerCase().replace(" ", ""));
         }
     }
 }

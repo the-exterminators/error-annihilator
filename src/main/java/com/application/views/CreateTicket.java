@@ -7,13 +7,13 @@ import com.application.security.SecurityService;
 import com.vaadin.flow.component.avatar.Avatar;
 import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.contextmenu.MenuItem;
-import com.vaadin.flow.component.datetimepicker.DateTimePicker;
 import com.vaadin.flow.component.formlayout.FormLayout;
 import com.vaadin.flow.component.html.H1;
+import com.vaadin.flow.component.html.Paragraph;
 import com.vaadin.flow.component.menubar.MenuBar;
 import com.vaadin.flow.component.notification.Notification;
+import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
-import com.vaadin.flow.component.textfield.NumberField;
 import com.vaadin.flow.component.textfield.TextArea;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.router.PageTitle;
@@ -31,17 +31,15 @@ public class CreateTicket extends VerticalLayout {
 
     private final DatabaseService databaseService;
     private final SecurityService securityService;
-    private Avatar avatar = new Avatar();
-    private NumberField ticketNumber = new NumberField();
-    private ComboBox<String> ticketType = new ComboBox<>();
-    private ComboBox<String> urgency = new ComboBox<>();
+    private final Avatar avatar = new Avatar();
+    private final ComboBox<String> ticketType = new ComboBox<>();
+    private final ComboBox<String> urgency = new ComboBox<>();
 
-    private ComboBox<String> projectType = new ComboBox<>();
-    private TextArea description = new TextArea();
+    private final ComboBox<String> projectType = new ComboBox<>();
+    private final TextArea description = new TextArea();
 
-    private TextField ticketName = new TextField();
-    private DateTimePicker dateCreated = new DateTimePicker();
-    private MenuBar buttons = new MenuBar();
+    private final TextField ticketName = new TextField();
+    private final MenuBar buttons = new MenuBar();
 
     public CreateTicket(DatabaseService databaseService, AuthenticationContext authenticationContext) {
         this.databaseService = DatabaseManager.getDatabaseService();
@@ -62,24 +60,17 @@ public class CreateTicket extends VerticalLayout {
 
         // Avatar needs to be changed to the real user later on
         avatar.setName("Isabelle Mariacher");
-        fullContent.add(avatar);
+        fullContent.add(new HorizontalLayout(avatar, new Paragraph(avatar.getName())));
 
         FormLayout formContent = new FormLayout();
         formContent.setHeightFull();
-        formContent.setWidthFull();
+        formContent.setWidth("90vw");
 
-        ticketNumber.setLabel("Ticket number");
-        dateCreated.setLabel("Ticket created");
         ticketName.setLabel("Ticket title");
         projectType.setLabel("Project Type");
         ticketType.setLabel("Ticket type");
         urgency.setLabel("Urgency");
         description.setLabel("Description");
-
-
-        //set the read only fields
-        ticketNumber.setReadOnly(true);
-        dateCreated.setReadOnly(true);
 
         //set the combo boxes
         setUrgencyComboBox(urgency);
@@ -96,9 +87,6 @@ public class CreateTicket extends VerticalLayout {
 
 
         //add components to form layout
-
-        formContent.add(ticketNumber);
-        formContent.add(dateCreated);
         formContent.add(ticketName);
         formContent.add(projectType);
         formContent.add(ticketType);
@@ -140,7 +128,7 @@ public class CreateTicket extends VerticalLayout {
 
      //Button bar containing a Create button
     private void setMenuBar(MenuBar menuBar) {
-        MenuItem creatItem = menuBar.addItem("Create");
+        MenuItem creatItem = menuBar.addItem("Submit");
         creatItem.addClickListener(event-> {
 
             // Get the ticketName and description as added by the user
