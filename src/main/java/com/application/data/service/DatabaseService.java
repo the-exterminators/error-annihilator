@@ -146,6 +146,21 @@ public class DatabaseService {
                 ));
     }
 
+    // Using this to get a single user by username (using entity)
+    public User getUserByUsername(String username) {
+        String sql = "SELECT * FROM USERS WHERE username = ?";
+        return jdbcTemplate.queryForObject(sql, new Object[]{username}, (rs, rowNum) ->
+                new User(
+                        rs.getLong("user_id"),
+                        rs.getString("first_name"),
+                        rs.getString("last_name"),
+                        rs.getString("username"),
+                        rs.getString("email"),
+                        rs.getString("passwordhash"),
+                        rs.getString("role_id")
+                ));
+    }
+
     // Using this to get a list of users (using entity)
     // Second getAllUsersDB() --> Uses DB instead of Entity, look below
     public List<User> getAllUsers() {
