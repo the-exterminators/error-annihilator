@@ -19,6 +19,8 @@ import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.spring.security.AuthenticationContext;
 import jakarta.annotation.security.PermitAll;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.util.List;
 
@@ -38,6 +40,7 @@ public class CreateTicket extends VerticalLayout {
 
     private final TextField ticketName = new TextField();
     private final MenuBar buttons = new MenuBar();
+    String currentPrincipalName ="";
 
     public CreateTicket(DatabaseService databaseService, AuthenticationContext authenticationContext) {
         this.databaseService = databaseService;
@@ -45,6 +48,11 @@ public class CreateTicket extends VerticalLayout {
         Header header = new Header(authenticationContext);
         header.setContent(getCreateTicketContent());
         add(header);
+
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if(authentication != null) {
+            currentPrincipalName = authentication.getName();
+        }
     }
 
     private VerticalLayout getCreateTicketContent() {
@@ -150,7 +158,7 @@ public class CreateTicket extends VerticalLayout {
             int projectId = databaseService.getProjectId(selectedProjectItem);
 
             // Get the id of the user that created the ticket, added later on
-            int creatorId = 1; // Defined later on
+            int creatorId = databaseService.getUserByUsername(currentPrincipalName).getUser_id(); // Defined later on
 
             databaseService.createTicket(title, desc, statusId, typeId, creatorId, urgencyId, projectId);
 

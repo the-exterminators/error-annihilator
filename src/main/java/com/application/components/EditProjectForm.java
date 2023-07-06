@@ -8,7 +8,9 @@ import com.vaadin.flow.component.Key;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.combobox.ComboBox;
+import com.vaadin.flow.component.confirmdialog.ConfirmDialog;
 import com.vaadin.flow.component.formlayout.FormLayout;
+import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.textfield.TextArea;
 import com.vaadin.flow.component.textfield.TextField;
@@ -17,6 +19,7 @@ import com.vaadin.flow.data.binder.Binder;
 import com.vaadin.flow.data.binder.ValidationException;
 import com.vaadin.flow.shared.Registration;
 import jakarta.annotation.security.PermitAll;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 @PermitAll
 public class EditProjectForm extends FormLayout {
@@ -33,6 +36,7 @@ public class EditProjectForm extends FormLayout {
     Button close = new Button("Cancel");
     Button delete = new Button("Delete");
     HorizontalLayout buttonSection;
+    ConfirmDialog dialog = new ConfirmDialog();
 
     private final DatabaseService databaseService;
 
@@ -40,6 +44,15 @@ public class EditProjectForm extends FormLayout {
     public EditProjectForm(DatabaseService databaseService) {
         this.databaseService = databaseService;
         addClassName("project-form");
+
+        // Delete dialog
+        dialog.setHeader("Are you sure?");
+        dialog.setText("Do you really want to delete this project?");
+
+        dialog.setCancelable(true);
+
+        dialog.setConfirmText("Delete");
+        dialog.addConfirmListener(event -> deleteProject());
 
         binder.bind(projectName, "projectName");
         binder.bind(projectDescription, "projectDescription");
@@ -73,8 +86,8 @@ public class EditProjectForm extends FormLayout {
         delete.addThemeVariants(ButtonVariant.LUMO_ERROR);
 
         save.addClickListener(event -> validateAndSave());
+        delete.addClickListener(e -> dialog.open());
         close.addClickListener(event -> fireEvent(new EditProjectForm.CloseEvent(this)));
-        delete.addClickListener(event -> fireEvent(new EditProjectForm.CloseEvent(this))); // Change to delete
 
         save.addClickShortcut(Key.ENTER);
         close.addClickShortcut(Key.ESCAPE);
@@ -82,10 +95,23 @@ public class EditProjectForm extends FormLayout {
         return new HorizontalLayout(save, delete, close);
     }
 
+    private void deleteProject() {
+        databaseService.setProjectInactive(Math.toIntExact(ticketProject.getProjectId()));
+        dialog.close();
+        fireEvent(new EditProjectForm.SaveEvent(this, ticketProject));
+    }
+
     // this function validates and saves the ticket according to the form (comments are saved when written)
     private void validateAndSave() {
         try {
             binder.writeBean(ticketProject);
+            databaseService.updateProject(Math.toIntExact(ticketProject.getProjectId()), ticketProject.getProjectName(), ticketProject.getProjectDescription(), ticketProject.getProjectLead().getUser_id(), true);
+            // Provide feedback after update
+            Notification notification = new Notification(
+                    "Details updated successfully!",
+                    5000,
+                    Notification.Position.MIDDLE);
+            notification.open();
             fireEvent(new SaveEvent(this, ticketProject));
         } catch (ValidationException e){
             e.printStackTrace();
