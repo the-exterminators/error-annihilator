@@ -44,7 +44,12 @@ public class CreateTicket extends VerticalLayout {
     private MenuBar buttons = new MenuBar();
 
     public CreateTicket(DatabaseService databaseService, AuthenticationContext authenticationContext) {
-        this.databaseService = DatabaseManager.getDatabaseService();
+        try {
+            this.databaseService = DatabaseManager.getDatabaseService();
+        } catch (Exception e)
+        {
+            e.printStackTrace();
+        }
         securityService = new SecurityService(authenticationContext);
         Header header = new Header(authenticationContext);
         header.setContent(getCreateTicketContent());
