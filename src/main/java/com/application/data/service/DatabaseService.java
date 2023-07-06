@@ -5,6 +5,8 @@ import com.application.data.entity.User;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 
+import java.sql.Connection;
+import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
@@ -14,12 +16,40 @@ import java.util.Map;
 public class DatabaseService {
 
     private final JdbcTemplate jdbcTemplate;
+    private static DatabaseService instance;
 
     public DatabaseService(JdbcTemplate jdbcTemplate) {
         this.jdbcTemplate = jdbcTemplate;
     }
 
+    public static synchronized DatabaseService getInstance(JdbcTemplate jdbcTemplate) throws DatabaseConnectionException {
+        if (instance == null) {
+            try {
+                establishConnection(jdbcTemplate);
+            } catch (Exception e) {
+                throw new DatabaseConnectionException("Failed to establish a database connection.", e);
+            }
+        }
+        return instance;
+    }
 
+    private static void establishConnection(JdbcTemplate jdbcTemplate) throws SQLException {
+        if (instance == null) {
+            Connection connection = null;
+            try {
+                connection = jdbcTemplate.getDataSource().getConnection();
+                // Perform connection setup if necessary
+                instance = new DatabaseService(jdbcTemplate);
+            } catch (SQLException e) {
+                throw e;
+            } finally {
+                if (connection != null) {
+                    connection.close();
+                }
+            }
+        }
+    }
+    
     /**
      * Getters for the tickets: getTicketTitle, description, etc. (all the columns)
      * AND: getAllCreatedTickets, getAllUsersAssignedToTicket, getTicketResolvedDeltaCreated and getTicketsCreatedDateInterval - All DB functions
