@@ -454,7 +454,7 @@ public class DatabaseService {
         return jdbcTemplate.query(query,
                 (rs, rowNum) ->
                         new TicketProject(
-                                rs.getLong("project_id"),
+                                rs.getInt("project_id"),
                                 rs.getString("title"),
                                 rs.getString("description"),
                                 getUserByID(rs.getInt("project_lead"))
@@ -495,6 +495,30 @@ public class DatabaseService {
         return jdbcTemplate.queryForList(query, projectId);
     }
 
+    public List<Ticket> getAllTicketsFromProjectEntityList(int projectId) {
+        String query = "SELECT * FROM tickets WHERE project_id = ?";
+        List<Ticket> tickets = new ArrayList<>();
+        List<Map<String, Object>> rows = jdbcTemplate.queryForList(query, projectId);
+        for (Map row : rows) {
+            Ticket obj = new Ticket(
+                    row.get("ticket_id").toString(),
+                    row.get("title").toString(),
+                    getTicketTypeName((Integer)row.get("type_id")),
+                    row.get("description").toString(),
+                    getStatusByID((Integer) row.get("status_id")),
+                    getProjectEntity((Integer) row.get("project_id")),
+                    getUserByID((Integer) row.get("creator_id")),
+                    getAllUsersAssignedToTicketEntity((Integer) row.get("ticket_id"))
+            );
+            obj.setCreatedTimeStamp((Timestamp) row.get("created"));
+            obj.setResolvedTimeStamp((Timestamp) row.get("resolved"));
+            obj.setUrgency(getUrgencyName((Integer) row.get("urgency_id")));
+            obj.setTicketComment(getCommentsByTicketId((Integer) row.get("ticket_id")));
+            tickets.add(obj);
+        }
+        return tickets;
+    }
+
     public Map<String, Object> getProject(int projectId) {
         String query = "SELECT * FROM getproject(?)";
         return jdbcTemplate.queryForMap(query, projectId);
@@ -504,7 +528,7 @@ public class DatabaseService {
         String query = "SELECT * FROM projects WHERE project_id = ?";
         return jdbcTemplate.queryForObject(query, new Object[]{projectId}, (rs, rowNum) ->
                 new TicketProject(//Long projectId, String projectName, String projectDescription, User projectLead
-                        rs.getLong("project_id"),
+                        rs.getInt("project_id"),
                         rs.getString("title"),
                         rs.getString("description"),
                         getUserByID(rs.getInt("project_lead"))
