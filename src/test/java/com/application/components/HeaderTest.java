@@ -1,4 +1,11 @@
-/*package com.application.components;
+/*
+
+IMPORTANT
+
+This test passed on my machine but crashed the build circle ci, unfortunately we were not able to find the problem.
+This is why we outcommented the code!
+
+package com.application.components;
 
 import io.github.bonigarcia.wdm.WebDriverManager;
 import org.junit.jupiter.api.AfterEach;
@@ -115,5 +122,7 @@ public class HeaderTest {
         WebElement logoutButton = driver.findElement(By.cssSelector("vaadin-button[tabindex='0'][role='button']"));
         assertTrue(logoutButton.isDisplayed());
     }
-}*/
+}
+
+ */
 

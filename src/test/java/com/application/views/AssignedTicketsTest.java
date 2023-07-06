@@ -75,7 +75,7 @@ public class AssignedTicketsTest {
         // Find the title element and assert its text
         WebElement titleElement = verticalLayout.findElement(By.tagName("h1"));
         String titleText = titleElement.getText();
-        assertEquals("Assigned Tickets", titleText);
+        assertEquals("My Assigned Tickets", titleText);
 
         // Find the grid element and assert its presence
         WebElement gridElement = driver.findElement(By.tagName("vaadin-grid"));
@@ -146,7 +146,7 @@ public class AssignedTicketsTest {
 
 
         // Find the title filter input element and enter the filter value
-        WebElement titleFilterInput = driver.findElement(By.cssSelector("input[placeholder='Filter Title ...']"));
+        WebElement titleFilterInput = driver.findElement(By.id("input-vaadin-text-field-51"));
         titleFilterInput.click();
         titleFilterInput.sendKeys(filterValue);
 
@@ -164,8 +164,8 @@ public class AssignedTicketsTest {
     }
 
     @Test
-    public void testDescriptionFilter() {
-        String filterValue = "test";
+    public void testNumberFilter() {
+        String filterValue = "1";
 
         // Open the login page
         driver.get("http://localhost:8080/login");
@@ -201,7 +201,7 @@ public class AssignedTicketsTest {
 
 
         // Find the title filter input element and enter the filter value
-        WebElement descriptionFilterInput = driver.findElement(By.cssSelector("input[placeholder='Filter Description ...']"));
+        WebElement descriptionFilterInput = driver.findElement(By.id("input-vaadin-text-field-49"));
         descriptionFilterInput.click();
         descriptionFilterInput.sendKeys(filterValue);
 
@@ -220,7 +220,7 @@ public class AssignedTicketsTest {
 
     @Test
     public void testStatusFilter() {
-        String filterValue = "test";
+        String filterValue = "resolved";
 
         // Open the login page
         driver.get("http://localhost:8080/login");
@@ -256,7 +256,7 @@ public class AssignedTicketsTest {
 
 
         // Find the title filter input element and enter the filter value
-        WebElement statusFilterInput = driver.findElement(By.cssSelector("input[placeholder='Filter Status ...']"));
+        WebElement statusFilterInput = driver.findElement(By.id("input-vaadin-combo-box-55"));
         statusFilterInput.click();
         statusFilterInput.sendKeys(filterValue);
 
@@ -272,4 +272,6 @@ public class AssignedTicketsTest {
             assertTrue(titleText.toLowerCase().contains(filterValue.toLowerCase()));
         }
     }
+
+    //Test for further filters still need to be implemented
 }
