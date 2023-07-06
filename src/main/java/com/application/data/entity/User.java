@@ -3,12 +3,15 @@ package com.application.data.entity;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotEmpty;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 @Entity
-public class User extends AbstractEntity {
+public class User extends AbstractEntity implements UserDetails {
 
     public User() {
 
@@ -43,6 +46,9 @@ public class User extends AbstractEntity {
 
     @NotEmpty
     private String userRole ="";
+
+    @NotEmpty
+    private Boolean is_active = true;
 
     @OneToMany(mappedBy = "ticketCreator")
     private List<Ticket> createdTickets;
@@ -121,5 +127,38 @@ public class User extends AbstractEntity {
     }
 
 
+    @Override
+    public Collection<? extends GrantedAuthority> getAuthorities() {
+        return null;
+    }
 
+    @Override
+    public String getPassword() {
+        return dummyPassword;
+    }
+
+    @Override
+    public String getUsername() {
+        return userName;
+    }
+
+    @Override
+    public boolean isAccountNonExpired() {
+        return is_active;
+    }
+
+    @Override
+    public boolean isAccountNonLocked() {
+        return is_active;
+    }
+
+    @Override
+    public boolean isCredentialsNonExpired() {
+        return is_active;
+    }
+
+    @Override
+    public boolean isEnabled() {
+        return is_active;
+    }
 }
