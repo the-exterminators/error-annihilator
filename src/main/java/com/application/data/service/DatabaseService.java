@@ -1,7 +1,6 @@
 package com.application.data.service;
 
-import com.application.data.entity.TicketProject;
-import com.application.data.entity.User;
+import com.application.data.entity.*;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 
@@ -41,6 +40,20 @@ public class DatabaseService {
         return jdbcTemplate.queryForObject(query, Integer.class, ticketId);
     }
 
+    public TicketStatus getStatusByID(Integer id) {
+        String sql = "SELECT * FROM status WHERE status_ID = ?";
+        return jdbcTemplate.queryForObject(sql, new Object[]{id}, (rs, rowNum) ->
+                new TicketStatus(
+                        (long) rs.getInt("status_id"),
+                        rs.getString("status_name")
+                ));
+    }
+
+    public List<String> getAllTicketStatus() {
+        String query = "SELECT status_name FROM status";
+        return jdbcTemplate.queryForList(query, String.class);
+    }
+
     public int getTicketTypeId(int ticketId) {
         String query = "SELECT type_id FROM tickets WHERE ticket_id = ?";
         return jdbcTemplate.queryForObject(query, Integer.class, ticketId);
@@ -76,9 +89,52 @@ public class DatabaseService {
         return jdbcTemplate.queryForList(query, userId);
     }
 
+    public List<Ticket> getAllCreatedTicketsEntityList(int userId) {
+        String query = "SELECT * FROM tickets WHERE creator_id = ?";
+        List<Ticket> tickets = new ArrayList<>();
+        List<Map<String, Object>> rows = jdbcTemplate.queryForList(query, userId);
+        for (Map row : rows) {
+            Ticket obj = new Ticket(
+                    row.get("ticket_id").toString(),
+                    row.get("title").toString(),
+                    getTicketTypeName((Integer)row.get("type_id")),
+                    row.get("description").toString(),
+                    getStatusByID((Integer) row.get("status_id")),
+                    getProjectEntity((Integer) row.get("project_id")),
+                    getUserByID((Integer) row.get("creator_id")),
+                    getAllUsersAssignedToTicketEntity((Integer) row.get("ticket_id"))
+            );
+            obj.setCreatedTimeStamp((Timestamp) row.get("created"));
+            obj.setResolvedTimeStamp((Timestamp) row.get("resolved"));
+            obj.setUrgency(getUrgencyName((Integer) row.get("urgency_id")));
+            obj.setTicketComment(getCommentsByTicketId((Integer) row.get("ticket_id")));
+            tickets.add(obj);
+        }
+        return tickets;
+    }
+
     public List<Map<String, Object>> getAllUsersAssignedToTicket(int ticketId) {
         String query = "SELECT * FROM getallusersassignedtoticket(?)";
         return jdbcTemplate.queryForList(query, ticketId);
+    }
+
+    public List<User> getAllUsersAssignedToTicketEntity(int ticketId) {
+        String query = "SELECT * FROM users JOIN tickets_assigned_users USING (user_id) WHERE ticket_id = ?";
+        List<User> users = new ArrayList<>();
+        List<Map<String, Object>> rows = jdbcTemplate.queryForList(query, ticketId);
+
+        for (Map row : rows) {
+            User obj = new User();
+            obj.setUser_id((Integer) row.get("user_id"));
+            obj.setFirstName(row.get("first_name").toString());
+            obj.setLastName(row.get("last_name").toString());
+            obj.setUserName(row.get("username").toString());
+            obj.setEmail(row.get("email").toString());
+            obj.setDummyPassword(row.get("passwordhash").toString());
+            obj.setUserRole(getRoleById((Integer) row.get("role_id")));
+            users.add(obj);
+        }
+        return users;
     }
 
     public double getTicketResolvedDeltaCreated(int ticketId) {
@@ -91,6 +147,24 @@ public class DatabaseService {
         return jdbcTemplate.queryForObject(query, Integer.class);
     }
 
+    public Ticket getTicketByIdEntity(int ticketid) {
+        String query = "SELECT * FROM tickets where ticket_id = ?";
+        Ticket ticket = jdbcTemplate.queryForObject(query, new Object[]{ticketid}, (rs, rowNum) ->
+                new Ticket(
+                        rs.getString("ticket_id"),
+                        rs.getString("title"),
+                        getTicketTypeName(rs.getInt("type_id")),
+                        rs.getString("description"),
+                        getStatusByID(rs.getInt("status_id")),
+                        getProjectEntity(rs.getInt("project_id")),
+                        getUserByID(rs.getInt("creator_id")),
+                        getAllUsersAssignedToTicketEntity(rs.getInt("ticket_id")),
+                        rs.getTimestamp("created"),
+                        rs.getTimestamp("resolved"),
+                        getUrgencyName(rs.getInt("urgency_id"))
+                ));
+        return ticket;
+    }
 
     // Setters
 
@@ -133,10 +207,11 @@ public class DatabaseService {
      */
 
     // Using this to get a single user by ID (using entity)
-    public User getUserByID(Long id) {
+    public User getUserByID(Integer id) {
         String sql = "SELECT * FROM USERS WHERE USER_ID = ?";
         return jdbcTemplate.queryForObject(sql, new Object[]{id}, (rs, rowNum) ->
                 new User(
+                        rs.getInt("user_id"),
                         rs.getString("first_name"),
                         rs.getString("last_name"),
                         rs.getString("username"),
@@ -151,7 +226,7 @@ public class DatabaseService {
         String sql = "SELECT * FROM USERS WHERE username = ?";
         return jdbcTemplate.queryForObject(sql, new Object[]{username}, (rs, rowNum) ->
                 new User(
-                        rs.getLong("user_id"),
+                        rs.getInt("user_id"),
                         rs.getString("first_name"),
                         rs.getString("last_name"),
                         rs.getString("username"),
@@ -170,6 +245,7 @@ public class DatabaseService {
 
         for (Map row : rows) {
             User obj = new User();
+            obj.setUser_id((Integer) row.get("user_id"));
             obj.setFirstName(row.get("first_name").toString());
             obj.setLastName(row.get("last_name").toString());
             obj.setUserName(row.get("username").toString());
@@ -209,9 +285,28 @@ public class DatabaseService {
         return jdbcTemplate.queryForMap(query, userId);
     }
 
-    public List<Map<String, Object>> getAssignedTickets(int assignedUserId) {
-        String query = "SELECT * FROM getassignedtickets(?)";
-        return jdbcTemplate.queryForList(query, assignedUserId);
+    public List<Ticket> getAssignedTickets(int assignedUserId) {
+        String query = "Select * From tickets Left Join tickets_assigned_users USING (ticket_id) Where tickets_assigned_users.user_id = ?";
+        List<Ticket> tickets = new ArrayList<>();
+        List<Map<String, Object>> rows = jdbcTemplate.queryForList(query, assignedUserId);
+        for (Map row : rows) {
+            Ticket obj = new Ticket(
+                    row.get("ticket_id").toString(),
+                    row.get("title").toString(),
+                    getTicketTypeName((Integer)row.get("type_id")),
+                    row.get("description").toString(),
+                    getStatusByID((Integer) row.get("status_id")),
+                    getProjectEntity((Integer) row.get("project_id")),
+                    getUserByID((Integer) row.get("creator_id")),
+                    getAllUsersAssignedToTicketEntity((Integer) row.get("ticket_id"))
+            );
+            obj.setCreatedTimeStamp((Timestamp) row.get("created"));
+            obj.setResolvedTimeStamp((Timestamp) row.get("resolved"));
+            obj.setUrgency(getUrgencyName((Integer) row.get("urgency_id")));
+            obj.setTicketComment(getCommentsByTicketId((Integer) row.get("ticket_id")));
+            tickets.add(obj);
+        }
+        return tickets;
     }
 
     public String getCurrentUserRole(int userId) {
@@ -269,6 +364,24 @@ public class DatabaseService {
         jdbcTemplate.update(query, commentText, ticketId, userId);
     }
 
+
+    public List<TicketComment> getCommentsByTicketId(int ticketId) {
+        String query = "SELECT * FROM comments WHERE ticket_id = ?";
+        List<TicketComment> comments = new ArrayList<>();
+        List<Map<String, Object>> rows = jdbcTemplate.queryForList(query, ticketId);
+
+        for (Map row : rows) {
+            TicketComment obj = new TicketComment(
+                    (Integer) row.get("comment_id"),
+                    row.get("comment_text").toString(),
+                    getUserByID((Integer) row.get("user_id")),
+                    getTicketByIdEntity((Integer) row.get("ticket_id")),
+                    (Timestamp) row.get("created")
+            );
+            comments.add(obj);
+        }
+        return comments;
+    }
 
 
     /**
@@ -341,10 +454,10 @@ public class DatabaseService {
         return jdbcTemplate.query(query,
                 (rs, rowNum) ->
                         new TicketProject(
-                                rs.getLong("project_id"),
+                                rs.getInt("project_id"),
                                 rs.getString("title"),
                                 rs.getString("description"),
-                                getUserByID(rs.getLong("project_lead"))
+                                getUserByID(rs.getInt("project_lead"))
                         ));
     }
 
@@ -382,9 +495,44 @@ public class DatabaseService {
         return jdbcTemplate.queryForList(query, projectId);
     }
 
+    public List<Ticket> getAllTicketsFromProjectEntityList(int projectId) {
+        String query = "SELECT * FROM tickets WHERE project_id = ?";
+        List<Ticket> tickets = new ArrayList<>();
+        List<Map<String, Object>> rows = jdbcTemplate.queryForList(query, projectId);
+        for (Map row : rows) {
+            Ticket obj = new Ticket(
+                    row.get("ticket_id").toString(),
+                    row.get("title").toString(),
+                    getTicketTypeName((Integer)row.get("type_id")),
+                    row.get("description").toString(),
+                    getStatusByID((Integer) row.get("status_id")),
+                    getProjectEntity((Integer) row.get("project_id")),
+                    getUserByID((Integer) row.get("creator_id")),
+                    getAllUsersAssignedToTicketEntity((Integer) row.get("ticket_id"))
+            );
+            obj.setCreatedTimeStamp((Timestamp) row.get("created"));
+            obj.setResolvedTimeStamp((Timestamp) row.get("resolved"));
+            obj.setUrgency(getUrgencyName((Integer) row.get("urgency_id")));
+            obj.setTicketComment(getCommentsByTicketId((Integer) row.get("ticket_id")));
+            tickets.add(obj);
+        }
+        return tickets;
+    }
+
     public Map<String, Object> getProject(int projectId) {
         String query = "SELECT * FROM getproject(?)";
         return jdbcTemplate.queryForMap(query, projectId);
+    }
+
+    public TicketProject getProjectEntity(long projectId) {
+        String query = "SELECT * FROM projects WHERE project_id = ?";
+        return jdbcTemplate.queryForObject(query, new Object[]{projectId}, (rs, rowNum) ->
+                new TicketProject(//Long projectId, String projectName, String projectDescription, User projectLead
+                        rs.getInt("project_id"),
+                        rs.getString("title"),
+                        rs.getString("description"),
+                        getUserByID(rs.getInt("project_lead"))
+                ));
     }
 
 }

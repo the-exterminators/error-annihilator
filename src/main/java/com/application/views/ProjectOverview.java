@@ -27,7 +27,6 @@ import java.util.function.Consumer;
 @Route(value = "project-overview")
 public class ProjectOverview extends VerticalLayout {
     Grid<TicketProject> grid = new Grid<>(TicketProject.class, false);
-    ProjectSingleView singleProject;
     H1 title = new H1("Projects");
 
     private final SecurityService securityService;
@@ -38,7 +37,6 @@ public class ProjectOverview extends VerticalLayout {
         this.databaseService = databaseService;
         this.securityService = new SecurityService(authenticationContext);
         addClassName("project-overview-view");
-        singleProject = new ProjectSingleView(databaseService, authenticationContext);
 
         // This is how to implement the header
         setSizeFull();
@@ -58,8 +56,7 @@ public class ProjectOverview extends VerticalLayout {
 
         // Add grid and form to content
         configureGrid();
-        content.add(singleProject, grid);
-        singleProject.getStyle().set("display", "none");
+        content.add(grid);
 
         return content;
     }

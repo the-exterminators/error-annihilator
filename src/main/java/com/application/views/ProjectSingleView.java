@@ -40,6 +40,7 @@ import jakarta.annotation.security.PermitAll;
 public class ProjectSingleView extends VerticalLayout implements HasUrlParameter<String> {
     private final SecurityService securityService;
     private final DatabaseService databaseService;
+    GridListDataView<Ticket> dataView;
 
     Grid<Ticket> grid = new Grid<>(Ticket.class, false);
     EditTicketForm ticketForm; // Form/Editor
@@ -64,11 +65,13 @@ public class ProjectSingleView extends VerticalLayout implements HasUrlParameter
 
     public void setProject(TicketProject ticketProject){
         this.ticketProject = ticketProject;
+        System.out.println(ticketProject.getProjectId());
         getUI().flatMap(ui -> {
             ui.access(() -> title.setText(ticketProject.getProjectName()));
             ui.access(() -> description.setText(ticketProject.getProjectDescription()));
             return Optional.empty();
         });
+        updateList();
     }
 
     // Have all content be gathered in this function
@@ -145,33 +148,14 @@ public class ProjectSingleView extends VerticalLayout implements HasUrlParameter
 
     // update the grid
     private void updateList() {
-        // grid.setItems(service.findallTickets(filterText.getValue())); // After DB integration
+        Integer project_id = ticketProject.getProjectId();
+        System.out.println(project_id);
+        dataView = grid.setItems(databaseService.getAllTicketsFromProjectEntityList(project_id));
     }
 
     // GRID ====================================
     // Configure the grid
     private void configureGrid() {
-        // Test users
-        List<Ticket> testTickets = new ArrayList<>();
-        List<User> testUsers = new LinkedList<>();
-        List<User> testUsers2 = new LinkedList<>();
-        User testUser = new User("Jana", "Burns", "Burnsjana", "bj4780@mci4me.at", "1234", "dev");
-        User testUser2 = new User("Isabelle", "Mariacher", "MariacherIsabelle", "mi4780@mci4me.at", "1234", "dev");
-        testUsers.add(testUser);
-        testUsers2.add(testUser);
-        testUsers2.add(testUser2);
-
-        // Test ticket 1
-        Ticket ticketOne = new Ticket("1", "I need help", "bug", "test test test", new TicketStatus("resolved"), new TicketProject(1L, "Project 1", "test", testUser), testUser, testUsers2);
-        List<TicketComment> listOne = new ArrayList<>();
-        listOne.add(new TicketComment("hello", testUser, ticketOne));
-        ticketOne.setTicketComment(listOne);
-        testTickets.add(ticketOne);
-
-        // Test ticket 2
-        Ticket ticketTwo = new Ticket("2", "hello", "defect", "hallo hallo", new TicketStatus("waiting for approval"), new TicketProject(2L, "Project 2", "test", testUser), testUser, testUsers);
-        testTickets.add(ticketTwo);
-
         // Columns
         Grid.Column<Ticket> numberColumn = grid.addColumn("ticketNumber").setHeader("Number").setWidth("0.5em");
         Grid.Column<Ticket> createdColumn = grid.addColumn(new LocalDateRenderer<>(ticket -> ticket.getCreatedTimeStamp().toLocalDateTime().toLocalDate())).setHeader("Created");
@@ -209,8 +193,11 @@ public class ProjectSingleView extends VerticalLayout implements HasUrlParameter
         grid.asSingleSelect().addValueChangeListener(e -> ticketForm.updateAssignedUsers());
 
         // Set items for grid
-        GridListDataView<Ticket> dataView = grid.setItems(testTickets);
-        //GridListDataView<Ticket> dataView = grid.setItems(databaseService.getTicketsByProjectId(ticketProject.getProjectId()));
+        //GridListDataView<Ticket> dataView = grid.setItems(testTickets);
+        //Integer project_id = Math.toIntExact(databaseService.getProjectId(ticketProject.getProjectName()));
+        Integer project_id = ticketProject.getProjectId();
+        System.out.println(project_id);
+        GridListDataView<Ticket> dataView = grid.setItems(databaseService.getAllTicketsFromProjectEntityList(project_id));
 
         // Filter - https://vaadin.com/docs/latest/components/grid
         TicketFilter ticketFilter = new TicketFilter(dataView);
@@ -218,9 +205,9 @@ public class ProjectSingleView extends VerticalLayout implements HasUrlParameter
         HeaderRow headerRow = grid.appendHeaderRow();
         headerRow.getCell(numberColumn).setComponent(createFilterHeader(ticketFilter::setNumber));
         headerRow.getCell(titleColumn).setComponent(createFilterHeader(ticketFilter::setTitle));
-        editComboFilter(headerRow, assignedColumn, Arrays.asList("Jana Burns", "Isabelle Mariacher", "Daniel Kihn"), ticketFilter::setAssignedUsers);
-        editComboFilter(headerRow, typeColumn, Arrays.asList("bug", "defect", "error"), ticketFilter::setType);
-        editComboFilter(headerRow, statusColumn, Arrays.asList("New", "In Progress", "Waiting For Approval","Resolved", "Rejected", "Reopened"), ticketFilter::setStatus);
+        editComboFilter(headerRow, assignedColumn, databaseService.getAllUsers(), ticketFilter::setAssignedUsers);
+        editComboFilter(headerRow, typeColumn,  databaseService.getAllTicketTypes(), ticketFilter::setType);
+        editComboFilter(headerRow, statusColumn, databaseService.getAllTicketStatus(), ticketFilter::setStatus);
         createDateHeader(headerRow, createdColumn, dataView);
 
         // Grid Size Settings
