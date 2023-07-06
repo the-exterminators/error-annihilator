@@ -123,8 +123,6 @@ public class DatabaseService {
         return jdbcTemplate.queryForList(query, ticketId);
     }
 
-
-
     public List<User> getAllUsersAssignedToTicketEntity(int ticketId) {
         String query = "SELECT * FROM users JOIN tickets_assigned_users USING (user_id) WHERE ticket_id = ?";
         List<User> users = new ArrayList<>();
