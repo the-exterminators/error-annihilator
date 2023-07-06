@@ -183,6 +183,22 @@ AS $$
         Where user_id = arg_user_id;
     End;
 $$ Language plpgsql;
+
+-- Procedure 1.2.9 - ManageUpdateUser --
+Create Or Replace Procedure ManageUpdateUser(arg_user_id integer, arg_firstname text, arg_lastname text, arg_username text,
+                                            arg_email text, arg_role_id integer)
+AS $$
+    Begin
+        Update users
+            Set
+                first_name = arg_firstname,
+                last_name = arg_lastname,
+                username = arg_username,
+                email = arg_email,
+                role_id = arg_role_id
+        Where user_id = arg_user_id;
+    End;
+$$ Language plpgsql;
 ------------------------------------------------------------------------------------------------------------------------
 -- Update Procedures - Tests -------------------------------------------------------------------------------------------
 Call UpdateTicket(2, 2, 2, 2, 2);
@@ -193,6 +209,6 @@ Call UpdateCurrentUserInfo(6, 'Jane', 'Döe', 'jaDöe', 'jane@doee.com');
 Call UpdateCurrentUserPasswordhash(6, '4321');
 Call SetUserInactive(6);
 Call SetUserActive(6);
+
+Call ManageUpdateUser(6, 'John', 'Doe', 'joDoe', 'john@doe.com', 3);
 ------------------------------------------------------------------------------------------------------------------------
-
-
