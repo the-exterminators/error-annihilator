@@ -199,7 +199,6 @@ AS $$
         Where user_id = arg_user_id;
     End;
 $$ Language plpgsql;
-
 ------------------------------------------------------------------------------------------------------------------------
 -- Update Procedures - Tests -------------------------------------------------------------------------------------------
 Call UpdateTicket(2, 2, 2, 2, 2);
@@ -210,7 +209,6 @@ Call UpdateCurrentUserInfo(6, 'Jane', 'Döe', 'jaDöe', 'jane@doee.com');
 Call UpdateCurrentUserPasswordhash(6, '4321');
 Call SetUserInactive(6);
 Call SetUserActive(6);
+
 Call ManageUpdateUser(6, 'John', 'Doe', 'joDoe', 'john@doe.com', 3);
 ------------------------------------------------------------------------------------------------------------------------
-
-

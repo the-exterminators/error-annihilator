@@ -7,6 +7,7 @@ import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.formlayout.FormLayout;
+import com.vaadin.flow.component.html.H2;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.textfield.EmailField;
 import com.vaadin.flow.component.textfield.PasswordField;
@@ -32,7 +33,8 @@ public class NewUserForm extends FormLayout {
         setUserRoleSampleData(userRole);
 
         // add to form layout
-        add(userName,
+        add(new H2("New User"),
+            userName,
             firstName,
             lastName,
             email,

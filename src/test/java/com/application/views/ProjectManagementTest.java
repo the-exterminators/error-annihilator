@@ -19,7 +19,7 @@ import java.util.List;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
-public class AssignedTicketsTest {
+public class ProjectManagementTest {
     private WebDriver driver;
 
     @Before
@@ -37,7 +37,7 @@ public class AssignedTicketsTest {
     }
 
     @Test
-    public void testAssignedTicketsView() {
+    public void testUserManagementView() {
 
         // Open the login page
         driver.get("http://localhost:8080/login");
@@ -62,20 +62,27 @@ public class AssignedTicketsTest {
         WebElement drawerToggle = wait.until(ExpectedConditions.visibilityOfElementLocated(By.cssSelector("vaadin-drawer-toggle[aria-expanded='false']")));
         drawerToggle.click();
 
-        // Find and click on the "Assigned Tickets" link
-        WebDriverWait menu = new WebDriverWait(driver,Duration.ofSeconds(10));
-        WebElement assignedTicketsLink = menu.until(ExpectedConditions.visibilityOfElementLocated(By.xpath("//vaadin-menu-bar-item[contains(., 'My Assigned Tickets')]")));
-        assignedTicketsLink.click();
+        // Find and click on the "Management" to open Submenu
+        WebDriverWait menu = new WebDriverWait(driver, Duration.ofSeconds(10));
+        WebElement managementLayout = menu.until(ExpectedConditions.visibilityOfElementLocated(By.className("management-submenu")));
+
+        // Find and click on the "Management" link within the layout
+        WebDriverWait waitClick = new WebDriverWait(driver, Duration.ofSeconds(10));
+        WebElement managementLink = waitClick.until(ExpectedConditions.elementToBeClickable(By.xpath(".//p[contains(text(), 'Management')]")));
+        managementLink.click();
+
+        // Find and click on the "Project Management" link within the layout
+        WebElement projectManagementLink = managementLayout.findElement(By.xpath(".//vaadin-menu-bar-item[contains(text(), 'Project Management')]"));
+        projectManagementLink.click();
 
         // Find the parent vaadin-vertical-layout element
         WebDriverWait waitView = new WebDriverWait(driver, Duration.ofSeconds(10)); // Adjust the timeout as needed
-        WebElement verticalLayout = waitView.until(ExpectedConditions.presenceOfElementLocated(By.cssSelector("vaadin-vertical-layout.assignedTickets-view")));
-
+        WebElement verticalLayout = waitView.until(ExpectedConditions.presenceOfElementLocated(By.cssSelector("vaadin-vertical-layout.content")));
 
         // Find the title element and assert its text
         WebElement titleElement = verticalLayout.findElement(By.tagName("h1"));
         String titleText = titleElement.getText();
-        assertEquals("Assigned Tickets", titleText);
+        assertEquals("Project Management", titleText);
 
         // Find the grid element and assert its presence
         WebElement gridElement = driver.findElement(By.tagName("vaadin-grid"));
@@ -88,23 +95,22 @@ public class AssignedTicketsTest {
         for (WebElement row : rows) {
             WebElement titleCell = row.findElement(By.cssSelector("td[part='cell body-cell first-column-cell']"));
             WebElement descriptionCell = row.findElement(By.cssSelector("td[part='cell body-cell']"));
-            WebElement statusCell = row.findElement(By.cssSelector("td[part='cell body-cell last-column-cell']"));
+            WebElement projectLeadCell = row.findElement(By.cssSelector("td[part='cell body-cell last-column-cell']"));
 
             String titleCellValue = titleCell.getText();
             String descriptionCellValue = descriptionCell.getText();
-            String statusCellValue = statusCell.getText();
+            String projectLeadCellValue = projectLeadCell.getText();
 
             assertTrue(!titleCellValue.isEmpty());
             assertTrue(!descriptionCellValue.isEmpty());
-            assertTrue(!statusCellValue.isEmpty());
+            assertTrue(!projectLeadCellValue.isEmpty());
 
             // Click on the current row
             row.click();
 
             // Assert that the form is displayed
-            WebElement formElement = driver.findElement(By.tagName("edit-ticket-form"));
+            WebElement formElement = driver.findElement(By.tagName("edit-project-form"));
             assertTrue(formElement.isDisplayed());
-
         }
     }
 
@@ -135,14 +141,22 @@ public class AssignedTicketsTest {
         WebElement drawerToggle = wait.until(ExpectedConditions.visibilityOfElementLocated(By.cssSelector("vaadin-drawer-toggle[aria-expanded='false']")));
         drawerToggle.click();
 
-        // Find and click on the "Assigned Tickets" link
-        WebDriverWait menu = new WebDriverWait(driver,Duration.ofSeconds(10));
-        WebElement assignedTicketsLink = menu.until(ExpectedConditions.visibilityOfElementLocated(By.xpath("//vaadin-menu-bar-item[contains(., 'My Assigned Tickets')]")));
-        assignedTicketsLink.click();
+        // Find and click on the "Management" to open Submenu
+        WebDriverWait menu = new WebDriverWait(driver, Duration.ofSeconds(10));
+        WebElement managementLayout = menu.until(ExpectedConditions.visibilityOfElementLocated(By.className("management-submenu")));
+
+        // Find and click on the "Management" link within the layout
+        WebDriverWait waitClick = new WebDriverWait(driver, Duration.ofSeconds(10));
+        WebElement managementLink = waitClick.until(ExpectedConditions.elementToBeClickable(By.xpath(".//p[contains(text(), 'Management')]")));
+        managementLink.click();
+
+        // Find and click on the "Project Management" link within the layout
+        WebElement projectManagementLink = managementLayout.findElement(By.xpath(".//vaadin-menu-bar-item[contains(text(), 'Project Management')]"));
+        projectManagementLink.click();
 
         // Find the parent vaadin-vertical-layout element
         WebDriverWait waitView = new WebDriverWait(driver, Duration.ofSeconds(10)); // Adjust the timeout as needed
-        WebElement verticalLayout = waitView.until(ExpectedConditions.presenceOfElementLocated(By.cssSelector("vaadin-vertical-layout.assignedTickets-view")));
+        WebElement verticalLayout = waitView.until(ExpectedConditions.presenceOfElementLocated(By.cssSelector("vaadin-vertical-layout.content")));
 
 
         // Find the title filter input element and enter the filter value
@@ -190,15 +204,22 @@ public class AssignedTicketsTest {
         WebElement drawerToggle = wait.until(ExpectedConditions.visibilityOfElementLocated(By.cssSelector("vaadin-drawer-toggle[aria-expanded='false']")));
         drawerToggle.click();
 
-        // Find and click on the "Assigned Tickets" link
-        WebDriverWait menu = new WebDriverWait(driver,Duration.ofSeconds(10));
-        WebElement assignedTicketsLink = menu.until(ExpectedConditions.visibilityOfElementLocated(By.xpath("//vaadin-menu-bar-item[contains(., 'My Assigned Tickets')]")));
-        assignedTicketsLink.click();
+        // Find and click on the "Management" to open Submenu
+        WebDriverWait menu = new WebDriverWait(driver, Duration.ofSeconds(10));
+        WebElement managementLayout = menu.until(ExpectedConditions.visibilityOfElementLocated(By.className("management-submenu")));
+
+        // Find and click on the "Management" link within the layout
+        WebDriverWait waitClick = new WebDriverWait(driver, Duration.ofSeconds(10));
+        WebElement managementLink = waitClick.until(ExpectedConditions.elementToBeClickable(By.xpath(".//p[contains(text(), 'Management')]")));
+        managementLink.click();
+
+        // Find and click on the "Project Management" link within the layout
+        WebElement projectManagementLink = managementLayout.findElement(By.xpath(".//vaadin-menu-bar-item[contains(text(), 'Project Management')]"));
+        projectManagementLink.click();
 
         // Find the parent vaadin-vertical-layout element
         WebDriverWait waitView = new WebDriverWait(driver, Duration.ofSeconds(10)); // Adjust the timeout as needed
-        WebElement verticalLayout = waitView.until(ExpectedConditions.presenceOfElementLocated(By.cssSelector("vaadin-vertical-layout.assignedTickets-view")));
-
+        WebElement verticalLayout = waitView.until(ExpectedConditions.presenceOfElementLocated(By.cssSelector("vaadin-vertical-layout.content")));
 
         // Find the title filter input element and enter the filter value
         WebElement descriptionFilterInput = driver.findElement(By.cssSelector("input[placeholder='Filter Description ...']"));
@@ -219,7 +240,7 @@ public class AssignedTicketsTest {
     }
 
     @Test
-    public void testStatusFilter() {
+    public void testProjectLeadFilter() {
         String filterValue = "test";
 
         // Open the login page
@@ -245,20 +266,27 @@ public class AssignedTicketsTest {
         WebElement drawerToggle = wait.until(ExpectedConditions.visibilityOfElementLocated(By.cssSelector("vaadin-drawer-toggle[aria-expanded='false']")));
         drawerToggle.click();
 
-        // Find and click on the "Assigned Tickets" link
-        WebDriverWait menu = new WebDriverWait(driver,Duration.ofSeconds(10));
-        WebElement assignedTicketsLink = menu.until(ExpectedConditions.visibilityOfElementLocated(By.xpath("//vaadin-menu-bar-item[contains(., 'My Assigned Tickets')]")));
-        assignedTicketsLink.click();
+        // Find and click on the "Management" to open Submenu
+        WebDriverWait menu = new WebDriverWait(driver, Duration.ofSeconds(10));
+        WebElement managementLayout = menu.until(ExpectedConditions.visibilityOfElementLocated(By.className("management-submenu")));
+
+        // Find and click on the "Management" link within the layout
+        WebDriverWait waitClick = new WebDriverWait(driver, Duration.ofSeconds(10));
+        WebElement managementLink = waitClick.until(ExpectedConditions.elementToBeClickable(By.xpath(".//p[contains(text(), 'Management')]")));
+        managementLink.click();
+
+        // Find and click on the "Project Management" link within the layout
+        WebElement projectManagementLink = managementLayout.findElement(By.xpath(".//vaadin-menu-bar-item[contains(text(), 'Project Management')]"));
+        projectManagementLink.click();
 
         // Find the parent vaadin-vertical-layout element
         WebDriverWait waitView = new WebDriverWait(driver, Duration.ofSeconds(10)); // Adjust the timeout as needed
-        WebElement verticalLayout = waitView.until(ExpectedConditions.presenceOfElementLocated(By.cssSelector("vaadin-vertical-layout.assignedTickets-view")));
-
+        WebElement verticalLayout = waitView.until(ExpectedConditions.presenceOfElementLocated(By.cssSelector("vaadin-vertical-layout.content")));
 
         // Find the title filter input element and enter the filter value
-        WebElement statusFilterInput = driver.findElement(By.cssSelector("input[placeholder='Filter Status ...']"));
-        statusFilterInput.click();
-        statusFilterInput.sendKeys(filterValue);
+        WebElement descriptionFilterInput = driver.findElement(By.cssSelector("input[placeholder='Filter Project Leader ...']"));
+        descriptionFilterInput.click();
+        descriptionFilterInput.sendKeys(filterValue);
 
         // Retrieve the updated grid rows and perform assertions on the filtered results
         List<WebElement> filteredRows = driver.findElements(By.cssSelector("vaadin-grid-row"));
@@ -272,4 +300,6 @@ public class AssignedTicketsTest {
             assertTrue(titleText.toLowerCase().contains(filterValue.toLowerCase()));
         }
     }
+
+
 }

@@ -4,6 +4,7 @@ import com.application.data.entity.Ticket;
 import com.application.data.entity.TicketComment;
 import com.application.data.entity.TicketStatus;
 import com.application.data.entity.User;
+import com.application.data.service.DatabaseService;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.combobox.MultiSelectComboBox;
@@ -12,7 +13,9 @@ import com.vaadin.flow.component.formlayout.FormLayout;
 import com.vaadin.flow.component.html.H2;
 import com.vaadin.flow.component.messages.MessageList;
 import com.vaadin.flow.component.messages.MessageListItem;
+import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
+import com.vaadin.flow.component.textfield.EmailField;
 import com.vaadin.flow.component.textfield.TextArea;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.binder.BeanValidationBinder;
@@ -41,28 +44,33 @@ public class SingleTicketForm extends FormLayout {
     TextArea description = new TextArea("Description");
     ComboBox<String> ticketType = new ComboBox<>("Type"); // I want this to be a dropdown of predefined types
     ComboBox<String> ticketProject = new ComboBox<>("Project"); // Change it to Projects
-    DateTimePicker createdTimeStamp = new DateTimePicker();
+    DateTimePicker createdTimeStamp = new DateTimePicker("Date Created");
     ComboBox<TicketStatus> ticketStatus = new ComboBox<>("Status"); // I want this to be a dropdown of predefined statuses
     TextField ticketCreator = new TextField("Creator");
+    EmailField creatorMail = new EmailField("Creator Email");
     ComboBox<List<User>> assignedUsers = new ComboBox<>("Assignees"); // for binding
     MultiSelectComboBox<String> assignedUsersMulti = new MultiSelectComboBox<>("Assignees"); // for display
 
     // Comment variables
+    H2 commentsTitle = new H2("Comments");
     MessageList ticketComments = new MessageList(); // The end display
     ComboBox<List<TicketComment>> ticketComment = new ComboBox<>("Comments"); // to bind
     List<TicketComment> commentList = new ArrayList<>(); // temp List
 
     // comments
     Component commentSection = createCommentsLayout();
+    DatabaseService databaseService;
 
     // Constructor
-    public SingleTicketForm(List<TicketStatus> statuses) {
+    public SingleTicketForm(DatabaseService databaseService) {
+        this.databaseService = databaseService;
         addClassName("ticket-form");
+
+        ticketNumber.setPattern("\\d*");
 
         configureBind();
 
         // set items and labels for lists
-        ticketStatus.setItems(statuses);
         ticketStatus.setItemLabelGenerator(TicketStatus::getStatusName);
         ticketComment.setItems(Collections.emptyList());
 
@@ -71,8 +79,13 @@ public class SingleTicketForm extends FormLayout {
         updateAssignedUsers();
         assignedUsers.addValueChangeListener(event -> updateAssignedUsers());
 
-        ticketProject.setItems("Project 1", "Project 2", "Project 3");
-        ticketType.setItems("bug", "defect", "error");
+        setProjectSampleData(ticketProject);
+        setTypeSampleData(ticketType);
+        setStatusSampleData(ticketStatus);
+
+        HorizontalLayout formRow = new HorizontalLayout(createdTimeStamp, ticketCreator, creatorMail);
+        formRow.addClassName("formRow");
+        setColspan(formRow, 2);
 
         configureFormLayout();
 
@@ -80,8 +93,7 @@ public class SingleTicketForm extends FormLayout {
         add(ticketNumber,
             ticketName,
             description,
-            createdTimeStamp,
-            ticketCreator,
+            formRow,
             ticketType,
             ticketStatus,
             ticketProject,
@@ -89,6 +101,20 @@ public class SingleTicketForm extends FormLayout {
             commentSection
         );
 
+    }
+    // Sample data for project, type and status
+    private void setProjectSampleData(ComboBox<String> comboBox){
+        List<String> projects = databaseService.getAllProjectItems();
+        comboBox.setItems(projects);
+        comboBox.setValue(projects.get(0));
+    }
+    private void setTypeSampleData(ComboBox<String> comboBox){
+        List<String> ticketTypes = databaseService.getAllTicketTypes();
+        comboBox.setItems(ticketTypes);
+        comboBox.setValue(ticketTypes.get(0));
+    }
+    private void setStatusSampleData(ComboBox<TicketStatus> comboBox){
+        comboBox.setItems(new TicketStatus("unassigned"), new TicketStatus("open"), new TicketStatus("in progress"), new TicketStatus("waiting for approval"), new TicketStatus("closed"));
     }
 
     // Update Assigned Users on select in grid
@@ -116,34 +142,41 @@ public class SingleTicketForm extends FormLayout {
         );
 
         // Bind rest
+        //binder.bind(ticketNumber, "ticketNumber");
         binder.forField(ticketNumber)
-                        .withValidator(new RegexpValidator("Only numbers allowed!", "\\d*"))
-                                .bind(Ticket::getTicketNumber, Ticket::setTicketNumber);
+                .withValidator(new RegexpValidator("Only numbers allowed!", "\\d*"))
+                .bind(Ticket::getTicketNumber, Ticket::setTicketNumber);
         binder.bind(ticketName, "ticketName");
         binder.bind(description, "description");
         binder.bind(ticketType, "ticketType");
         binder.bind(ticketStatus, "ticketStatus");
         binder.bind(ticketProject, "ticketProject.projectName");
         binder.bind(ticketCreator, "ticketCreator.userName");
+        binder.bind(creatorMail, "ticketCreator.email");
         binder.bind(assignedUsers, "assignedUsers");
         binder.bind(ticketComment, "ticketComment");
     }
 
     // Style and Design stuff
     private void configureFormLayout() {
-        // This is a view only form
-        ticketNumber.setReadOnly(true);
+        // Only Type, Status and Assignee should be editable
         ticketName.setReadOnly(true);
         description.setReadOnly(true);
         createdTimeStamp.setReadOnly(true);
         ticketCreator.setReadOnly(true);
-        ticketProject.setReadOnly(true);
+        creatorMail.setReadOnly(true);
+        ticketNumber.setReadOnly(true);
         ticketType.setReadOnly(true);
         ticketStatus.setReadOnly(true);
+        ticketProject.setReadOnly(true);
         assignedUsersMulti.setReadOnly(true);
 
+        // Styles
+        createdTimeStamp.getStyle().set("flex", "1");
+        ticketCreator.getStyle().set("flex", "1");
+        creatorMail.getStyle().set("flex", "1");
+
         // Layout reform
-        setColspan(ticketName, 2);
         setColspan(description, 2);
         setColspan(commentSection, 2);
     }
@@ -157,7 +190,8 @@ public class SingleTicketForm extends FormLayout {
 
     // Creates the comments layout and updates the comments
     private Component createCommentsLayout() {
-        return new VerticalLayout(new H2("Comments"), ticketComments);
+        validateAndUpdate();
+        return new VerticalLayout(commentsTitle, ticketComments);
     }
 
     // updates the comments
@@ -174,6 +208,9 @@ public class SingleTicketForm extends FormLayout {
                 }
             }
             this.ticketComments.setItems(realComments);
+            getUI().ifPresent(ui -> ui.access(() -> {
+                commentsTitle.setVisible(!commentList.isEmpty()); // If statement
+            }));
         }
     }
 

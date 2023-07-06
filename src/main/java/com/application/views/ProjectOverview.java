@@ -2,9 +2,10 @@ package com.application.views;
 
 import com.application.components.Header;
 import com.application.data.entity.TicketProject;
-import com.application.data.entity.User;
+import com.application.data.service.DatabaseService;
 import com.application.security.SecurityService;
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.grid.HeaderRow;
 import com.vaadin.flow.component.grid.dataview.GridListDataView;
@@ -18,7 +19,6 @@ import com.vaadin.flow.router.Route;
 import com.vaadin.flow.spring.security.AuthenticationContext;
 import jakarta.annotation.security.PermitAll;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
 
@@ -31,12 +31,14 @@ public class ProjectOverview extends VerticalLayout {
     H1 title = new H1("Projects");
 
     private final SecurityService securityService;
+    private final DatabaseService databaseService;
 
     // Constructor
-    public ProjectOverview(AuthenticationContext authenticationContext) {
+    public ProjectOverview(DatabaseService databaseService, AuthenticationContext authenticationContext) {
+        this.databaseService = databaseService;
         this.securityService = new SecurityService(authenticationContext);
         addClassName("project-overview-view");
-        singleProject = new ProjectSingleView(authenticationContext);
+        singleProject = new ProjectSingleView(databaseService, authenticationContext);
 
         // This is how to implement the header
         setSizeFull();
@@ -65,13 +67,6 @@ public class ProjectOverview extends VerticalLayout {
     // GRID ====================================
     // Configure the grid
     private void configureGrid() {
-        // Test projects
-        User user = new User("Jana", "Burns", "Burnsjana", "email", "1234", "dev");
-        List<TicketProject> testProjects = new ArrayList<>();
-        testProjects.add(new TicketProject("Project 1", "Test Description 1",user));
-        testProjects.add(new TicketProject("Project 2", "Test Description 2", user));
-        testProjects.add(new TicketProject("Project 3", "Test Description 3", user));
-
         // Columns
         Grid.Column<TicketProject> titleColumn = grid.addColumn("projectName").setHeader("Title");
         Grid.Column<TicketProject> descriptionColumn = grid.addColumn("projectDescription").setHeader("Description");
@@ -83,19 +78,15 @@ public class ProjectOverview extends VerticalLayout {
             grid.getUI().flatMap(ui -> ui.navigate(ProjectSingleView.class, customRoute)).ifPresent(editor -> editor.setProject(e.getValue()));
         });
 
-
-
-
         // Set items for grid
-        GridListDataView<TicketProject> dataView = grid.setItems(testProjects); // replace with dataservice.getTickets()
-
+        GridListDataView<TicketProject> dataView = grid.setItems(databaseService.getAllProjectItems2());
         // Filter - https://vaadin.com/docs/latest/components/grid
         ProjectFilter projectFilter = new ProjectFilter(dataView);
         grid.getHeaderRows().clear();
         HeaderRow headerRow = grid.appendHeaderRow();
-        headerRow.getCell(titleColumn).setComponent(createFilterHeader("Filter Title", projectFilter::setTitle));
-        headerRow.getCell(descriptionColumn).setComponent(createFilterHeader("Filter Description", projectFilter::setDescription));
-        headerRow.getCell(leaderColumn).setComponent(createFilterHeader("Filter Project Leader", projectFilter::setLead));
+        headerRow.getCell(titleColumn).setComponent(createFilterHeader(projectFilter::setTitle));
+        headerRow.getCell(descriptionColumn).setComponent(createFilterHeader(projectFilter::setDescription));
+        editComboFilter(headerRow, leaderColumn, databaseService.getAllUsernames(), projectFilter::setLead);
 
         // Grid Size Settings
         grid.setSizeFull();
@@ -106,9 +97,9 @@ public class ProjectOverview extends VerticalLayout {
 
     // FILTER ==================================
     // This creates the filter header with the textfield etc
-    private static Component createFilterHeader(String labelText, Consumer<String> filterChangeConsumer) {
+    private static Component createFilterHeader(Consumer<String> filterChangeConsumer) {
         TextField textField = new TextField();
-        textField.setPlaceholder(labelText + " ...");
+        textField.setPlaceholder("Filter");
         textField.getStyle().set("font-size", "var(--lumo-font-size-xs)");
         textField.setValueChangeMode(ValueChangeMode.EAGER);
         textField.setClearButtonVisible(true);
@@ -117,6 +108,21 @@ public class ProjectOverview extends VerticalLayout {
         textField.addValueChangeListener(
                 e -> filterChangeConsumer.accept(e.getValue()));
         return textField;
+    }
+
+    private ComboBox editComboFilter(HeaderRow headerRow, Grid.Column<TicketProject> gridColumn, List items, Consumer<String> consumer) {
+        ComboBox<String> comboBox = new ComboBox<>();
+        comboBox.addClassName("filter-header-item");
+        comboBox.setPlaceholder("Filter");
+        comboBox.setClearButtonVisible(true);
+        comboBox.getStyle().set("font-size", "var(--lumo-font-size-xs)");
+        comboBox.setWidth("100%");
+        comboBox.setItems(items);
+
+        comboBox.addValueChangeListener(e -> consumer.accept(e.getValue()));
+        headerRow.getCell(gridColumn).setComponent(comboBox);
+
+        return comboBox;
     }
 
     // Class to filter projects in grid
@@ -157,7 +163,7 @@ public class ProjectOverview extends VerticalLayout {
 
         private boolean matches(String value, String searchTerm) {
             return searchTerm == null || searchTerm.isEmpty()
-                    || value.toLowerCase().contains(searchTerm.toLowerCase());
+                    || value.toLowerCase().replace(" ", "").contains(searchTerm.toLowerCase().replace(" ", ""));
         }
     }
 

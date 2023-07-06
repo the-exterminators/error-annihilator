@@ -1,6 +1,7 @@
 package com.application.components;
 
 import com.application.data.entity.User;
+import com.application.security.SecurityService;
 import com.vaadin.flow.component.ComponentEvent;
 import com.vaadin.flow.component.ComponentEventListener;
 import com.vaadin.flow.component.Key;
@@ -15,6 +16,7 @@ import com.vaadin.flow.data.binder.BeanValidationBinder;
 import com.vaadin.flow.data.binder.Binder;
 import com.vaadin.flow.data.binder.ValidationException;
 import com.vaadin.flow.shared.Registration;
+import com.vaadin.flow.spring.security.AuthenticationContext;
 
 public class UserProfileForm extends FormLayout {
     Binder<User> binder = new BeanValidationBinder<>(User.class); // to bind to User Entity
@@ -24,11 +26,13 @@ public class UserProfileForm extends FormLayout {
     TextField lastName = new TextField("Last Name");
     EmailField email = new EmailField("Email");
     PasswordField dummyPassword = new PasswordField("Password");
+    private final SecurityService securityService;
 
     // Buttons
     Button save = new Button("Save");
     Button delete = new Button("Delete my Profile");
-    public UserProfileForm() {
+    public UserProfileForm(AuthenticationContext authenticationContext) {
+        this.securityService = new SecurityService(authenticationContext);
         addClassName("user-form");
 
         configureBind();
@@ -65,7 +69,7 @@ public class UserProfileForm extends FormLayout {
         delete.addThemeVariants(ButtonVariant.LUMO_ERROR);
 
         save.addClickListener(event -> validateAndSave());
-        //delete.addClickListener(event -> deleteEvent()); // Change to delete
+        delete.addClickListener(e -> securityService.logout()); // Change to delete
 
         save.addClickShortcut(Key.ENTER);
 

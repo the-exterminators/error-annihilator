@@ -1,6 +1,7 @@
 package com.application.components;
 
 import com.application.data.entity.*;
+import com.application.data.service.DatabaseService;
 import com.vaadin.flow.component.*;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
@@ -12,8 +13,10 @@ import com.vaadin.flow.component.html.H2;
 import com.vaadin.flow.component.messages.MessageInput;
 import com.vaadin.flow.component.messages.MessageList;
 import com.vaadin.flow.component.messages.MessageListItem;
+import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
+import com.vaadin.flow.component.textfield.EmailField;
 import com.vaadin.flow.component.textfield.TextArea;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.binder.BeanValidationBinder;
@@ -42,28 +45,33 @@ public class EditTicketForm extends FormLayout {
     TextArea description = new TextArea("Description");
     ComboBox<String> ticketType = new ComboBox<>("Type"); // I want this to be a dropdown of predefined types
     ComboBox<String> ticketProject = new ComboBox<>("Project"); // Change it to Projects
-    DateTimePicker createdTimeStamp = new DateTimePicker();
+    DateTimePicker createdTimeStamp = new DateTimePicker("Date Created");
     ComboBox<TicketStatus> ticketStatus = new ComboBox<>("Status"); // I want this to be a dropdown of predefined statuses
     TextField ticketCreator = new TextField("Creator");
+    EmailField creatorMail = new EmailField("Creator Email");
     ComboBox<List<User>> assignedUsers = new ComboBox<>("Assignees"); // for binding
     MultiSelectComboBox<String> assignedUsersMulti = new MultiSelectComboBox<>("Assignees"); // for display
 
     // Comment variables
+    H2 commentsTitle = new H2("Comments");
     MessageList ticketComments = new MessageList(); // The end display
     ComboBox<List<TicketComment>> ticketComment = new ComboBox<>("Comments"); // to bind
     List<TicketComment> commentList = new ArrayList<>(); // temp List
 
     // Buttons
     Button save = new Button("Save");
-    Button close = new Button("Cancel");
+    Button close = new Button("Close");
 
     // comments
     Component commentSection = createCommentsLayout();
     // buttons
     HorizontalLayout buttonSection;
 
+    DatabaseService databaseService;
+
     // Constructor
-    public EditTicketForm(List<TicketStatus> statuses) {
+    public EditTicketForm(DatabaseService databaseService) {
+        this.databaseService = databaseService;
         addClassName("ticket-form");
 
         ticketNumber.setPattern("\\d*");
@@ -73,7 +81,6 @@ public class EditTicketForm extends FormLayout {
         buttonSection = createButtonsLayout();
 
         // set items and labels for lists
-        ticketStatus.setItems(statuses);
         ticketStatus.setItemLabelGenerator(TicketStatus::getStatusName);
         ticketComment.setItems(Collections.emptyList());
 
@@ -86,6 +93,9 @@ public class EditTicketForm extends FormLayout {
         setTypeSampleData(ticketType);
         setStatusSampleData(ticketStatus);
 
+        HorizontalLayout formRow = new HorizontalLayout(createdTimeStamp, ticketCreator, creatorMail);
+        formRow.addClassName("formRow");
+        setColspan(formRow, 2);
 
         configureFormLayout();
 
@@ -94,8 +104,7 @@ public class EditTicketForm extends FormLayout {
                 ticketNumber,
                 ticketName,
                 description,
-                createdTimeStamp,
-                ticketCreator,
+                formRow,
                 ticketType,
                 ticketStatus,
                 ticketProject,
@@ -106,10 +115,14 @@ public class EditTicketForm extends FormLayout {
     }
     // Sample data for project, type and status
     private void setProjectSampleData(ComboBox<String> comboBox){
-        comboBox.setItems("Project 1", "Project 2", "Project 3");
+        List<String> projects = databaseService.getAllProjectItems();
+        comboBox.setItems(projects);
+        comboBox.setValue(projects.get(0));
     }
     private void setTypeSampleData(ComboBox<String> comboBox){
-        comboBox.setItems("bug", "defect", "error");
+        List<String> ticketTypes = databaseService.getAllTicketTypes();
+        comboBox.setItems(ticketTypes);
+        comboBox.setValue(ticketTypes.get(0));
     }
     private void setStatusSampleData(ComboBox<TicketStatus> comboBox){
         comboBox.setItems(new TicketStatus("unassigned"), new TicketStatus("open"), new TicketStatus("in progress"), new TicketStatus("waiting for approval"), new TicketStatus("closed"));
@@ -150,6 +163,7 @@ public class EditTicketForm extends FormLayout {
         binder.bind(ticketStatus, "ticketStatus");
         binder.bind(ticketProject, "ticketProject.projectName");
         binder.bind(ticketCreator, "ticketCreator.userName");
+        binder.bind(creatorMail, "ticketCreator.email");
         binder.bind(assignedUsers, "assignedUsers");
         binder.bind(ticketComment, "ticketComment");
     }
@@ -161,11 +175,16 @@ public class EditTicketForm extends FormLayout {
         description.setReadOnly(true);
         createdTimeStamp.setReadOnly(true);
         ticketCreator.setReadOnly(true);
+        creatorMail.setReadOnly(true);
         ticketNumber.setReadOnly(true);
+
+        // Styles
+        createdTimeStamp.getStyle().set("flex", "1");
+        ticketCreator.getStyle().set("flex", "1");
+        creatorMail.getStyle().set("flex", "1");
 
         // Layout reform
         setColspan(buttonSection, 2);
-        setColspan(ticketName, 2);
         setColspan(description, 2);
         setColspan(commentSection, 2);
     }
@@ -186,7 +205,7 @@ public class EditTicketForm extends FormLayout {
             ticket.getTicketComment().add(new TicketComment(submitEvent.getValue(), user, ticket));
             validateAndUpdate();
         });
-        return new VerticalLayout(new H2("Comments"), ticketComments, input);
+        return new VerticalLayout(commentsTitle, ticketComments, input);
     }
 
     // Creates the button layout to save and cancel the form
@@ -200,7 +219,11 @@ public class EditTicketForm extends FormLayout {
         save.addClickShortcut(Key.ENTER);
         close.addClickShortcut(Key.ESCAPE);
 
-        return new HorizontalLayout(save, close);
+        HorizontalLayout content = new HorizontalLayout(save, close);
+
+        content.setJustifyContentMode(FlexComponent.JustifyContentMode.END);
+
+        return content;
     }
 
     // this function validates and saves the ticket according to the form (comments are saved when written)
@@ -227,6 +250,9 @@ public class EditTicketForm extends FormLayout {
                 }
             }
             this.ticketComments.setItems(realComments);
+            getUI().ifPresent(ui -> ui.access(() -> {
+                commentsTitle.setVisible(!commentList.isEmpty()); // If statement
+            }));
         }
     }
 

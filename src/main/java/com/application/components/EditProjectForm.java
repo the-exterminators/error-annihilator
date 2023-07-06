@@ -1,6 +1,7 @@
 package com.application.components;
 
 import com.application.data.entity.TicketProject;
+import com.application.data.service.DatabaseService;
 import com.vaadin.flow.component.ComponentEvent;
 import com.vaadin.flow.component.ComponentEventListener;
 import com.vaadin.flow.component.Key;
@@ -9,6 +10,7 @@ import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.formlayout.FormLayout;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
+import com.vaadin.flow.component.textfield.TextArea;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.binder.BeanValidationBinder;
 import com.vaadin.flow.data.binder.Binder;
@@ -23,7 +25,7 @@ public class EditProjectForm extends FormLayout {
 
     // Ticket entity fields
     TextField projectName = new TextField("Title");
-    TextField projectDescription = new TextField("Description");
+    TextArea projectDescription = new TextArea("Description");
     ComboBox<String> projectLead = new ComboBox<>("Project Lead");
 
     // Buttons
@@ -32,8 +34,11 @@ public class EditProjectForm extends FormLayout {
     Button delete = new Button("Delete");
     HorizontalLayout buttonSection;
 
+    private final DatabaseService databaseService;
+
     // Constructor
-    public EditProjectForm() {
+    public EditProjectForm(DatabaseService databaseService) {
+        this.databaseService = databaseService;
         addClassName("project-form");
 
         binder.bind(projectName, "projectName");
@@ -45,11 +50,12 @@ public class EditProjectForm extends FormLayout {
         buttonSection = createButtonsLayout();
 
         setColspan(buttonSection, 2);
+        setColspan(projectDescription, 2);
 
         // add to form layout
         add(projectName,
-            projectDescription,
             projectLead,
+            projectDescription,
             buttonSection
         );
     }
@@ -97,7 +103,7 @@ public class EditProjectForm extends FormLayout {
     }
 
     private void setProjectLeadSampleData(ComboBox<String> comboBox){
-        comboBox.setItems("burnsjana", "stefanelabdellaoui", "isabellemariacher", "danielkihn", "manuelaudino");
+        comboBox.setItems(databaseService.getAllUsernames());
     }
 
     // Save Event for saving ticket
