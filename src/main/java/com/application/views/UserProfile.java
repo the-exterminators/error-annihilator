@@ -3,6 +3,7 @@ package com.application.views;
 import com.application.components.Header;
 import com.application.components.UserProfileForm;
 import com.application.data.entity.User;
+import com.application.data.service.DatabaseService;
 import com.application.security.SecurityService;
 import com.vaadin.flow.component.html.H1;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
@@ -19,19 +20,24 @@ import org.springframework.security.core.context.SecurityContextHolder;
 public class UserProfile extends VerticalLayout {
     UserProfileForm userForm; // Form/Editor
     String currentPrincipalName ="";
+    User currentUser;
     private final SecurityService securityService;
+    private final DatabaseService databaseService;
 
     // Constructor
-    public UserProfile(AuthenticationContext authenticationContext) {
+    public UserProfile(DatabaseService databaseService, AuthenticationContext authenticationContext) {
+        this.databaseService = databaseService;
         this.securityService = new SecurityService(authenticationContext);
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if(authentication != null) {
             currentPrincipalName = authentication.getName();
         }
 
+        currentUser = databaseService.getUserByUsername(currentPrincipalName);
+
         addClassName("myProfile-view");
 
-        userForm = new UserProfileForm(authenticationContext);
+        userForm = new UserProfileForm(databaseService, authenticationContext);
 
         // This is how to implement the header
         setSizeFull();
@@ -57,13 +63,13 @@ public class UserProfile extends VerticalLayout {
     }
 
     private void configureForm() {
-        userForm.setUser(new User("Jana", "Burns", "Burnsjana", "bj4780@mci4me.at", "1234", "Manager")); // change to current user
+        userForm.setUser(currentUser); // change to current user
         userForm.setSizeFull();
         userForm.addSaveListener(this::saveUser); // add listener to save ticket - doesn't work yet
     }
 
     // Saves user, updates the grid and closes editor/form
     private void saveUser(UserProfileForm.SaveEvent event) {
-        // service.saveUser(event.getUser()); // After DB integration
+         //databaseService.manageUpdateUser(event.getUser().); // After DB integration
     }
 }
