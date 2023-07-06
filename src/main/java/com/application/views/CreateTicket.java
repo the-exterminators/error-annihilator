@@ -43,13 +43,8 @@ public class CreateTicket extends VerticalLayout {
     private DateTimePicker dateCreated = new DateTimePicker();
     private MenuBar buttons = new MenuBar();
 
-    public CreateTicket(DatabaseService databaseService, AuthenticationContext authenticationContext) {
-        try {
-            this.databaseService = DatabaseManager.getDatabaseService();
-        } catch (Exception e)
-        {
-            e.printStackTrace();
-        }
+    public CreateTicket(AuthenticationContext authenticationContext) {
+        this.databaseService = DatabaseManager.getDatabaseService();
         securityService = new SecurityService(authenticationContext);
         Header header = new Header(authenticationContext);
         header.setContent(getCreateTicketContent());
