@@ -528,11 +528,9 @@ public class DatabaseService {
         String query = "SELECT * FROM projects WHERE project_id = ?";
         return jdbcTemplate.queryForObject(query, new Object[]{projectId}, (rs, rowNum) ->
                 new TicketProject(//Long projectId, String projectName, String projectDescription, User projectLead
-                        rs.getInt("project_id"),
+                        rs.getLong("project_id"),
                         rs.getString("title"),
                         rs.getString("description"),
                         getUserByID(rs.getInt("project_lead"))
                 ));
     }
-
-}
