@@ -1,6 +1,7 @@
 package com.application.views;
 
 import com.application.components.Header;
+import com.application.data.service.DatabaseConnectionException;
 import com.application.data.service.DatabaseManager;
 import com.application.data.service.DatabaseService;
 import com.application.security.SecurityService;
@@ -41,7 +42,7 @@ public class CreateTicket extends VerticalLayout {
     private final TextField ticketName = new TextField();
     private final MenuBar buttons = new MenuBar();
 
-    public CreateTicket(AuthenticationContext authenticationContext) {
+    public CreateTicket(AuthenticationContext authenticationContext) throws DatabaseConnectionException {
         this.databaseService = DatabaseManager.getDatabaseService();
         securityService = new SecurityService(authenticationContext);
         Header header = new Header(authenticationContext);
