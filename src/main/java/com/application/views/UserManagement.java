@@ -34,7 +34,7 @@ import java.util.function.Consumer;
 public class UserManagement extends VerticalLayout {
     Grid<User> grid = new Grid<>(User.class, false);
     EditUserForm userForm; // Form/Editor
-    NewUserForm newUserForm = new NewUserForm(); // Form/Editor for new users
+    NewUserForm newUserForm; // Form/Editor for new users
     H1 title = new H1("User Management");
     Button newUser = new Button("New User");
 
@@ -43,6 +43,7 @@ public class UserManagement extends VerticalLayout {
 
     public UserManagement(DatabaseService databaseService, AuthenticationContext authenticationContext) {
         this.databaseService = databaseService;
+        newUserForm = new NewUserForm(databaseService);
         this.securityService = new SecurityService(authenticationContext);
         addClassName("userManagement-view");
 
@@ -125,14 +126,19 @@ public class UserManagement extends VerticalLayout {
     }
 
     private void configureForm() {
-        userForm = new EditUserForm();
+        userForm = new EditUserForm(databaseService);
         userForm.setSizeFull();
         userForm.addCloseListener(e -> closeEditor()); // add listener to close form
         userForm.addSaveListener(this::saveUser); // add listener to save ticket - doesn't work yet
 
         newUserForm.setSizeFull();
         newUserForm.addCloseListener(e -> closeEditor()); // add listener to close form
-        //newUserForm.addSaveListener(this::saveUser); // add listener to save ticket - doesn't work yet
+        newUserForm.addSaveListener(this::saveUser); // add listener to save ticket - doesn't work yet
+    }
+
+    private void saveUser(NewUserForm.SaveEvent saveEvent) {
+        updateList();
+        closeEditor();
     }
 
     // Saves user, updates the grid and closes editor/form
@@ -144,7 +150,7 @@ public class UserManagement extends VerticalLayout {
 
     // update the grid
     private void updateList() {
-        // grid.setItems(service.findallTickets(filterText.getValue())); // After DB integration
+        grid.setItems(databaseService.getAllUsers()); // After DB integration
     }
 
     private void configureGrid() {

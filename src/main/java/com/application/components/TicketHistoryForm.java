@@ -164,7 +164,7 @@ public class TicketHistoryForm extends FormLayout {
         //binder.bind(ticketNumber, "ticketNumber");
         binder.forField(ticketNumber)
                 .withValidator(new RegexpValidator("Only numbers allowed!", "\\d*"))
-                .bind(Ticket::getTicketNumber, Ticket::setTicketNumber);
+                .bind("ticketNumber");
         binder.bind(ticketName, "ticketName");
         binder.bind(description, "description");
         binder.bind(ticketType, "ticketType");

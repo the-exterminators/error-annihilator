@@ -312,7 +312,7 @@ public class ProjectSingleView extends VerticalLayout implements HasUrlParameter
         }
 
         public boolean test(Ticket ticket) {
-            boolean matchesNumber = matches(ticket.getTicketNumber(), number);
+            boolean matchesNumber = matches(ticket.getTicketNumber().toString(), number);
             boolean matchesTitle = matches(ticket.getTicketName(), title);
             boolean matchesType = matches(ticket.getTicketType(), type);
             boolean matchesStatus = matches(ticket.getTicketStatus().getStatusName(), status);

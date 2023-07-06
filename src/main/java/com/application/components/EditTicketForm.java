@@ -13,6 +13,7 @@ import com.vaadin.flow.component.html.H2;
 import com.vaadin.flow.component.messages.MessageInput;
 import com.vaadin.flow.component.messages.MessageList;
 import com.vaadin.flow.component.messages.MessageListItem;
+import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
@@ -160,7 +161,7 @@ public class EditTicketForm extends FormLayout {
         //binder.bind(ticketNumber, "ticketNumber");
         binder.forField(ticketNumber)
                 .withValidator(new RegexpValidator("Only numbers allowed!", "\\d*"))
-                .bind(Ticket::getTicketNumber, Ticket::setTicketNumber);
+                .bind("ticketNumber");
         binder.bind(ticketName, "ticketName");
         binder.bind(description, "description");
         binder.bind(ticketType, "ticketType");
@@ -232,6 +233,17 @@ public class EditTicketForm extends FormLayout {
     private void validateAndSave() {
         try {
             binder.writeBean(ticket);
+            databaseService.updateTicket(Integer.valueOf(ticket.getTicketNumber()),
+                    databaseService.getTicketTypeId(ticket.getTicketType()),
+                    databaseService.getTicketStatus(ticket.getTicketStatus().getStatusName()),
+                    databaseService.getProjectId(ticket.getTicketProject().getProjectName()),
+                    databaseService.getUrgencyId(ticket.getUrgency()));
+            // Provide feedback after update
+            Notification notification = new Notification(
+                    "Details updated successfully!",
+                    5000,
+                    Notification.Position.MIDDLE);
+            notification.open();
             fireEvent(new SaveEvent(this, ticket));
         } catch (ValidationException e){
             e.printStackTrace();

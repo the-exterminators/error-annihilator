@@ -40,6 +40,11 @@ public class DatabaseService {
         return jdbcTemplate.queryForObject(query, Integer.class, ticketId);
     }
 
+    public int getTicketStatus(String status_name){
+        String query = "SELECT status_id FROM status WHERE status_name = ?";
+        return jdbcTemplate.queryForObject(query, Integer.class, status_name);
+    }
+
     public TicketStatus getStatusByID(Integer id) {
         String sql = "SELECT * FROM status WHERE status_ID = ?";
         return jdbcTemplate.queryForObject(sql, new Object[]{id}, (rs, rowNum) ->
@@ -192,6 +197,11 @@ public class DatabaseService {
         return jdbcTemplate.queryForObject(query, String.class, ID);
     }
 
+    public Integer getRoleByName(String name){
+        String query = "SELECT role_id FROM ROLES WHERE role_name = ?";
+        return jdbcTemplate.queryForObject(query, Integer.class, name);
+    }
+
     // Using this for the Role Dropdowns
     public List<String> getAllRoles(){
         String query = "SELECT role_name FROM roles";
@@ -239,7 +249,7 @@ public class DatabaseService {
     // Using this to get a list of users (using entity)
     // Second getAllUsersDB() --> Uses DB instead of Entity, look below
     public List<User> getAllUsers() {
-        String sql = "SELECT * FROM USERS";
+        String sql = "SELECT * FROM USERS WHERE is_active = true";
         List<User> users = new ArrayList<>();
         List<Map<String, Object>> rows = jdbcTemplate.queryForList(sql);
 
@@ -264,7 +274,7 @@ public class DatabaseService {
 
     // using this to get a list of users (just their usernames)
     public List<String> getAllUsernames() {
-        String sql = "SELECT * FROM USERS";
+        String sql = "SELECT * FROM USERS WHERE is_active = true";
         List<String> usernames = new ArrayList<>();
         List<Map<String, Object>> rows = jdbcTemplate.queryForList(sql);
 
@@ -434,7 +444,7 @@ public class DatabaseService {
      */
 
     public List<String> getAllProjectItems() {
-        String query = "SELECT title FROM projects";
+        String query = "SELECT title FROM projects WHERE is_active = true";
         return jdbcTemplate.queryForList(query, String.class);
     }
 
@@ -450,7 +460,7 @@ public class DatabaseService {
 
     // Jana: Brauchte TicketProject Items, sorry für die hässliche Benennung
     public List<TicketProject> getAllProjectItems2() {
-        String query = "SELECT * FROM projects";
+        String query = "SELECT * FROM projects where is_active = true";
         return jdbcTemplate.query(query,
                 (rs, rowNum) ->
                         new TicketProject(
