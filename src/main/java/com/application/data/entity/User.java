@@ -27,7 +27,7 @@ public class User extends AbstractEntity implements UserDetails {
         this.userRole = userRole;
     }
 
-    public User(Long id, String firstName, String lastName, String userName, String email, String dummyPassword, String userRole) {
+    public User(Integer id, String firstName, String lastName, String userName, String email, String dummyPassword, String userRole) {
         this.user_id = id;
         this.firstName = firstName;
         this.lastName = lastName;
@@ -40,7 +40,7 @@ public class User extends AbstractEntity implements UserDetails {
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "idgenerator")
     @SequenceGenerator(name = "idgenerator")
-    private Long user_id;
+    private Integer user_id;
 
     @NotEmpty
     private String firstName = "";
@@ -76,11 +76,11 @@ public class User extends AbstractEntity implements UserDetails {
         return firstName + " " + lastName;
     }
 
-    public Long getUser_id() {
+    public Integer getUser_id() {
         return user_id;
     }
 
-    public void setUser_id(Long user_id) {
+    public void setUser_id(Integer user_id) {
         this.user_id = user_id;
     }
 

@@ -27,6 +27,8 @@ import com.vaadin.flow.data.validator.RegexpValidator;
 import com.vaadin.flow.function.ValueProvider;
 import com.vaadin.flow.shared.Registration;
 import jakarta.annotation.security.PermitAll;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.sql.Timestamp;
 import java.time.Instant;
@@ -68,11 +70,17 @@ public class TicketHistoryForm extends FormLayout {
     HorizontalLayout buttonSection;
 
     DatabaseService databaseService;
+    String currentPrincipalName ="";
 
     // Constructor
     public TicketHistoryForm(DatabaseService databaseService) {
         this.databaseService = databaseService;
         addClassName("ticket-form");
+
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if(authentication != null) {
+            currentPrincipalName = authentication.getName();
+        }
 
         ticketNumber.setPattern("\\d*");
 
@@ -190,10 +198,9 @@ public class TicketHistoryForm extends FormLayout {
 
     // Creates the comments layout and updates the comments
     private Component createCommentsLayout() {
+        MessageInput input = new MessageInput();
         input.addSubmitListener(submitEvent -> {
-            User user = new User();
-            user.setUserName("UserName");
-            ticket.getTicketComment().add(new TicketComment(submitEvent.getValue(), user, ticket));
+            ticket.getTicketComment().add(new TicketComment(submitEvent.getValue(), databaseService.getUserByUsername(currentPrincipalName), ticket, Timestamp.from(Instant.now())));
             validateAndUpdate();
         });
         return new VerticalLayout(new H2("Comments"), ticketComments, input);
@@ -235,7 +242,7 @@ public class TicketHistoryForm extends FormLayout {
             if (this.commentList != null) {
                 for(TicketComment element : this.commentList){
                     realComments.add(new MessageListItem(element.getCommentText(),
-                            Instant.now(),
+                            element.getCreated().toInstant(),
                             element.getCommentAuthor().getUserName())
                     );
                 }
@@ -252,6 +259,7 @@ public class TicketHistoryForm extends FormLayout {
                         input.setVisible(true);
                     }
                     if(!ticket.getTicketStatus().getStatusName().equalsIgnoreCase("new")){
+                        ticketNumber.setReadOnly(true);
                         ticketName.setReadOnly(true);
                         description.setReadOnly(true);
                         createdTimeStamp.setReadOnly(true);
@@ -263,6 +271,7 @@ public class TicketHistoryForm extends FormLayout {
                         ticketProject.setReadOnly(true);
                         assignedUsersMulti.setReadOnly(true);
                     } else {
+                        ticketNumber.setReadOnly(true);
                         ticketName.setReadOnly(false);
                         description.setReadOnly(false);
                         createdTimeStamp.setReadOnly(true);
