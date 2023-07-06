@@ -116,7 +116,7 @@ public class ProjectManagementTest {
 
     @Test
     public void testTitleFilter() {
-        String filterValue = "test";
+        String filterValue = "Project 1";
 
         // Open the login page
         driver.get("http://localhost:8080/login");
@@ -160,7 +160,7 @@ public class ProjectManagementTest {
 
 
         // Find the title filter input element and enter the filter value
-        WebElement titleFilterInput = driver.findElement(By.cssSelector("input[placeholder='Filter Title ...']"));
+        WebElement titleFilterInput = driver.findElement(By.cssSelector("vaadin-grid-cell-content[slot='vaadin-grid-cell-content-3'] vaadin-text-field input"));
         titleFilterInput.click();
         titleFilterInput.sendKeys(filterValue);
 
@@ -179,7 +179,7 @@ public class ProjectManagementTest {
 
     @Test
     public void testDescriptionFilter() {
-        String filterValue = "test";
+        String filterValue = "Test Description";
 
         // Open the login page
         driver.get("http://localhost:8080/login");
@@ -222,7 +222,7 @@ public class ProjectManagementTest {
         WebElement verticalLayout = waitView.until(ExpectedConditions.presenceOfElementLocated(By.cssSelector("vaadin-vertical-layout.content")));
 
         // Find the title filter input element and enter the filter value
-        WebElement descriptionFilterInput = driver.findElement(By.cssSelector("input[placeholder='Filter Description ...']"));
+        WebElement descriptionFilterInput = driver.findElement(By.cssSelector("vaadin-grid-cell-content[slot='vaadin-grid-cell-content-4'] vaadin-text-field input"));
         descriptionFilterInput.click();
         descriptionFilterInput.sendKeys(filterValue);
 
@@ -241,7 +241,7 @@ public class ProjectManagementTest {
 
     @Test
     public void testProjectLeadFilter() {
-        String filterValue = "test";
+        String filterValue = "Jana Burns";
 
         // Open the login page
         driver.get("http://localhost:8080/login");
@@ -284,7 +284,7 @@ public class ProjectManagementTest {
         WebElement verticalLayout = waitView.until(ExpectedConditions.presenceOfElementLocated(By.cssSelector("vaadin-vertical-layout.content")));
 
         // Find the title filter input element and enter the filter value
-        WebElement descriptionFilterInput = driver.findElement(By.cssSelector("input[placeholder='Filter Project Leader ...']"));
+        WebElement descriptionFilterInput = driver.findElement(By.cssSelector("vaadin-grid-cell-content[slot='vaadin-grid-cell-content-5'] vaadin-combo-box input"));
         descriptionFilterInput.click();
         descriptionFilterInput.sendKeys(filterValue);
 
