@@ -1,6 +1,8 @@
 package com.application.views;
 
 import com.application.components.Header;
+import com.application.data.service.DatabaseConnectionException;
+import com.application.data.service.DatabaseManager;
 import com.application.data.service.DatabaseService;
 import com.application.security.SecurityService;
 import com.vaadin.flow.component.avatar.Avatar;
@@ -22,6 +24,7 @@ import jakarta.annotation.security.PermitAll;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 
+
 import java.util.List;
 
 @PermitAll
@@ -42,8 +45,8 @@ public class CreateTicket extends VerticalLayout {
     private final MenuBar buttons = new MenuBar();
     String currentPrincipalName ="";
 
-    public CreateTicket(DatabaseService databaseService, AuthenticationContext authenticationContext) {
-        this.databaseService = databaseService;
+    public CreateTicket(AuthenticationContext authenticationContext) throws DatabaseConnectionException {
+        this.databaseService = DatabaseManager.getDatabaseService();
         securityService = new SecurityService(authenticationContext);
         Header header = new Header(authenticationContext);
         header.setContent(getCreateTicketContent());
@@ -141,7 +144,16 @@ public class CreateTicket extends VerticalLayout {
             String title = ticketName.getValue();
             String desc = description.getValue();
 
-            // Always sets the status of a newly created ticket to "New"
+            // Validate inputs
+            if (title.isEmpty() || desc.isEmpty()) {
+                Notification.show("Please enter a title and description!.",
+                        5000,
+                        Notification.Position.MIDDLE);
+                return;
+            }
+
+            try {
+                // Always sets the status of a newly created ticket to "New"
             int statusId = 1;
 
             // Get the ticket type
@@ -175,6 +187,13 @@ public class CreateTicket extends VerticalLayout {
             ticketType.setValue(databaseService.getTicketTypeName(1));
             urgency.setValue(databaseService.getUrgencyName(1));
             projectType.setValue(databaseService.getProjectName(1));
+            } catch (Exception e) {
+                e.printStackTrace();
+                // Handle database connection error
+                Notification.show("Failed to create ticket. No connection to the database. Please try again later.",
+                        8000,
+                        Notification.Position.MIDDLE);
+            }
 
         });
     }
