@@ -1,6 +1,7 @@
 package com.application.views;
 
 import com.application.components.Header;
+import com.application.data.entity.User;
 import com.application.data.service.DatabaseService;
 import com.application.security.SecurityService;
 import com.vaadin.flow.component.avatar.Avatar;
@@ -44,15 +45,16 @@ public class CreateTicket extends VerticalLayout {
 
     public CreateTicket(DatabaseService databaseService, AuthenticationContext authenticationContext) {
         this.databaseService = databaseService;
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if(authentication != null) {
+            currentPrincipalName = authentication.getName();
+        }
         securityService = new SecurityService(authenticationContext);
         Header header = new Header(authenticationContext);
         header.setContent(getCreateTicketContent());
         add(header);
 
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        if(authentication != null) {
-            currentPrincipalName = authentication.getName();
-        }
+
     }
 
     private VerticalLayout getCreateTicketContent() {
@@ -65,7 +67,8 @@ public class CreateTicket extends VerticalLayout {
         fullContent.add(title);
 
         // Avatar needs to be changed to the real user later on
-        avatar.setName("Isabelle Mariacher");
+        User currentUser = databaseService.getUserByUsername(currentPrincipalName);
+        avatar.setName(currentUser.getFirstName() + " " + currentUser.getLastName());
         fullContent.add(new HorizontalLayout(avatar, new Paragraph(avatar.getName())));
 
         FormLayout formContent = new FormLayout();
