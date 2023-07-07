@@ -127,7 +127,7 @@ public class ProjectManagement extends VerticalLayout {
 
     // update the grid
     private void updateList() {
-        // grid.setItems(service.findallTickets(filterText.getValue())); // After DB integration
+         grid.setItems(databaseService.getAllProjectItems2()); // After DB integration
     }
 
     // FORM =======================================
@@ -140,7 +140,12 @@ public class ProjectManagement extends VerticalLayout {
 
         newProjectForm.setSizeFull();
         newProjectForm.addCloseListener(e -> closeEditor()); // add listener to close form
-        //newProjectForm.addSaveListener(this::saveProject); // add listener to save ticket - doesn't work yet
+        newProjectForm.addSaveListener(this::saveProject); // add listener to save ticket - doesn't work yet
+    }
+
+    private void saveProject(NewProjectForm.SaveEvent saveEvent) {
+        updateList();
+        closeEditor();
     }
 
     // GRID ====================================
@@ -163,7 +168,7 @@ public class ProjectManagement extends VerticalLayout {
         HeaderRow headerRow = grid.appendHeaderRow();
         headerRow.getCell(titleColumn).setComponent(createFilterHeader(projectFilter::setTitle));
         headerRow.getCell(descriptionColumn).setComponent(createFilterHeader(projectFilter::setDescription));
-        editComboFilter(headerRow, leaderColumn, databaseService.getAllUsernames(), projectFilter::setLead);
+        editComboFilter(headerRow, leaderColumn, databaseService.getAllUsers(), projectFilter::setLead);
 
 
         // Grid Size Settings

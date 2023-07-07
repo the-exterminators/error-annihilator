@@ -21,7 +21,9 @@ import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.spring.security.AuthenticationContext;
 import jakarta.annotation.security.PermitAll;
-import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+
 
 import java.util.List;
 
@@ -41,6 +43,7 @@ public class CreateTicket extends VerticalLayout {
 
     private final TextField ticketName = new TextField();
     private final MenuBar buttons = new MenuBar();
+    String currentPrincipalName ="";
 
     public CreateTicket(AuthenticationContext authenticationContext) throws DatabaseConnectionException {
         this.databaseService = DatabaseManager.getDatabaseService();
@@ -48,6 +51,11 @@ public class CreateTicket extends VerticalLayout {
         Header header = new Header(authenticationContext);
         header.setContent(getCreateTicketContent());
         add(header);
+
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if(authentication != null) {
+            currentPrincipalName = authentication.getName();
+        }
     }
 
     private VerticalLayout getCreateTicketContent() {
@@ -146,37 +154,39 @@ public class CreateTicket extends VerticalLayout {
 
             try {
                 // Always sets the status of a newly created ticket to "New"
-                int statusId = 1;
+            int statusId = 1;
 
-                // Get the ticket type
-                String selectedTicketType = ticketType.getValue();
-                int typeId = databaseService.getTicketTypeId(selectedTicketType);
+            // Get the ticket type
+            String selectedTicketType = ticketType.getValue();
+            int typeId = databaseService.getTicketTypeId(selectedTicketType);
 
-                // Get the urgency
-                String selectedUrgency = urgency.getValue();
-                int urgencyId = databaseService.getUrgencyId(selectedUrgency);
+            // Get the urgency
+            String selectedUrgency = urgency.getValue();
+            int urgencyId = databaseService.getUrgencyId(selectedUrgency);
 
-                // Get the project type
-                String selectedProjectItem = projectType.getValue();
-                int projectId = databaseService.getProjectId(selectedProjectItem);
 
-                // Get the id of the user that created the ticket, added later on
-                int creatorId = 1; // Defined later on
+            // Get the project type
+            String selectedProjectItem = projectType.getValue();
+            int projectId = databaseService.getProjectId(selectedProjectItem);
 
-                // Create the ticket
-                databaseService.createTicket(title, desc, statusId, typeId, creatorId, urgencyId, projectId);
+            // Get the id of the user that created the ticket, added later on
+            int creatorId = databaseService.getUserByUsername(currentPrincipalName).getUser_id(); // Defined later on
 
-                // Provide success feedback after creating the ticket
-                Notification.show("Ticket created successfully!",
-                        5000,
-                        Notification.Position.MIDDLE);
+            databaseService.createTicket(title, desc, statusId, typeId, creatorId, urgencyId, projectId);
 
-                // Clear the data in the title and description fields and reset the combo boxes to the first value in the list
-                ticketName.clear();
-                description.clear();
-                ticketType.setValue(databaseService.getTicketTypeName(1));
-                urgency.setValue(databaseService.getUrgencyName(1));
-                projectType.setValue(databaseService.getProjectName(1));
+            // Provide feedback after creating the ticket
+            Notification notification = new Notification(
+                    "Ticket created successfully!",
+                    5000,
+                    Notification.Position.MIDDLE);
+            notification.open();
+
+            // Clear the data in the title and description fields and reset the combo boxes to the first value in the list
+            ticketName.clear();
+            description.clear();
+            ticketType.setValue(databaseService.getTicketTypeName(1));
+            urgency.setValue(databaseService.getUrgencyName(1));
+            projectType.setValue(databaseService.getProjectName(1));
             } catch (Exception e) {
                 e.printStackTrace();
                 // Handle database connection error
@@ -184,6 +194,7 @@ public class CreateTicket extends VerticalLayout {
                         8000,
                         Notification.Position.MIDDLE);
             }
+
         });
     }
 }

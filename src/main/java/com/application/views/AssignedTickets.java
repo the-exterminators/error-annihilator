@@ -23,6 +23,8 @@ import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.spring.security.AuthenticationContext;
 import jakarta.annotation.security.PermitAll;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.time.LocalDate;
 import java.util.*;
@@ -34,6 +36,7 @@ import java.util.function.Consumer;
 public class AssignedTickets extends VerticalLayout {
     Grid<Ticket> grid = new Grid<>(Ticket.class, false);
     EditTicketForm ticketForm; // Form/Editor
+    String currentPrincipalName ="";
     H1 title = new H1("My Assigned Tickets");
 
     private final SecurityService securityService;
@@ -44,6 +47,11 @@ public class AssignedTickets extends VerticalLayout {
         this.databaseService = databaseService;
         this.securityService = new SecurityService(authenticationContext);
         addClassName("assignedTickets-view");
+
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if(authentication != null) {
+            currentPrincipalName = authentication.getName();
+        }
 
         // This is how to implement the header
         setSizeFull();
@@ -119,27 +127,6 @@ public class AssignedTickets extends VerticalLayout {
     // GRID ====================================
     // Configure the grid
     private void configureGrid() {
-        // Test users
-        List<Ticket> testTickets = new ArrayList<>();
-        List<User> testUsers = new LinkedList<>();
-        List<User> testUsers2 = new LinkedList<>();
-        User testUser = new User("Jana", "Burns", "Burnsjana", "bj4780@mci4me.at", "1234", "dev");
-        User testUser2 = new User("Isabelle", "Mariacher", "MariacherIsabelle", "mi4780@mci4me.at", "1234", "dev");
-        testUsers.add(testUser);
-        testUsers2.add(testUser);
-        testUsers2.add(testUser2);
-
-        // Test ticket 1
-        Ticket ticketOne = new Ticket("1", "I need help", "bug", "test test test", new TicketStatus("resolved"), new TicketProject(1L, "Project 1", "test", testUser), testUser, testUsers2);
-        List<TicketComment> listOne = new ArrayList<>();
-        listOne.add(new TicketComment("hello", testUser, ticketOne));
-        ticketOne.setTicketComment(listOne);
-        testTickets.add(ticketOne);
-
-        // Test ticket 2
-        Ticket ticketTwo = new Ticket("2", "hello", "defect", "hallo hallo", new TicketStatus("waiting for approval"), new TicketProject(2L, "Project 2", "test", testUser), testUser, testUsers);
-        testTickets.add(ticketTwo);
-
         // Columns
         Grid.Column<Ticket> numberColumn = grid.addColumn("ticketNumber").setHeader("Number").setWidth("0.5em");
         Grid.Column<Ticket> createdColumn = grid.addColumn(new LocalDateRenderer<>(ticket -> ticket.getCreatedTimeStamp().toLocalDateTime().toLocalDate())).setHeader("Created");
@@ -170,7 +157,9 @@ public class AssignedTickets extends VerticalLayout {
         grid.asSingleSelect().addValueChangeListener(e -> ticketForm.updateAssignedUsers());
 
         // Set items for grid
-        GridListDataView<Ticket> dataView = grid.setItems(testTickets); // replace with dataservice.getTickets()
+        //GridListDataView<Ticket> dataView = grid.setItems(testTickets); // replace with dataservice.getTickets()
+        Integer user_id = Math.toIntExact(databaseService.getUserByUsername(currentPrincipalName).getUser_id());
+        GridListDataView<Ticket> dataView = grid.setItems(databaseService.getAssignedTickets(user_id));
 
         // Filter - https://vaadin.com/docs/latest/components/grid
         TicketFilter ticketFilter = new TicketFilter(dataView);
@@ -178,9 +167,9 @@ public class AssignedTickets extends VerticalLayout {
         HeaderRow headerRow = grid.appendHeaderRow();
         headerRow.getCell(numberColumn).setComponent(createFilterHeader(ticketFilter::setNumber));
         headerRow.getCell(titleColumn).setComponent(createFilterHeader(ticketFilter::setTitle));
-        editComboFilter(headerRow, typeColumn, Arrays.asList("bug", "defect", "error"), ticketFilter::setType);
-        editComboFilter(headerRow, projectColumn, Arrays.asList("Project 1", "Project 2", "Project 3"), ticketFilter::setProject);
-        editComboFilter(headerRow, statusColumn, Arrays.asList("New", "In Progress", "Waiting For Approval","Resolved", "Rejected", "Reopened"), ticketFilter::setStatus);
+        editComboFilter(headerRow, typeColumn, databaseService.getAllTicketTypes(), ticketFilter::setType);
+        editComboFilter(headerRow, projectColumn, databaseService.getAllProjectItems(), ticketFilter::setProject);
+        editComboFilter(headerRow, statusColumn, databaseService.getAllTicketStatus(), ticketFilter::setStatus);
         createDateHeader(headerRow, createdColumn, dataView);
 
         // Grid Size Settings
@@ -282,7 +271,7 @@ public class AssignedTickets extends VerticalLayout {
         }
 
         public boolean test(Ticket ticket) {
-            boolean matchesNumber = matches(ticket.getTicketNumber(), number);
+            boolean matchesNumber = matches(ticket.getTicketNumber().toString(), number);
             boolean matchesTitle = matches(ticket.getTicketName(), title);
             boolean matchesType = matches(ticket.getTicketType(), type);
             boolean matchesStatus = matches(ticket.getTicketStatus().getStatusName(), status);

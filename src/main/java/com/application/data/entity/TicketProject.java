@@ -8,7 +8,7 @@ import jakarta.validation.constraints.NotNull;
 @Entity
 public class TicketProject extends AbstractEntity {
     @NotEmpty
-    private Long projectId = 0L;
+    private Integer projectId = 0;
 
     @NotEmpty
     private String projectName = "";
@@ -20,18 +20,18 @@ public class TicketProject extends AbstractEntity {
 
     public TicketProject() {}
 
-    public TicketProject(Long projectId, String projectName, String projectDescription, User projectLead) {
+    public TicketProject(Integer projectId, String projectName, String projectDescription, User projectLead) {
         this.projectId = projectId;
         this.projectName = projectName;
         this.projectDescription = projectDescription;
         this.projectLead = projectLead;
     }
 
-    public Long getProjectId(){
+    public Integer getProjectId(){
         return projectId;
     }
 
-    public void setProjectId(Long ID){
+    public void setProjectId(Integer ID){
         this.projectId = ID;
     }
 
