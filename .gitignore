@@ -161,3 +161,4 @@ vite.generated.ts
 tsconfig.json
 types.d.ts
 frontend/generated/
+src/main/dev-bundle/webapp/VAADIN/build/
