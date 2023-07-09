@@ -3,6 +3,7 @@
 CREATE TABLE roles (
     role_id serial,
     role_name varchar(50),
+    role_security varchar(255),
     Primary Key (role_id)
 );
 

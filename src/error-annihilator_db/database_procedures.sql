@@ -125,7 +125,7 @@ Create Or Replace Procedure SetProjectInactive(arg_project_id integer)
 AS $$
     Begin
         Update projects
-        Set is_active = false;
+        Set is_active = false
         Where project_id = arg_project_id;
     End;
 $$ Language plpgsql;
@@ -135,7 +135,7 @@ Create Or Replace Procedure SetProjectActive(arg_project_Id integer)
 AS $$
     Begin
         Update projects
-        Set is_active = true;
+        Set is_active = true
         Where project_id = arg_project_id;
     End;
 $$ Language plpgsql;
