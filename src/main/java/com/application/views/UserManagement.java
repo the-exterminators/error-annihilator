@@ -18,7 +18,9 @@ import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.component.textfield.TextFieldVariant;
+import com.vaadin.flow.data.provider.ListDataProvider;
 import com.vaadin.flow.data.value.ValueChangeMode;
+import com.vaadin.flow.function.SerializablePredicate;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.spring.security.AuthenticationContext;
@@ -37,6 +39,7 @@ public class UserManagement extends VerticalLayout {
     NewUserForm newUserForm; // Form/Editor for new users
     H1 title = new H1("User Management");
     Button newUser = new Button("New User");
+    GridListDataView<User> dataView;
 
     private final SecurityService securityService;
     private final DatabaseService databaseService;
@@ -143,14 +146,13 @@ public class UserManagement extends VerticalLayout {
 
     // Saves user, updates the grid and closes editor/form
     private void saveUser(EditUserForm.SaveEvent event) {
-        // service.saveTicket(event.getTicket()); // After DB integration
         updateList();
         closeEditor();
     }
 
     // update the grid
     private void updateList() {
-        grid.setItems(databaseService.getAllUsers()); // After DB integration
+        dataView = grid.setItems(databaseService.getAllUsers()); // After DB integration
     }
 
     private void configureGrid() {
@@ -165,10 +167,10 @@ public class UserManagement extends VerticalLayout {
         grid.asSingleSelect().addValueChangeListener(e -> editUser(e.getValue()));
 
         // Set items for grid
-        GridListDataView<User> dataView = grid.setItems(databaseService.getAllUsers());
+        updateList();
 
         // Filter - https://vaadin.com/docs/latest/components/grid
-        UserManagement.UserFilter userFilter = new UserManagement.UserFilter(dataView);
+        UserFilter userFilter = new UserFilter(dataView);
         grid.getHeaderRows().clear();
         HeaderRow headerRow = grid.appendHeaderRow();
         headerRow.getCell(titleColumn).setComponent(createFilterHeader(userFilter::setUserName));

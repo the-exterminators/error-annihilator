@@ -64,6 +64,13 @@ public class NewUserForm extends FormLayout {
                     Notification.Position.MIDDLE);
             notification.open();
             fireEvent(new NewUserForm.SaveEvent(this));
+            // Clear the data in the title and description fields and reset the combo boxes to the first value in the list
+            firstName.clear();
+            lastName.clear();
+            userName.clear();
+            dummyPassword.clear();
+            email.clear();
+            userRole.clear();
         });
         close.addClickListener(event -> fireEvent(new NewUserForm.CloseEvent(this)));
 

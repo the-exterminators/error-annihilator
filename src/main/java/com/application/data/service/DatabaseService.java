@@ -357,6 +357,44 @@ public class DatabaseService {
         return users;
     }
 
+    public List<User> getAllDevelopers() {
+        String sql = "SELECT * FROM USERS WHERE is_active = true AND role_id = 3";
+        List<User> users = new ArrayList<>();
+        List<Map<String, Object>> rows = jdbcTemplate.queryForList(sql);
+
+        for (Map row : rows) {
+            User obj = new User();
+            obj.setUser_id((Integer) row.get("user_id"));
+            obj.setFirstName(row.get("first_name").toString());
+            obj.setLastName(row.get("last_name").toString());
+            obj.setUserName(row.get("username").toString());
+            obj.setEmail(row.get("email").toString());
+            obj.setDummyPassword(row.get("passwordhash").toString());
+            obj.setUserRole(getRoleById((Integer) row.get("role_id")));
+            users.add(obj);
+        }
+        return users;
+    }
+
+    public List<User> getAllLeads() {
+        String sql = "SELECT * FROM USERS WHERE is_active = true AND role_id = 2";
+        List<User> users = new ArrayList<>();
+        List<Map<String, Object>> rows = jdbcTemplate.queryForList(sql);
+
+        for (Map row : rows) {
+            User obj = new User();
+            obj.setUser_id((Integer) row.get("user_id"));
+            obj.setFirstName(row.get("first_name").toString());
+            obj.setLastName(row.get("last_name").toString());
+            obj.setUserName(row.get("username").toString());
+            obj.setEmail(row.get("email").toString());
+            obj.setDummyPassword(row.get("passwordhash").toString());
+            obj.setUserRole(getRoleById((Integer) row.get("role_id")));
+            users.add(obj);
+        }
+        return users;
+    }
+
     public List<Map<String, Object>> getAllUsersDB() {
         String query = "SELECT * FROM getallusers()";
         return jdbcTemplate.queryForList(query);
@@ -365,6 +403,30 @@ public class DatabaseService {
     // using this to get a list of users (just their usernames)
     public List<String> getAllUsernames() {
         String sql = "SELECT * FROM USERS WHERE is_active = true";
+        List<String> usernames = new ArrayList<>();
+        List<Map<String, Object>> rows = jdbcTemplate.queryForList(sql);
+
+        for (Map row : rows) {
+            usernames.add(row.get("first_name").toString() + " " + row.get("last_name").toString());
+        }
+
+        return usernames;
+    }
+
+    public List<String> getAllLeadsNames() {
+        String sql = "SELECT * FROM USERS WHERE is_active = true AND role_id = 2";
+        List<String> usernames = new ArrayList<>();
+        List<Map<String, Object>> rows = jdbcTemplate.queryForList(sql);
+
+        for (Map row : rows) {
+            usernames.add(row.get("first_name").toString() + " " + row.get("last_name").toString());
+        }
+
+        return usernames;
+    }
+
+    public List<String> getAllDevelopersNames() {
+        String sql = "SELECT * FROM USERS WHERE is_active = true AND role_id = 3";
         List<String> usernames = new ArrayList<>();
         List<Map<String, Object>> rows = jdbcTemplate.queryForList(sql);
 
@@ -442,9 +504,9 @@ public class DatabaseService {
         jdbcTemplate.update(query, userId);
     }
 
-    public void updateCurrentUserInfo(int userId, String firstName, String lastName, String username, String email) {
-        String query = "CALL updatecurrentuserinfo(?, ?, ?, ?, ?)";
-        jdbcTemplate.update(query, userId, firstName, lastName, username, email);
+    public void updateCurrentUserInfo(int userId, String firstName, String lastName, String username, String email, int roleId) {
+        String query = "UPDATE users SET role_id = ?, first_name = ?, last_name = ?, username = ?, email = ? WHERE user_id = ?";
+        jdbcTemplate.update(query, roleId, firstName, lastName, username, email, userId);
     }
 
     public void updateCurrentUserPasswordHash(int userId, String passwordHash) {
@@ -547,6 +609,11 @@ public class DatabaseService {
         return jdbcTemplate.queryForList(query, String.class);
     }
 
+    public List<String> getAllProjectItemsActive() {
+        String query = "SELECT title FROM projects WHERE is_active = true";
+        return jdbcTemplate.queryForList(query, String.class);
+    }
+
     public int getProjectId(String projectType) {
         String query = "SELECT project_id FROM projects WHERE title = ?";
         return jdbcTemplate.queryForObject(query, Integer.class, projectType);
@@ -560,6 +627,19 @@ public class DatabaseService {
     // Jana: Brauchte TicketProject Items, sorry für die hässliche Benennung
     public List<TicketProject> getAllProjectItems2() {
         String query = "SELECT * FROM projects";
+        return jdbcTemplate.query(query,
+                (rs, rowNum) ->
+                        new TicketProject(
+                                rs.getInt("project_id"),
+                                rs.getString("title"),
+                                rs.getString("description"),
+                                getUserByID(rs.getInt("project_lead")),
+                                rs.getBoolean("is_active")
+                        ));
+    }
+
+    public List<TicketProject> getAllProjectItems2Active() {
+        String query = "SELECT * FROM projects WHERE is_active = true";
         return jdbcTemplate.query(query,
                 (rs, rowNum) ->
                         new TicketProject(

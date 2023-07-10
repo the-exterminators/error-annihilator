@@ -95,7 +95,6 @@ public class EditTicketForm extends FormLayout {
         // set items Assigned Users
         assignedUsers.setItems(databaseService.getAllUsers());
         assignedUsersMulti.setItems(databaseService.getAllUsers());
-        //updateAssignedUsers();
         assignedUsers.addValueChangeListener(event -> updateAssignedUsers());
 
         setProjectSampleData(ticketProject);
@@ -127,7 +126,7 @@ public class EditTicketForm extends FormLayout {
     }
     // Sample data for project, type and status
     private void setProjectSampleData(ComboBox<TicketProject> comboBox){
-        List<TicketProject> projects = databaseService.getAllProjectItems2();
+        List<TicketProject> projects = databaseService.getAllProjectItems2Active();
         comboBox.setItems(projects);
     }
     private void setTypeSampleData(ComboBox<String> comboBox){

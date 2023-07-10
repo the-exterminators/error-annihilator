@@ -70,6 +70,6 @@ public class UserProfile extends VerticalLayout {
 
     // Saves user, updates the grid and closes editor/form
     private void saveUser(UserProfileForm.SaveEvent event) {
-         //databaseService.manageUpdateUser(event.getUser().); // After DB integration
+         currentUser = event.getUser();
     }
 }

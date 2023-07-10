@@ -108,7 +108,7 @@ public class SingleTicketForm extends FormLayout {
     }
     // Sample data for project, type and status
     private void setProjectSampleData(ComboBox<String> comboBox){
-        List<String> projects = databaseService.getAllProjectItems();
+        List<String> projects = databaseService.getAllProjectItemsActive();
         comboBox.setItems(projects);
         comboBox.setValue(projects.get(0));
     }

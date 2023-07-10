@@ -82,7 +82,7 @@ public class ProjectOverview extends VerticalLayout {
         HeaderRow headerRow = grid.appendHeaderRow();
         headerRow.getCell(titleColumn).setComponent(createFilterHeader(projectFilter::setTitle));
         headerRow.getCell(descriptionColumn).setComponent(createFilterHeader(projectFilter::setDescription));
-        editComboFilter(headerRow, leaderColumn, databaseService.getAllUsernames(), projectFilter::setLead);
+        editComboFilter(headerRow, leaderColumn, databaseService.getAllLeadsNames(), projectFilter::setLead);
 
         List<String> items = new ArrayList<>();
         items.add("True");

@@ -37,6 +37,7 @@ public class ProjectManagement extends VerticalLayout {
     Button newProject = new Button("New Project");
     private final SecurityService securityService;
     private final DatabaseService databaseService;
+    GridListDataView<TicketProject> dataView;
     H1 title = new H1("Project Management");
 
     public ProjectManagement(DatabaseService databaseService, AuthenticationContext authenticationContext) {
@@ -129,7 +130,7 @@ public class ProjectManagement extends VerticalLayout {
 
     // update the grid
     private void updateList() {
-         grid.setItems(databaseService.getAllProjectItems2()); // After DB integration
+         dataView = grid.setItems(databaseService.getAllProjectItems2()); // After DB integration
     }
 
     // FORM =======================================
@@ -163,7 +164,7 @@ public class ProjectManagement extends VerticalLayout {
         grid.asSingleSelect().addValueChangeListener(e -> editProject(e.getValue()));
 
         // Set items for grid
-        GridListDataView<TicketProject> dataView = grid.setItems(databaseService.getAllProjectItems2());
+        updateList();
 
         // Filter - https://vaadin.com/docs/latest/components/grid
         ProjectFilter projectFilter = new ProjectFilter(dataView);
@@ -171,7 +172,7 @@ public class ProjectManagement extends VerticalLayout {
         HeaderRow headerRow = grid.appendHeaderRow();
         headerRow.getCell(titleColumn).setComponent(createFilterHeader(projectFilter::setTitle));
         headerRow.getCell(descriptionColumn).setComponent(createFilterHeader(projectFilter::setDescription));
-        editComboFilter(headerRow, leaderColumn, databaseService.getAllUsernames(), projectFilter::setLead);
+        editComboFilter(headerRow, leaderColumn, databaseService.getAllLeadsNames(), projectFilter::setLead);
 
         List<String> items = new ArrayList<>();
         items.add("True");

@@ -130,7 +130,7 @@ public class TicketHistoryForm extends FormLayout {
     }
     // Sample data for project, type and status
     private void setProjectSampleData(ComboBox<String> comboBox){
-        List<String> projects = databaseService.getAllProjectItems();
+        List<String> projects = databaseService.getAllProjectItemsActive();
         comboBox.setItems(projects);
         comboBox.setValue(projects.get(0));
     }
@@ -290,7 +290,9 @@ public class TicketHistoryForm extends FormLayout {
             this.ticketComments.setItems(realComments);
             getUI().ifPresent(ui -> {
                 ui.access(() -> {
-                    if(!ticket.getTicketStatus().getStatusName().equalsIgnoreCase("new")){
+                    if(ticket.getTicketStatus().getStatusName().equalsIgnoreCase("new")){
+                        save.setVisible(true);
+                    } else {
                         save.setVisible(false);
                     }
                     if(ticket.getTicketStatus().getStatusName().equalsIgnoreCase("resolved") ||
