@@ -1,6 +1,7 @@
 package com.application.components;
 
 import com.application.data.entity.TicketProject;
+import com.application.data.entity.User;
 import com.application.data.service.DatabaseService;
 import com.vaadin.flow.component.ComponentEvent;
 import com.vaadin.flow.component.ComponentEventListener;
@@ -29,7 +30,7 @@ public class EditProjectForm extends FormLayout {
     // Ticket entity fields
     TextField projectName = new TextField("Title");
     TextArea projectDescription = new TextArea("Description");
-    ComboBox<String> projectLead = new ComboBox<>("Project Lead");
+    ComboBox<User> projectLead = new ComboBox<>("Project Lead");
 
     // Buttons
     Button save = new Button("Save");
@@ -56,7 +57,7 @@ public class EditProjectForm extends FormLayout {
 
         binder.bind(projectName, "projectName");
         binder.bind(projectDescription, "projectDescription");
-        binder.bind(projectLead, "projectLead.userName");
+        binder.bind(projectLead, "projectLead");
 
         setProjectLeadSampleData(projectLead);
 
@@ -105,7 +106,7 @@ public class EditProjectForm extends FormLayout {
     private void validateAndSave() {
         try {
             binder.writeBean(ticketProject);
-            databaseService.updateProject(Math.toIntExact(ticketProject.getProjectId()), ticketProject.getProjectName(), ticketProject.getProjectDescription(), ticketProject.getProjectLead().getUser_id(), true);
+            databaseService.updateProject(Math.toIntExact(ticketProject.getProjectId()), projectName.getValue(), projectDescription.getValue(), projectLead.getValue().getUser_id(), ticketProject.getIs_active());
             // Provide feedback after update
             Notification notification = new Notification(
                     "Details updated successfully!",
@@ -128,8 +129,8 @@ public class EditProjectForm extends FormLayout {
         }
     }
 
-    private void setProjectLeadSampleData(ComboBox<String> comboBox){
-        comboBox.setItems(databaseService.getAllUsernames());
+    private void setProjectLeadSampleData(ComboBox<User> comboBox){
+        comboBox.setItems(databaseService.getAllLeads());
     }
 
     // Save Event for saving ticket

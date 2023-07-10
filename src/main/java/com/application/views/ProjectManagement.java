@@ -21,11 +21,13 @@ import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.spring.security.AuthenticationContext;
 import jakarta.annotation.security.PermitAll;
+import jakarta.annotation.security.RolesAllowed;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
 
-@PermitAll // Declare roles manager/admin
+@PermitAll
 @PageTitle("Project Management | Error Annihilator")
 @Route(value = "project-management")
 public class ProjectManagement extends VerticalLayout {
@@ -35,6 +37,7 @@ public class ProjectManagement extends VerticalLayout {
     Button newProject = new Button("New Project");
     private final SecurityService securityService;
     private final DatabaseService databaseService;
+    GridListDataView<TicketProject> dataView;
     H1 title = new H1("Project Management");
 
     public ProjectManagement(DatabaseService databaseService, AuthenticationContext authenticationContext) {
@@ -127,7 +130,7 @@ public class ProjectManagement extends VerticalLayout {
 
     // update the grid
     private void updateList() {
-         grid.setItems(databaseService.getAllProjectItems2()); // After DB integration
+         dataView = grid.setItems(databaseService.getAllProjectItems2()); // After DB integration
     }
 
     // FORM =======================================
@@ -155,12 +158,13 @@ public class ProjectManagement extends VerticalLayout {
         Grid.Column<TicketProject> titleColumn = grid.addColumn("projectName").setHeader("Title");
         Grid.Column<TicketProject> descriptionColumn = grid.addColumn("projectDescription").setHeader("Description");
         Grid.Column<TicketProject> leaderColumn = grid.addColumn("projectLead").setHeader("Project Lead");
+        Grid.Column<TicketProject> activeColumn = grid.addColumn("is_active").setHeader("Active");
 
         // Add listeners
         grid.asSingleSelect().addValueChangeListener(e -> editProject(e.getValue()));
 
         // Set items for grid
-        GridListDataView<TicketProject> dataView = grid.setItems(databaseService.getAllProjectItems2());
+        updateList();
 
         // Filter - https://vaadin.com/docs/latest/components/grid
         ProjectFilter projectFilter = new ProjectFilter(dataView);
@@ -168,7 +172,12 @@ public class ProjectManagement extends VerticalLayout {
         HeaderRow headerRow = grid.appendHeaderRow();
         headerRow.getCell(titleColumn).setComponent(createFilterHeader(projectFilter::setTitle));
         headerRow.getCell(descriptionColumn).setComponent(createFilterHeader(projectFilter::setDescription));
-        editComboFilter(headerRow, leaderColumn, databaseService.getAllUsers(), projectFilter::setLead);
+        editComboFilter(headerRow, leaderColumn, databaseService.getAllLeadsNames(), projectFilter::setLead);
+
+        List<String> items = new ArrayList<>();
+        items.add("True");
+        items.add("False");
+        editComboFilterActive(headerRow, activeColumn, items, projectFilter::setActive);
 
 
         // Grid Size Settings
@@ -210,12 +219,30 @@ public class ProjectManagement extends VerticalLayout {
         return comboBox;
     }
 
+    private ComboBox editComboFilterActive(HeaderRow headerRow, Grid.Column<TicketProject> gridColumn, List items, Consumer<String> consumer) {
+        ComboBox<String> comboBox = new ComboBox<>();
+        comboBox.addClassName("filter-header-item");
+        comboBox.setPlaceholder("Filter");
+        comboBox.setClearButtonVisible(true);
+        comboBox.getStyle().set("font-size", "var(--lumo-font-size-xs)");
+        comboBox.setWidth("100%");
+        comboBox.setItems(items);
+        comboBox.setValue("True");
+        consumer.accept("True");
+
+        comboBox.addValueChangeListener(e -> consumer.accept(e.getValue()));
+        headerRow.getCell(gridColumn).setComponent(comboBox);
+
+        return comboBox;
+    }
+
     // Class to filter projects in grid
     private static class ProjectFilter {
         private final GridListDataView<TicketProject> dataView;
         private String title;
         private String description;
         private String lead;
+        private String is_active;
 
         public ProjectFilter(GridListDataView<TicketProject> dataView) {
             this.dataView = dataView;
@@ -237,13 +264,19 @@ public class ProjectManagement extends VerticalLayout {
             this.dataView.refreshAll();
         }
 
+        public void setActive(String is_active) {
+            this.is_active = is_active;
+            this.dataView.refreshAll();
+        }
+
 
         public boolean test(TicketProject ticketProject) {
             boolean matchesTitle = matches(ticketProject.getProjectName(), title);
             boolean matchesDescr = matches(ticketProject.getProjectDescription(), description);
-            boolean matchesLead = matches(ticketProject.getProjectLead().getUserName(), lead);
+            boolean matchesLead = matches(ticketProject.getProjectLead().toString(), lead);
+            boolean matchesActive = matches(ticketProject.getIs_active().toString(), is_active);
 
-            return matchesTitle && matchesDescr && matchesLead;
+            return matchesTitle && matchesDescr && matchesLead & matchesActive;
         }
 
         private boolean matches(String value, String searchTerm) {

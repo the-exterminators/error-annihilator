@@ -10,6 +10,8 @@ public class TicketProject extends AbstractEntity {
     @NotEmpty
     private Integer projectId = 0;
 
+    private Boolean is_active = true;
+
     @NotEmpty
     private String projectName = "";
     @NotEmpty
@@ -27,8 +29,29 @@ public class TicketProject extends AbstractEntity {
         this.projectLead = projectLead;
     }
 
+    public TicketProject(Integer projectId, String projectName, String projectDescription, User projectLead, Boolean is_active) {
+        this.projectId = projectId;
+        this.projectName = projectName;
+        this.projectDescription = projectDescription;
+        this.projectLead = projectLead;
+        this.is_active = is_active;
+    }
+
+    @Override
+    public String toString() {
+        return projectName;
+    }
+
     public Integer getProjectId(){
         return projectId;
+    }
+
+    public Boolean getIs_active() {
+        return is_active;
+    }
+
+    public void setIs_active(Boolean is_active) {
+        this.is_active = is_active;
     }
 
     public void setProjectId(Integer ID){

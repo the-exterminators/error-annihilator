@@ -13,6 +13,7 @@ import com.vaadin.flow.component.html.H2;
 import com.vaadin.flow.component.messages.MessageInput;
 import com.vaadin.flow.component.messages.MessageList;
 import com.vaadin.flow.component.messages.MessageListItem;
+import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
@@ -51,6 +52,7 @@ public class TicketHistoryForm extends FormLayout {
     ComboBox<TicketStatus> ticketStatus = new ComboBox<>("Status"); // I want this to be a dropdown of predefined statuses
     TextField ticketCreator = new TextField("Creator");
     EmailField creatorMail = new EmailField("Creator Email");
+    ComboBox<String> urgency = new ComboBox<>("Urgency"); // for binding
     ComboBox<List<User>> assignedUsers = new ComboBox<>("Assignees"); // for binding
     MultiSelectComboBox<String> assignedUsersMulti = new MultiSelectComboBox<>("Assignees"); // for display
 
@@ -62,10 +64,12 @@ public class TicketHistoryForm extends FormLayout {
 
     // Buttons
     Button reopen = new Button("Reopen");
+    Button save = new Button("Save");
     Button close = new Button("Close");
 
     // comments
     Component commentSection = createCommentsLayout();
+
     // buttons
     HorizontalLayout buttonSection;
 
@@ -100,8 +104,9 @@ public class TicketHistoryForm extends FormLayout {
         setProjectSampleData(ticketProject);
         setTypeSampleData(ticketType);
         setStatusSampleData(ticketStatus);
+        urgency.setItems(databaseService.getAllUrgencyItems());
 
-        HorizontalLayout formRow = new HorizontalLayout(createdTimeStamp, ticketCreator, creatorMail);
+        HorizontalLayout formRow = new HorizontalLayout(ticketCreator, creatorMail);
         formRow.addClassName("formRow");
         setColspan(formRow, 2);
 
@@ -113,6 +118,8 @@ public class TicketHistoryForm extends FormLayout {
             ticketName,
             description,
             formRow,
+            urgency,
+            createdTimeStamp,
             ticketType,
             ticketStatus,
             ticketProject,
@@ -123,7 +130,7 @@ public class TicketHistoryForm extends FormLayout {
     }
     // Sample data for project, type and status
     private void setProjectSampleData(ComboBox<String> comboBox){
-        List<String> projects = databaseService.getAllProjectItems();
+        List<String> projects = databaseService.getAllProjectItemsActive();
         comboBox.setItems(projects);
         comboBox.setValue(projects.get(0));
     }
@@ -133,7 +140,7 @@ public class TicketHistoryForm extends FormLayout {
         comboBox.setValue(ticketTypes.get(0));
     }
     private void setStatusSampleData(ComboBox<TicketStatus> comboBox){
-        comboBox.setItems(new TicketStatus("unassigned"), new TicketStatus("open"), new TicketStatus("in progress"), new TicketStatus("waiting for approval"), new TicketStatus("closed"));
+        comboBox.setItems(databaseService.getAllTicketStatusEntityList());
     }
 
     // Update Assigned Users on select in grid
@@ -161,7 +168,6 @@ public class TicketHistoryForm extends FormLayout {
         );
 
         // Bind rest
-        //binder.bind(ticketNumber, "ticketNumber");
         binder.forField(ticketNumber)
                 .withValidator(new RegexpValidator("Only numbers allowed!", "\\d*"))
                 .bind("ticketNumber");
@@ -174,6 +180,7 @@ public class TicketHistoryForm extends FormLayout {
         binder.bind(creatorMail, "ticketCreator.email");
         binder.bind(assignedUsers, "assignedUsers");
         binder.bind(ticketComment, "ticketComment");
+        binder.bind(urgency, "urgency");
     }
 
     // Style and Design stuff
@@ -202,6 +209,7 @@ public class TicketHistoryForm extends FormLayout {
         input.addSubmitListener(submitEvent -> {
             ticket.getTicketComment().add(new TicketComment(submitEvent.getValue(), databaseService.getUserByUsername(currentPrincipalName), ticket, Timestamp.from(Instant.now())));
             validateAndUpdate();
+            databaseService.createComment(submitEvent.getValue(), Integer.parseInt(ticket.getTicketNumber()), databaseService.getUserByUsername(currentPrincipalName).getUser_id());
         });
         return new VerticalLayout(new H2("Comments"), ticketComments, input);
     }
@@ -209,15 +217,18 @@ public class TicketHistoryForm extends FormLayout {
     // Creates the button layout to save and cancel the form
     private HorizontalLayout createButtonsLayout() {
         reopen.addThemeVariants(ButtonVariant.LUMO_TERTIARY);
+        save.addThemeVariants(ButtonVariant.LUMO_TERTIARY);
         close.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
 
-        reopen.addClickListener(event -> validateAndSave());
+        reopen.addClickListener(event -> reopenTicket());
+        save.addClickListener(event -> validateAndSave());
         close.addClickListener(event -> fireEvent(new CloseEvent(this)));
 
         reopen.addClickShortcut(Key.ENTER);
+        save.addClickShortcut(Key.ENTER);
         close.addClickShortcut(Key.ESCAPE);
 
-        HorizontalLayout content = new HorizontalLayout(reopen, close);
+        HorizontalLayout content = new HorizontalLayout(save, reopen, close);
 
         content.setJustifyContentMode(FlexComponent.JustifyContentMode.END);
 
@@ -228,6 +239,35 @@ public class TicketHistoryForm extends FormLayout {
     private void validateAndSave() {
         try {
             binder.writeBean(ticket);
+            databaseService.updateTicket(Integer.valueOf(ticket.getTicketNumber()),
+                    databaseService.getTicketTypeId(ticket.getTicketType()),
+                    databaseService.getTicketStatus(ticket.getTicketStatus().getStatusName()),
+                    databaseService.getProjectId(ticketProject.getValue()),
+                    databaseService.getUrgencyId(ticket.getUrgency()),
+                    ticket.getTicketName(),
+                    ticket.getDescription());
+            // Provide feedback after update
+            Notification notification = new Notification(
+                    "Details updated successfully!",
+                    5000,
+                    Notification.Position.MIDDLE);
+            notification.open();
+            fireEvent(new TicketHistoryForm.SaveEvent(this, ticket));
+        } catch (ValidationException e){
+            e.printStackTrace();
+        }
+    }
+
+    private void reopenTicket() {
+        try {
+            databaseService.setStatus(Integer.parseInt(ticket.getTicketNumber()));
+            binder.writeBean(ticket);
+            // Provide feedback after update
+            Notification notification = new Notification(
+                    "Ticket reopened successfully!",
+                    5000,
+                    Notification.Position.MIDDLE);
+            notification.open();
             fireEvent(new SaveEvent(this, ticket));
         } catch (ValidationException e){
             e.printStackTrace();
@@ -250,8 +290,13 @@ public class TicketHistoryForm extends FormLayout {
             this.ticketComments.setItems(realComments);
             getUI().ifPresent(ui -> {
                 ui.access(() -> {
-                    if(ticket.getTicketStatus().getStatusName().endsWith("esolved") ||
-                        ticket.getTicketStatus().getStatusName().endsWith("ejected")) {
+                    if(ticket.getTicketStatus().getStatusName().equalsIgnoreCase("new")){
+                        save.setVisible(true);
+                    } else {
+                        save.setVisible(false);
+                    }
+                    if(ticket.getTicketStatus().getStatusName().equalsIgnoreCase("resolved") ||
+                        ticket.getTicketStatus().getStatusName().equalsIgnoreCase("rejected")) {
                         reopen.setVisible(true);
                         input.setVisible(false);
                     } else {
@@ -265,7 +310,7 @@ public class TicketHistoryForm extends FormLayout {
                         createdTimeStamp.setReadOnly(true);
                         ticketCreator.setReadOnly(true);
                         creatorMail.setReadOnly(true);
-                        ticketNumber.setReadOnly(true);
+                        urgency.setReadOnly(true);
                         ticketType.setReadOnly(true);
                         ticketStatus.setReadOnly(true);
                         ticketProject.setReadOnly(true);
@@ -277,7 +322,7 @@ public class TicketHistoryForm extends FormLayout {
                         createdTimeStamp.setReadOnly(true);
                         ticketCreator.setReadOnly(true);
                         creatorMail.setReadOnly(true);
-                        ticketNumber.setReadOnly(false);
+                        urgency.setReadOnly(false);
                         ticketType.setReadOnly(false);
                         ticketStatus.setReadOnly(true);
                         ticketProject.setReadOnly(false);

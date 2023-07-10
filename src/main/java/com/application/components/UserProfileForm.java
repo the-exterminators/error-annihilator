@@ -102,7 +102,7 @@ public class UserProfileForm extends FormLayout {
         try {
             binder.writeBean(user);
             BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
-            databaseService.updateCurrentUserInfo(Math.toIntExact(user.getUser_id()), user.getFirstName(), user.getLastName(), user.getUserName(), user.getEmail());
+            databaseService.updateCurrentUserInfo(Math.toIntExact(user.getUser_id()), user.getFirstName(), user.getLastName(), user.getUserName(), user.getEmail(), databaseService.getRoleByName(user.getUserRole()));
             databaseService.updateCurrentUserPasswordHash(Math.toIntExact(user.getUser_id()), encoder.encode(dummyPassword.getValue()));
             // Provide feedback after update
             Notification notification = new Notification(
@@ -110,6 +110,8 @@ public class UserProfileForm extends FormLayout {
                     5000,
                     Notification.Position.MIDDLE);
             notification.open();
+            dummyPassword.clear();
+            fireEvent(new UserProfileForm.SaveEvent(this, user));
         } catch (ValidationException e){
             e.printStackTrace();
         }

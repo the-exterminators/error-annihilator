@@ -5,9 +5,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 
 import java.sql.Timestamp;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Service
 public class DatabaseService {
@@ -49,7 +47,7 @@ public class DatabaseService {
         String sql = "SELECT * FROM status WHERE status_ID = ?";
         return jdbcTemplate.queryForObject(sql, new Object[]{id}, (rs, rowNum) ->
                 new TicketStatus(
-                        (long) rs.getInt("status_id"),
+                        (int) rs.getInt("status_id"),
                         rs.getString("status_name")
                 ));
     }
@@ -57,6 +55,25 @@ public class DatabaseService {
     public List<String> getAllTicketStatus() {
         String query = "SELECT status_name FROM status";
         return jdbcTemplate.queryForList(query, String.class);
+    }
+
+    public List<TicketStatus> getAllTicketStatusEntityList(){
+        String query = "SELECT * FROM status";
+        List<TicketStatus> status = new ArrayList<>();
+        List<Map<String, Object>> rows = jdbcTemplate.queryForList(query);
+        for (Map row : rows) {
+            TicketStatus obj = new TicketStatus(
+                    (Integer) row.get("status_id"),
+                    row.get("status_name").toString()
+            );
+            status.add(obj);
+        }
+        return status;
+    }
+
+    public void setStatus(int ticketId){
+        String query = "UPDATE tickets SET status_id = 5 WHERE ticket_id = ?";
+        jdbcTemplate.update(query, ticketId);
     }
 
     public int getTicketTypeId(int ticketId) {
@@ -174,14 +191,87 @@ public class DatabaseService {
     // Setters
 
     public void createTicket(String title, String description, int statusId, int typeId, int creatorId, int urgencyId, int projectId) {
-        String query = "CALL createticket(?, ?, ?, ?, ?, ?, ?)";
-        jdbcTemplate.update(query, title, description, statusId, typeId, creatorId, urgencyId, projectId);
+        //String query = "CALL createticket(?, ?, ?, ?, ?, ?, ?)";
+        String query = "INSERT INTO tickets VALUES (?, ?, ?, ?, ?, CURRENT_TIMESTAMP, null, ?, ?, ?)";
+        jdbcTemplate.update(query, getNextTicketId(), title, description, statusId, typeId, creatorId, urgencyId, projectId);
+    }
+
+    public Integer getNextTicketId(){
+        String query = "SELECT max(ticket_id) From tickets";
+        Integer id = jdbcTemplate.queryForObject(query, Integer.class);
+        if(id == null){
+            id = 0;
+        }
+        return id + 1;
     }
 
 
     public void updateTicket(int ticketId, int updateTypeId, int updateStatusId, int updateProjectId, int updateUrgencyId) {
         String query = "CALL updateticket(?, ?, ?, ?, ?)";
         jdbcTemplate.update(query, ticketId, updateTypeId, updateStatusId, updateProjectId, updateUrgencyId);
+    }
+
+    public void updateTicket(int ticketId, int updateTypeId, int updateStatusId, int updateProjectId, int updateUrgencyId, String title, String description) {
+        String query = "UPDATE tickets SET type_id = ?," +
+                "status_id = ?," +
+                "project_id = ?," +
+                "urgency_id = ?," +
+                "title = ?," +
+                "description = ?" +
+                "WHERE ticket_id = ?";
+        jdbcTemplate.update(query, updateTypeId, updateStatusId, updateProjectId, updateUrgencyId, title, description, ticketId);
+    }
+
+    public Integer getNextTauId(){
+        String query = "SELECT max(tau_id) From tickets_assigned_users";
+        Integer id = jdbcTemplate.queryForObject(query, Integer.class);
+        if(id == null){
+            id = 0;
+        }
+        return id + 1;
+    }
+
+    // loop through all entries related to the ticket and compare if they are in the list
+    // Excuse the complicated function, it can surely be easier than this :(
+    public void updateAssignedUser(int ticketId, Set<User> users){
+        List<User> currentUsers = getAllUsersAssignedToTicketEntity(ticketId);
+        Set<User> newUsers = new HashSet<>();
+
+        // Loop through all current assigned users
+        if(!currentUsers.isEmpty()) {
+            Boolean deleteUser = true;
+            for (User currUser : currentUsers) {
+                // Loop through our new user list
+                for (User user : users) {
+                    // if the new user exists we dont want to delete the current user
+                    if (user.getUser_id() == currUser.getUser_id()) {
+                        deleteUser = false;
+                        // if the array doesnt already contain the user, we want to add the user to the new users
+                    } else if (!newUsers.contains(user)) { // also need to compare to other currUsers
+                        Boolean addUser = true;
+                        for(User currUser2 : currentUsers) {
+                            if(currUser2.getUser_id() == user.getUser_id()) {
+                                addUser = false;
+                            }
+                        }
+                        if(addUser){
+                            newUsers.add(user);
+                        }
+                    }
+                }
+                if (deleteUser) {
+                    String query = "DELETE FROM tickets_assigned_users WHERE user_id = ? AND ticket_id = ?";
+                    jdbcTemplate.update(query, currUser.getUser_id(), ticketId);
+                }
+                deleteUser = true;
+            }
+        } else {
+            newUsers = users;
+        }
+        for(User user : newUsers){
+            String query = "INSERT INTO tickets_assigned_users VALUES(?,?,?)";
+            jdbcTemplate.update(query, getNextTauId(), ticketId, user.getUser_id());
+        }
     }
 
 
@@ -267,6 +357,44 @@ public class DatabaseService {
         return users;
     }
 
+    public List<User> getAllDevelopers() {
+        String sql = "SELECT * FROM USERS WHERE is_active = true AND role_id = 3";
+        List<User> users = new ArrayList<>();
+        List<Map<String, Object>> rows = jdbcTemplate.queryForList(sql);
+
+        for (Map row : rows) {
+            User obj = new User();
+            obj.setUser_id((Integer) row.get("user_id"));
+            obj.setFirstName(row.get("first_name").toString());
+            obj.setLastName(row.get("last_name").toString());
+            obj.setUserName(row.get("username").toString());
+            obj.setEmail(row.get("email").toString());
+            obj.setDummyPassword(row.get("passwordhash").toString());
+            obj.setUserRole(getRoleById((Integer) row.get("role_id")));
+            users.add(obj);
+        }
+        return users;
+    }
+
+    public List<User> getAllLeads() {
+        String sql = "SELECT * FROM USERS WHERE is_active = true AND role_id = 2";
+        List<User> users = new ArrayList<>();
+        List<Map<String, Object>> rows = jdbcTemplate.queryForList(sql);
+
+        for (Map row : rows) {
+            User obj = new User();
+            obj.setUser_id((Integer) row.get("user_id"));
+            obj.setFirstName(row.get("first_name").toString());
+            obj.setLastName(row.get("last_name").toString());
+            obj.setUserName(row.get("username").toString());
+            obj.setEmail(row.get("email").toString());
+            obj.setDummyPassword(row.get("passwordhash").toString());
+            obj.setUserRole(getRoleById((Integer) row.get("role_id")));
+            users.add(obj);
+        }
+        return users;
+    }
+
     public List<Map<String, Object>> getAllUsersDB() {
         String query = "SELECT * FROM getallusers()";
         return jdbcTemplate.queryForList(query);
@@ -275,6 +403,30 @@ public class DatabaseService {
     // using this to get a list of users (just their usernames)
     public List<String> getAllUsernames() {
         String sql = "SELECT * FROM USERS WHERE is_active = true";
+        List<String> usernames = new ArrayList<>();
+        List<Map<String, Object>> rows = jdbcTemplate.queryForList(sql);
+
+        for (Map row : rows) {
+            usernames.add(row.get("first_name").toString() + " " + row.get("last_name").toString());
+        }
+
+        return usernames;
+    }
+
+    public List<String> getAllLeadsNames() {
+        String sql = "SELECT * FROM USERS WHERE is_active = true AND role_id = 2";
+        List<String> usernames = new ArrayList<>();
+        List<Map<String, Object>> rows = jdbcTemplate.queryForList(sql);
+
+        for (Map row : rows) {
+            usernames.add(row.get("first_name").toString() + " " + row.get("last_name").toString());
+        }
+
+        return usernames;
+    }
+
+    public List<String> getAllDevelopersNames() {
+        String sql = "SELECT * FROM USERS WHERE is_active = true AND role_id = 3";
         List<String> usernames = new ArrayList<>();
         List<Map<String, Object>> rows = jdbcTemplate.queryForList(sql);
 
@@ -352,9 +504,9 @@ public class DatabaseService {
         jdbcTemplate.update(query, userId);
     }
 
-    public void updateCurrentUserInfo(int userId, String firstName, String lastName, String username, String email) {
-        String query = "CALL updatecurrentuserinfo(?, ?, ?, ?, ?)";
-        jdbcTemplate.update(query, userId, firstName, lastName, username, email);
+    public void updateCurrentUserInfo(int userId, String firstName, String lastName, String username, String email, int roleId) {
+        String query = "UPDATE users SET role_id = ?, first_name = ?, last_name = ?, username = ?, email = ? WHERE user_id = ?";
+        jdbcTemplate.update(query, roleId, firstName, lastName, username, email, userId);
     }
 
     public void updateCurrentUserPasswordHash(int userId, String passwordHash) {
@@ -370,8 +522,17 @@ public class DatabaseService {
 
     // Calling the createcomment Procedure from the db
     public void createComment(String commentText, int ticketId, int userId) {
-        String query = "CALL createcomment(?, ?, ?)";
-        jdbcTemplate.update(query, commentText, ticketId, userId);
+        String query = "Insert into comments Values(?, ?, ?, ?, CURRENT_TIMESTAMP)";
+        jdbcTemplate.update(query, getNextCommentId(), commentText, ticketId, userId);
+    }
+
+    public Integer getNextCommentId(){
+        String query = "SELECT max(comment_id) From comments";
+        Integer id = jdbcTemplate.queryForObject(query, Integer.class);
+        if(id == null){
+            id = 0;
+        }
+        return id + 1;
     }
 
 
@@ -444,6 +605,11 @@ public class DatabaseService {
      */
 
     public List<String> getAllProjectItems() {
+        String query = "SELECT title FROM projects";
+        return jdbcTemplate.queryForList(query, String.class);
+    }
+
+    public List<String> getAllProjectItemsActive() {
         String query = "SELECT title FROM projects WHERE is_active = true";
         return jdbcTemplate.queryForList(query, String.class);
     }
@@ -460,14 +626,28 @@ public class DatabaseService {
 
     // Jana: Brauchte TicketProject Items, sorry für die hässliche Benennung
     public List<TicketProject> getAllProjectItems2() {
-        String query = "SELECT * FROM projects where is_active = true";
+        String query = "SELECT * FROM projects";
         return jdbcTemplate.query(query,
                 (rs, rowNum) ->
                         new TicketProject(
                                 rs.getInt("project_id"),
                                 rs.getString("title"),
                                 rs.getString("description"),
-                                getUserByID(rs.getInt("project_lead"))
+                                getUserByID(rs.getInt("project_lead")),
+                                rs.getBoolean("is_active")
+                        ));
+    }
+
+    public List<TicketProject> getAllProjectItems2Active() {
+        String query = "SELECT * FROM projects WHERE is_active = true";
+        return jdbcTemplate.query(query,
+                (rs, rowNum) ->
+                        new TicketProject(
+                                rs.getInt("project_id"),
+                                rs.getString("title"),
+                                rs.getString("description"),
+                                getUserByID(rs.getInt("project_lead")),
+                                rs.getBoolean("is_active")
                         ));
     }
 

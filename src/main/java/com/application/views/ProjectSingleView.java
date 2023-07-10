@@ -12,6 +12,7 @@ import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.datepicker.DatePicker;
 import com.vaadin.flow.component.grid.Grid;
+import com.vaadin.flow.component.grid.GridSortOrder;
 import com.vaadin.flow.component.grid.HeaderRow;
 import com.vaadin.flow.component.grid.dataview.GridListDataView;
 import com.vaadin.flow.component.html.H1;
@@ -22,6 +23,8 @@ import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextField;
+import com.vaadin.flow.component.textfield.TextFieldVariant;
+import com.vaadin.flow.data.provider.SortDirection;
 import com.vaadin.flow.data.renderer.ComponentRenderer;
 import com.vaadin.flow.data.renderer.LocalDateRenderer;
 import com.vaadin.flow.data.value.ValueChangeMode;
@@ -33,10 +36,12 @@ import java.util.function.Consumer;
 
 import com.vaadin.flow.spring.security.AuthenticationContext;
 import jakarta.annotation.security.PermitAll;
+import org.springframework.dao.EmptyResultDataAccessException;
 
 @PermitAll
 @PageTitle("Project Single View | Error Annihilator")
 @Route(value = "project")
+@PreserveOnRefresh
 public class ProjectSingleView extends VerticalLayout implements HasUrlParameter<String> {
     private final SecurityService securityService;
     private final DatabaseService databaseService;
@@ -63,17 +68,6 @@ public class ProjectSingleView extends VerticalLayout implements HasUrlParameter
         add(header); // adds Header with content into the View
     }
 
-    public void setProject(TicketProject ticketProject){
-        this.ticketProject = ticketProject;
-        System.out.println(ticketProject.getProjectId());
-        getUI().flatMap(ui -> {
-            ui.access(() -> title.setText(ticketProject.getProjectName()));
-            ui.access(() -> description.setText(ticketProject.getProjectDescription()));
-            return Optional.empty();
-        });
-        updateList();
-    }
-
     // Have all content be gathered in this function
     private VerticalLayout getContent(){
         VerticalLayout content = new VerticalLayout();
@@ -93,7 +87,6 @@ public class ProjectSingleView extends VerticalLayout implements HasUrlParameter
         content.add(description);
 
         // Add grid and form to content
-        configureGrid();
         configureForm();
         content.add(grid, ticketForm);
 
@@ -141,25 +134,40 @@ public class ProjectSingleView extends VerticalLayout implements HasUrlParameter
 
     // Saves ticket, updates the grid and closes editor/form
     private void saveTicket(EditTicketForm.SaveEvent event) {
-        //service.saveTicket(event.getTicket()); // After DB integration
         updateList();
         closeEditor();
     }
 
+    @Override
+    public void setParameter(BeforeEvent event, String parameter) {
+        try {
+            ticketProject = databaseService.getProjectEntity(databaseService.getProjectId(parameter));
+            getUI().flatMap(ui -> {
+                ui.access(() -> title.setText(ticketProject.getProjectName()));
+                ui.access(() -> description.setText(ticketProject.getProjectDescription()));
+                return Optional.empty();
+            });
+            configureGrid();
+            updateList();
+        }
+        catch (EmptyResultDataAccessException e){
+
+        }
+    }
+
     // update the grid
     private void updateList() {
-        Integer project_id = ticketProject.getProjectId();
-        System.out.println(project_id);
-        dataView = grid.setItems(databaseService.getAllTicketsFromProjectEntityList(project_id));
+        dataView = grid.setItems(databaseService.getAllTicketsFromProjectEntityList(ticketProject.getProjectId()));
     }
 
     // GRID ====================================
     // Configure the grid
     private void configureGrid() {
         // Columns
-        Grid.Column<Ticket> numberColumn = grid.addColumn("ticketNumber").setHeader("Number").setWidth("0.5em");
-        Grid.Column<Ticket> createdColumn = grid.addColumn(new LocalDateRenderer<>(ticket -> ticket.getCreatedTimeStamp().toLocalDateTime().toLocalDate())).setHeader("Created");
-        createdColumn.setSortable(true);
+        Grid.Column<Ticket> numberColumn = grid.addColumn("ticketNumber").setHeader("Number").setWidth("3em").setSortable(false);
+        Grid.Column<Ticket> createdColumn = grid.addColumn(new LocalDateRenderer<>(ticket -> ticket.getCreatedTimeStamp().toLocalDateTime().toLocalDate()))
+                .setHeader("Created")
+                .setComparator(Ticket::getCreatedTimeStamp);
         Grid.Column<Ticket> titleColumn = grid.addColumn("ticketName").setHeader("Title");
         Grid.Column<Ticket> typeColumn = grid.addColumn("ticketType").setHeader("Type");
         Grid.Column<Ticket> statusColumn = grid.addColumn(new ComponentRenderer<>(ticket -> {
@@ -186,6 +194,25 @@ public class ProjectSingleView extends VerticalLayout implements HasUrlParameter
             }
             return avatarGroup;
         })).setHeader("Assigned Users");
+        Grid.Column<Ticket> urgencyColumn = grid.addColumn(new ComponentRenderer<>(ticket -> {
+            Span span = new Span();
+            String text = ticket.getUrgency();
+            span.setText(text);
+            span.getElement().getClassList().add("urgency");
+            switch (text.toLowerCase()) {
+                case "low" -> span.getElement().getClassList().add("low");
+                case "medium" -> span.getElement().getClassList().add("medium");
+                case "high" -> span.getElement().getClassList().add("high");
+                case "higher" -> span.getElement().getClassList().add("higher");
+                case "highest" -> span.getElement().getClassList().add("highest");
+                case "critical" -> span.getElement().getClassList().add("critical");
+                case "cosmetic" -> span.getElement().getClassList().add("cosmetic");
+            }
+            return span;
+        })).setHeader("Urgency");
+
+        GridSortOrder<Ticket> order = new GridSortOrder<>(createdColumn, SortDirection.DESCENDING);
+        grid.sort(Arrays.asList(order));
 
         // Add listeners
         grid.asSingleSelect().addValueChangeListener(e -> editTicket(e.getValue()));
@@ -193,11 +220,7 @@ public class ProjectSingleView extends VerticalLayout implements HasUrlParameter
         grid.asSingleSelect().addValueChangeListener(e -> ticketForm.updateAssignedUsers());
 
         // Set items for grid
-        //GridListDataView<Ticket> dataView = grid.setItems(testTickets);
-        //Integer project_id = Math.toIntExact(databaseService.getProjectId(ticketProject.getProjectName()));
-        Integer project_id = ticketProject.getProjectId();
-        System.out.println(project_id);
-        GridListDataView<Ticket> dataView = grid.setItems(databaseService.getAllTicketsFromProjectEntityList(project_id));
+        updateList();
 
         // Filter - https://vaadin.com/docs/latest/components/grid
         TicketFilter ticketFilter = new TicketFilter(dataView);
@@ -205,16 +228,16 @@ public class ProjectSingleView extends VerticalLayout implements HasUrlParameter
         HeaderRow headerRow = grid.appendHeaderRow();
         headerRow.getCell(numberColumn).setComponent(createFilterHeader(ticketFilter::setNumber));
         headerRow.getCell(titleColumn).setComponent(createFilterHeader(ticketFilter::setTitle));
-        editComboFilter(headerRow, assignedColumn, databaseService.getAllUsers(), ticketFilter::setAssignedUsers);
+        editComboFilter(headerRow, assignedColumn, databaseService.getAllUsernames(), ticketFilter::setAssignedUsers);
         editComboFilter(headerRow, typeColumn,  databaseService.getAllTicketTypes(), ticketFilter::setType);
         editComboFilter(headerRow, statusColumn, databaseService.getAllTicketStatus(), ticketFilter::setStatus);
-        createDateHeader(headerRow, createdColumn, dataView);
+        editComboFilter(headerRow, urgencyColumn, databaseService.getAllUrgencyItems(), ticketFilter::setUrgency);
+        headerRow.getCell(createdColumn).setComponent(createDateHeader(ticketFilter::setCreated));
 
         // Grid Size Settings
         grid.setSizeFull();
         grid.addClassName("assignedTickets-grid");
         grid.setWidth("90vw");
-        //grid.getColumns().forEach(col -> col.setAutoWidth(true));
     }
 
     // FILTER ==================================
@@ -222,17 +245,17 @@ public class ProjectSingleView extends VerticalLayout implements HasUrlParameter
     private static Component createFilterHeader(Consumer<String> filterChangeConsumer) {
         TextField textField = new TextField();
         textField.setPlaceholder("Filter");
-        textField.addClassName("filter-header-item");
         textField.getStyle().set("font-size", "var(--lumo-font-size-xs)");
         textField.setValueChangeMode(ValueChangeMode.EAGER);
         textField.setClearButtonVisible(true);
+        textField.addThemeVariants(TextFieldVariant.LUMO_SMALL);
         textField.getStyle().set("max-width", "100%");
         textField.addValueChangeListener(
                 e -> filterChangeConsumer.accept(e.getValue()));
         return textField;
     }
 
-    private static void createDateHeader(HeaderRow headerRow, Grid.Column<Ticket> column, GridListDataView<Ticket> dataView) {
+    private static Component createDateHeader(Consumer<LocalDate> filterChangeConsumer) {
         DatePicker dateFilter = new DatePicker();
         dateFilter.setPlaceholder("Filter");
         dateFilter.addClassName("filter-header-item");
@@ -240,12 +263,12 @@ public class ProjectSingleView extends VerticalLayout implements HasUrlParameter
         dateFilter.getStyle().set("max-width", "100%");
         dateFilter.setClearButtonVisible(true);
         dateFilter.addValueChangeListener(
-                event -> dataView.addFilter(ticket -> areDatesEqual(ticket, dateFilter)));
-        headerRow.getCell(column).setComponent(dateFilter);
+                e -> filterChangeConsumer.accept(e.getValue()));
+        return dateFilter;
     }
 
-    private static boolean areDatesEqual(Ticket ticket, DatePicker dateFilter) {
-        LocalDate dateFilterValue = dateFilter.getValue();
+    private static boolean areDatesEqual(Ticket ticket, LocalDate dateFilter) {
+        LocalDate dateFilterValue = dateFilter;
         if (dateFilterValue != null) {
             LocalDate createdDate = ticket.getCreatedTimeStamp().toLocalDateTime().toLocalDate();
             return dateFilterValue.equals(createdDate);
@@ -267,10 +290,7 @@ public class ProjectSingleView extends VerticalLayout implements HasUrlParameter
 
     }
 
-    @Override
-    public void setParameter(BeforeEvent event, String parameter) {
 
-    }
 
     // Class to filter tickets in grid
     private static class TicketFilter {
@@ -280,6 +300,8 @@ public class ProjectSingleView extends VerticalLayout implements HasUrlParameter
         private String number;
         private String type;
         private String assignedUsers;
+        private String urgency;
+        private LocalDate created;
 
         public TicketFilter(GridListDataView<Ticket> dataView) {
             this.dataView = dataView;
@@ -311,18 +333,30 @@ public class ProjectSingleView extends VerticalLayout implements HasUrlParameter
             this.dataView.refreshAll();
         }
 
+        public void setUrgency(String urgency) {
+            this.urgency = urgency;
+            this.dataView.refreshAll();;
+        }
+
+        public void setCreated(LocalDate created){
+            this.created = created;
+            this.dataView.refreshAll();
+        }
+
         public boolean test(Ticket ticket) {
-            boolean matchesNumber = matches(ticket.getTicketNumber().toString(), number);
+            boolean matchesNumber = matches(ticket.getTicketNumber(), number);
             boolean matchesTitle = matches(ticket.getTicketName(), title);
             boolean matchesType = matches(ticket.getTicketType(), type);
             boolean matchesStatus = matches(ticket.getTicketStatus().getStatusName(), status);
-            StringBuilder userSpan = new StringBuilder();
+            String userSpan = "";
             for(User user : ticket.getAssignedUsers()){
-                userSpan.append(user.getFirstName()).append(" ").append(user.getLastName());
+                userSpan.concat(user.toString() + " ");
             }
-            boolean matchesAssigned = matches(userSpan.toString(), assignedUsers);
+            boolean matchesAssigned = matches(userSpan, assignedUsers);
+            boolean matchesCreated = areDatesEqual(ticket, created);
+            boolean matchesUrgency = matches(ticket.getUrgency(), urgency);
 
-            return matchesTitle && matchesStatus && matchesNumber && matchesType && matchesAssigned;
+            return matchesTitle && matchesStatus && matchesNumber && matchesType && matchesAssigned && matchesCreated && matchesUrgency;
         }
 
         private boolean matches(String value, String searchTerm) {

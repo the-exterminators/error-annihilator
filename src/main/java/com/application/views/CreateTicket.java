@@ -128,7 +128,7 @@ public class CreateTicket extends VerticalLayout {
     }
 
     private void setProjectTypeComboBox(ComboBox<String> comboBox) {
-        List<String> projectTypes = databaseService.getAllProjectItems();
+        List<String> projectTypes = databaseService.getAllProjectItemsActive();
         comboBox.setItems(projectTypes);
         comboBox.setValue(projectTypes.get(0));
     }

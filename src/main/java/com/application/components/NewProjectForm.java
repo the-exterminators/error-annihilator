@@ -54,6 +54,9 @@ public class NewProjectForm extends FormLayout {
                     Notification.Position.MIDDLE);
             notification.open();
             fireEvent(new NewProjectForm.SaveEvent(this));
+            projectLead.clear();
+            projectName.clear();
+            projectDescription.clear();
         });
         close.addClickListener(event -> fireEvent(new NewProjectForm.CloseEvent(this)));
 
@@ -64,7 +67,7 @@ public class NewProjectForm extends FormLayout {
     }
 
     private void setProjectLeadSampleData(ComboBox<User> comboBox){
-        comboBox.setItems(databaseService.getAllUsers());
+        comboBox.setItems(databaseService.getAllLeads());
     }
 
     // this function validates and saves the user according to the form
