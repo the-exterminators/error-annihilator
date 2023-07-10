@@ -27,6 +27,11 @@ public class TicketProject extends AbstractEntity {
         this.projectLead = projectLead;
     }
 
+    @Override
+    public String toString() {
+        return projectName;
+    }
+
     public Integer getProjectId(){
         return projectId;
     }

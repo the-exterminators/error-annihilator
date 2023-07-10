@@ -21,11 +21,12 @@ import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.spring.security.AuthenticationContext;
 import jakarta.annotation.security.PermitAll;
+import jakarta.annotation.security.RolesAllowed;
 
 import java.util.List;
 import java.util.function.Consumer;
 
-@PermitAll // Declare roles manager/admin
+@PermitAll
 @PageTitle("Project Management | Error Annihilator")
 @Route(value = "project-management")
 public class ProjectManagement extends VerticalLayout {
@@ -168,7 +169,7 @@ public class ProjectManagement extends VerticalLayout {
         HeaderRow headerRow = grid.appendHeaderRow();
         headerRow.getCell(titleColumn).setComponent(createFilterHeader(projectFilter::setTitle));
         headerRow.getCell(descriptionColumn).setComponent(createFilterHeader(projectFilter::setDescription));
-        editComboFilter(headerRow, leaderColumn, databaseService.getAllUsers(), projectFilter::setLead);
+        editComboFilter(headerRow, leaderColumn, databaseService.getAllUsernames(), projectFilter::setLead);
 
 
         // Grid Size Settings
@@ -241,7 +242,7 @@ public class ProjectManagement extends VerticalLayout {
         public boolean test(TicketProject ticketProject) {
             boolean matchesTitle = matches(ticketProject.getProjectName(), title);
             boolean matchesDescr = matches(ticketProject.getProjectDescription(), description);
-            boolean matchesLead = matches(ticketProject.getProjectLead().getUserName(), lead);
+            boolean matchesLead = matches(ticketProject.getProjectLead().toString(), lead);
 
             return matchesTitle && matchesDescr && matchesLead;
         }

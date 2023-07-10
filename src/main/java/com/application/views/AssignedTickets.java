@@ -38,6 +38,7 @@ public class AssignedTickets extends VerticalLayout {
     EditTicketForm ticketForm; // Form/Editor
     String currentPrincipalName ="";
     H1 title = new H1("My Assigned Tickets");
+    GridListDataView<Ticket> dataView;
 
     private final SecurityService securityService;
     private final DatabaseService databaseService;
@@ -121,7 +122,8 @@ public class AssignedTickets extends VerticalLayout {
 
     // update the grid
     private void updateList() {
-        // grid.setItems(service.findallTickets(filterText.getValue())); // After DB integration
+        Integer user_id = Math.toIntExact(databaseService.getUserByUsername(currentPrincipalName).getUser_id());
+        dataView = grid.setItems(databaseService.getAssignedTickets(user_id));
     }
 
     // GRID ====================================
@@ -159,7 +161,7 @@ public class AssignedTickets extends VerticalLayout {
         // Set items for grid
         //GridListDataView<Ticket> dataView = grid.setItems(testTickets); // replace with dataservice.getTickets()
         Integer user_id = Math.toIntExact(databaseService.getUserByUsername(currentPrincipalName).getUser_id());
-        GridListDataView<Ticket> dataView = grid.setItems(databaseService.getAssignedTickets(user_id));
+        dataView = grid.setItems(databaseService.getAssignedTickets(user_id));
 
         // Filter - https://vaadin.com/docs/latest/components/grid
         TicketFilter ticketFilter = new TicketFilter(dataView);
