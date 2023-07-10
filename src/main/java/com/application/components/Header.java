@@ -21,6 +21,8 @@ import com.vaadin.flow.component.textfield.NumberField;
 import com.vaadin.flow.spring.security.AuthenticationContext;
 import com.vaadin.flow.theme.lumo.LumoUtility;
 import jakarta.annotation.security.PermitAll;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 
 @PermitAll
 public class Header extends AppLayout{
@@ -29,10 +31,15 @@ public class Header extends AppLayout{
     NumberField ticketSearch = new NumberField(); // search field - not functional atm
     Button searchButton = new Button(VaadinIcon.SEARCH.create());
 
+    String authorities;
+
 
     // Constructor
     public Header(AuthenticationContext authenticationContext) {
         this.securityService = new SecurityService(authenticationContext);
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+         authorities = authentication.getAuthorities().toString();
+
         Div searchPrefix = new Div();
         searchPrefix.setText("#");
         ticketSearch.setPrefixComponent(searchPrefix);
@@ -84,29 +91,35 @@ public class Header extends AppLayout{
 
         addMenuItemToContent(content, VaadinIcon.TICKET, "Create a Ticket", CreateTicket.class);
 
-        VerticalLayout adminSubMenu = new VerticalLayout();
-        adminSubMenu.addClassName("management-submenu");
-        Icon icon = new Icon(VaadinIcon.BULLETS);
-        Paragraph management = new Paragraph(icon, new Paragraph("Management"));
-        management.addClickListener(e -> {
-            if(adminSubMenu.hasClassName("open")){
-                adminSubMenu.removeClassName("open");
-            } else {
-                adminSubMenu.addClassName("open");
-            }
-        });
-        adminSubMenu.add(management);
+        if(authorities.contains("ADMIN")) {
+            VerticalLayout adminSubMenu = new VerticalLayout();
+            adminSubMenu.addClassName("management-submenu");
+            Icon icon = new Icon(VaadinIcon.BULLETS);
+            Paragraph management = new Paragraph(icon, new Paragraph("Management"));
+            management.addClickListener(e -> {
+                if (adminSubMenu.hasClassName("open")) {
+                    adminSubMenu.removeClassName("open");
+                } else {
+                    adminSubMenu.addClassName("open");
+                }
+            });
+            adminSubMenu.add(management);
 
-        addMenuItemToContent(adminSubMenu, VaadinIcon.CLIPBOARD_TEXT, "Project Management", ProjectManagement.class, true);
-        addMenuItemToContent(adminSubMenu, VaadinIcon.CLIPBOARD_USER, "User Management", UserManagement.class, true);
-        addMenuItemToContent(adminSubMenu, VaadinIcon.LINE_BAR_CHART, "Dashboard", Dashboard.class, true);
+            addMenuItemToContent(adminSubMenu, VaadinIcon.CLIPBOARD_TEXT, "Project Management", ProjectManagement.class, true);
+            addMenuItemToContent(adminSubMenu, VaadinIcon.CLIPBOARD_USER, "User Management", UserManagement.class, true);
+            addMenuItemToContent(adminSubMenu, VaadinIcon.LINE_BAR_CHART, "Dashboard", Dashboard.class, true);
 
-        //admin.add(adminSubMenu);
-        content.add(adminSubMenu);
+            content.add(adminSubMenu);
 
-        addMenuItemToContent(content, VaadinIcon.CLIPBOARD_TEXT, "Project Overview", ProjectOverview.class);
+        }
+
+        if(authorities.contains("DEVELOPER") || authorities.contains("ADMIN") || authorities.contains("PROJECT_LEAD")) {
+            addMenuItemToContent(content, VaadinIcon.CLIPBOARD_TEXT, "Project Overview", ProjectOverview.class);
+        }
         addMenuItemToContent(content, VaadinIcon.USER, "My Profile", UserProfile.class);
-        addMenuItemToContent(content, VaadinIcon.FLAG, "My Assigned Tickets", AssignedTickets.class);
+        if(authorities.contains("DEVELOPER") || authorities.contains("ADMIN") || authorities.contains("PROJECT_LEAD")) {
+            addMenuItemToContent(content, VaadinIcon.FLAG, "My Assigned Tickets", AssignedTickets.class);
+        }
         addMenuItemToContent(content, VaadinIcon.TICKET, "My Submitted Tickets", TicketHistory.class);
         addMenuItemToContent(content, VaadinIcon.QUESTION, "Help", Help.class);
 

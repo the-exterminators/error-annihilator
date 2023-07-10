@@ -49,7 +49,7 @@ public class DatabaseService {
         String sql = "SELECT * FROM status WHERE status_ID = ?";
         return jdbcTemplate.queryForObject(sql, new Object[]{id}, (rs, rowNum) ->
                 new TicketStatus(
-                        (long) rs.getInt("status_id"),
+                        (int) rs.getInt("status_id"),
                         rs.getString("status_name")
                 ));
     }
@@ -57,6 +57,25 @@ public class DatabaseService {
     public List<String> getAllTicketStatus() {
         String query = "SELECT status_name FROM status";
         return jdbcTemplate.queryForList(query, String.class);
+    }
+
+    public List<TicketStatus> getAllTicketStatusEntityList(){
+        String query = "SELECT * FROM status";
+        List<TicketStatus> status = new ArrayList<>();
+        List<Map<String, Object>> rows = jdbcTemplate.queryForList(query);
+        for (Map row : rows) {
+            TicketStatus obj = new TicketStatus(
+                    (Integer) row.get("status_id"),
+                    row.get("status_name").toString()
+            );
+            status.add(obj);
+        }
+        return status;
+    }
+
+    public void setStatus(int ticketId){
+        String query = "UPDATE tickets SET status_id = 5 WHERE ticket_id = ?";
+        jdbcTemplate.update(query, ticketId);
     }
 
     public int getTicketTypeId(int ticketId) {
@@ -174,8 +193,18 @@ public class DatabaseService {
     // Setters
 
     public void createTicket(String title, String description, int statusId, int typeId, int creatorId, int urgencyId, int projectId) {
-        String query = "CALL createticket(?, ?, ?, ?, ?, ?, ?)";
-        jdbcTemplate.update(query, title, description, statusId, typeId, creatorId, urgencyId, projectId);
+        //String query = "CALL createticket(?, ?, ?, ?, ?, ?, ?)";
+        String query = "INSERT INTO tickets VALUES (?, ?, ?, ?, ?, CURRENT_TIMESTAMP, null, ?, ?, ?)";
+        jdbcTemplate.update(query, getNextTicketId(), title, description, statusId, typeId, creatorId, urgencyId, projectId);
+    }
+
+    public Integer getNextTicketId(){
+        String query = "SELECT max(ticket_id) From tickets";
+        Integer id = jdbcTemplate.queryForObject(query, Integer.class);
+        if(id == null){
+            id = 0;
+        }
+        return id + 1;
     }
 
 
@@ -183,6 +212,31 @@ public class DatabaseService {
         String query = "CALL updateticket(?, ?, ?, ?, ?)";
         jdbcTemplate.update(query, ticketId, updateTypeId, updateStatusId, updateProjectId, updateUrgencyId);
     }
+
+    public void updateTicket(int ticketId, int updateTypeId, int updateStatusId, int updateProjectId, int updateUrgencyId, String title, String description) {
+        String query = "UPDATE tickets SET type_id = ?," +
+                "status_id = ?," +
+                "project_id = ?," +
+                "urgency_id = ?," +
+                "title = ?," +
+                "description = ?" +
+                "WHERE ticket_id = ?";
+        jdbcTemplate.update(query, updateTypeId, updateStatusId, updateProjectId, updateUrgencyId, title, description, ticketId);
+    }
+
+    public String doesAssignedExist(int ticketId, int userId) {
+        String query = "SELECT tau_id FROM tickets_assigned_users WHERE ticket_id = ? AND user_id = ?";
+        return jdbcTemplate.queryForObject(query, String.class, ticketId, userId);
+    }
+
+    /*public void updateAssignedUsers(int ticketId, int userId){
+        if(doesAssignedExist(ticketId, userId).isEmpty()){
+            String query = "INSERT INTO tickets_assigned_users VALUES(?,?)";
+            jdbcTemplate.update(query, ticketId, userId);
+        } else {
+            String query = "DELETE FROM tickets_assigned_users WHERE ticket_id = ? AND user_id = ?"
+        }
+    }*/
 
 
     /**
@@ -370,8 +424,18 @@ public class DatabaseService {
 
     // Calling the createcomment Procedure from the db
     public void createComment(String commentText, int ticketId, int userId) {
-        String query = "CALL createcomment(?, ?, ?)";
-        jdbcTemplate.update(query, commentText, ticketId, userId);
+        System.out.println(ticketId + " " + userId + " " + commentText);
+        String query = "Insert into comments Values(?, ?, ?, ?, CURRENT_TIMESTAMP)";
+        jdbcTemplate.update(query, getNextCommentId(), commentText, ticketId, userId);
+    }
+
+    public Integer getNextCommentId(){
+        String query = "SELECT max(comment_id) From comments";
+        Integer id = jdbcTemplate.queryForObject(query, Integer.class);
+        if(id == null){
+            id = 0;
+        }
+        return id + 1;
     }
 
 

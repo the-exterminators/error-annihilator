@@ -10,6 +10,7 @@ import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.router.*;
 import com.vaadin.flow.spring.security.AuthenticationContext;
 import jakarta.annotation.security.PermitAll;
+import org.springframework.dao.EmptyResultDataAccessException;
 
 import java.util.*;
 
@@ -23,12 +24,12 @@ import java.util.*;
 @PermitAll // all roles
 @PageTitle("Searched Ticket | Error Annihilator")
 @Route(value = "ticket")
+@PreserveOnRefresh
 public class SingleTicket extends VerticalLayout implements HasUrlParameter<Integer> {
     public SingleTicketForm ticketForm; // Form/Editor
     private final SecurityService securityService;
-    Ticket ticket; // set this ticket when searched
-    long ticketNumber;
-    H1 title = new H1("Ticket # " + (int) ticketNumber);
+    Ticket ticket = new Ticket(); // set this ticket when searched
+    H1 title = new H1("Ticket # " + ticket.getTicketNumber());
     Header header;
     DatabaseService databaseService;
 
@@ -62,19 +63,8 @@ public class SingleTicket extends VerticalLayout implements HasUrlParameter<Inte
     // FORM =======================================
     // Configure the editor/form
     private void configureForm() {
-        // Test users
-        List<User> testUsers = new LinkedList<>();
-        User testUser = new User("Jana", "Burns", "Burnsjana", "bj4780@mci4me.at", "1234", "dev");
-        testUsers.add(testUser);
-
-        // Test ticket 1
-        ticket = new Ticket("1", "I need help", "bug", "test test test", new TicketStatus("open"), new TicketProject(1, "Project 1", "test", testUser), testUser, testUsers);
-        List<TicketComment> comments = new ArrayList<>();
-        comments.add(new TicketComment("hello", testUser, ticket));
-        ticket.setTicketComment(comments);
-
         ticketForm = new SingleTicketForm(databaseService); // Replace with actual lists of status
-        ticketForm.setTicket(ticket); // find ticket based on search term
+        //ticketForm.setTicket(ticket); // find ticket based on search term
         ticketForm.setSizeFull();
     }
 
@@ -88,5 +78,16 @@ public class SingleTicket extends VerticalLayout implements HasUrlParameter<Inte
             ui.access(() -> title.setText("Ticket # " + parameter));
             return Optional.empty();
         });
+        try {
+            ticket = databaseService.getTicketByIdEntity(parameter);
+            ticketForm.setTicket(ticket);
+        }
+        catch (EmptyResultDataAccessException e){
+            getUI().flatMap(ui -> {
+                ui.access(() -> title.setText("No Ticket found with number " + parameter));
+                return Optional.empty();
+            });
+        }
+
     }
 }

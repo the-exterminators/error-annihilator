@@ -153,7 +153,7 @@ public class ProjectOverview extends VerticalLayout {
         public boolean test(TicketProject ticketProject) {
             boolean matchesTitle = matches(ticketProject.getProjectName(), title);
             boolean matchesDescr = matches(ticketProject.getProjectDescription(), description);
-            boolean matchesLead = matches(ticketProject.getProjectLead().getUserName(), lead);
+            boolean matchesLead = matches(ticketProject.getProjectLead().toString(), lead);
 
             return matchesTitle && matchesDescr && matchesLead;
         }

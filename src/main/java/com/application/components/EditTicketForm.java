@@ -47,7 +47,7 @@ public class EditTicketForm extends FormLayout {
     TextField ticketNumber = new TextField("Ticket Number");
     TextArea description = new TextArea("Description");
     ComboBox<String> ticketType = new ComboBox<>("Type"); // I want this to be a dropdown of predefined types
-    ComboBox<String> ticketProject = new ComboBox<>("Project"); // Change it to Projects
+    ComboBox<TicketProject> ticketProject = new ComboBox<>("Project"); // Change it to Projects
     DateTimePicker createdTimeStamp = new DateTimePicker("Date Created");
     ComboBox<String> ticketStatus = new ComboBox<>("Status"); // I want this to be a dropdown of predefined statuses
     TextField ticketCreator = new TextField("Creator");
@@ -122,8 +122,8 @@ public class EditTicketForm extends FormLayout {
 
     }
     // Sample data for project, type and status
-    private void setProjectSampleData(ComboBox<String> comboBox){
-        List<String> projects = databaseService.getAllProjectItems();
+    private void setProjectSampleData(ComboBox<TicketProject> comboBox){
+        List<TicketProject> projects = databaseService.getAllProjectItems2();
         comboBox.setItems(projects);
     }
     private void setTypeSampleData(ComboBox<String> comboBox){
@@ -158,7 +158,6 @@ public class EditTicketForm extends FormLayout {
         );
 
         // Bind rest
-        //binder.bind(ticketNumber, "ticketNumber");
         binder.forField(ticketNumber)
                 .withValidator(new RegexpValidator("Only numbers allowed!", "\\d*"))
                 .bind("ticketNumber");
@@ -166,7 +165,7 @@ public class EditTicketForm extends FormLayout {
         binder.bind(description, "description");
         binder.bind(ticketType, "ticketType");
         binder.bind(ticketStatus, "ticketStatus.statusName");
-        binder.bind(ticketProject, "ticketProject.projectName");
+        binder.bind(ticketProject, "ticketProject");
         binder.bind(ticketCreator, "ticketCreator.userName");
         binder.bind(creatorMail, "ticketCreator.email");
         binder.bind(assignedUsers, "assignedUsers");
@@ -207,6 +206,7 @@ public class EditTicketForm extends FormLayout {
         input.addSubmitListener(submitEvent -> {
             ticket.getTicketComment().add(new TicketComment(submitEvent.getValue(), databaseService.getUserByUsername(currentPrincipalName), ticket, Timestamp.from(Instant.now())));
             validateAndUpdate();
+            databaseService.createComment(submitEvent.getValue(), Integer.parseInt(ticket.getTicketNumber()), databaseService.getUserByUsername(currentPrincipalName).getUser_id());
         });
         return new VerticalLayout(commentsTitle, ticketComments, input);
     }
@@ -236,7 +236,7 @@ public class EditTicketForm extends FormLayout {
             databaseService.updateTicket(Integer.valueOf(ticket.getTicketNumber()),
                     databaseService.getTicketTypeId(ticket.getTicketType()),
                     databaseService.getTicketStatus(ticket.getTicketStatus().getStatusName()),
-                    databaseService.getProjectId(ticket.getTicketProject().getProjectName()),
+                    ticketProject.getValue().getProjectId(),
                     databaseService.getUrgencyId(ticket.getUrgency()));
             // Provide feedback after update
             Notification notification = new Notification(
@@ -264,9 +264,6 @@ public class EditTicketForm extends FormLayout {
                 }
             }
             this.ticketComments.setItems(realComments);
-            getUI().ifPresent(ui -> ui.access(() -> {
-                commentsTitle.setVisible(!commentList.isEmpty()); // If statement
-            }));
         }
     }
 

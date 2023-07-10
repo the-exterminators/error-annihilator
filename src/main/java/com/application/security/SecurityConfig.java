@@ -36,9 +36,6 @@ public class SecurityConfig extends VaadinWebSecurity {
     }
 
     @Autowired
-    private DataSource dataSource;
-
-    @Autowired
     public void configureGlobal(AuthenticationManagerBuilder auth)
         throws Exception {
         auth.jdbcAuthentication()

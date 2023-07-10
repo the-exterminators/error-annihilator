@@ -131,6 +131,41 @@ vaadin-grid-cell-content vaadin-text-field{
     width: 100%;
 }
 
+.urgency{
+    padding: 3px 5px;
+    color: #fff;
+    border-radius: 5px;
+    font-size: 14px;
+}
+
+.urgency.low{
+    background: #319157;
+}
+
+.urgency.medium{
+    background: #307b86;
+}
+
+.urgency.high{
+    background: #101eb2;
+}
+
+.urgency.higher{
+    background: #592dc7;
+}
+
+.urgency.highest{
+    background: #9603ad;
+}
+
+.urgency.critical{
+    background: #ba1c1c;
+}
+
+.urgency.cosmetic{
+    background: #595959;
+}
+
 @media screen and (max-width:1024px){
     h1{
         font-size: 30px;
