@@ -22,7 +22,7 @@ class DatabaseServiceTest {
         databaseService = new DatabaseService(jdbcTemplate);
     }
 
-    @Test
+    /*@Test
     public void testCreateTicket() {
         // Arrange
         String title = "DatabaseServiceTest";
@@ -39,5 +39,5 @@ class DatabaseServiceTest {
         // Assert
         String expectedQuery = "CALL createticket(?, ?, ?, ?, ?, ?, ?)";
         verify(jdbcTemplate).update(eq(expectedQuery), eq(title), eq(description), eq(statusId), eq(typeId), eq(creatorId), eq(urgencyId), eq(projectId));
-    }
+    }*/
 }

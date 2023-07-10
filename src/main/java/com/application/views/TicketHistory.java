@@ -193,7 +193,7 @@ public class TicketHistory extends VerticalLayout {
         editComboFilter(headerRow, projectColumn, databaseService.getAllProjectItems(), ticketFilter::setProject);
         editComboFilter(headerRow, statusColumn, databaseService.getAllTicketStatus(), ticketFilter::setStatus);
         editComboFilter(headerRow, urgencyColumn, databaseService.getAllUrgencyItems(), ticketFilter::setUrgency);
-        createDateHeader(headerRow, createdColumn, dataView);
+        headerRow.getCell(createdColumn).setComponent(createDateHeader(ticketFilter::setCreated));
 
         // Grid Size Settings
         grid.setSizeFull();
@@ -216,7 +216,7 @@ public class TicketHistory extends VerticalLayout {
         return textField;
     }
 
-    private static Component createDateHeader(HeaderRow headerRow, Grid.Column<Ticket> column, GridListDataView<Ticket> dataView) {
+    private static Component createDateHeader(Consumer<LocalDate> filterChangeConsumer) {
         DatePicker dateFilter = new DatePicker();
         dateFilter.setPlaceholder("Filter");
         dateFilter.addClassName("filter-header-item");
@@ -224,13 +224,12 @@ public class TicketHistory extends VerticalLayout {
         dateFilter.getStyle().set("max-width", "100%");
         dateFilter.setClearButtonVisible(true);
         dateFilter.addValueChangeListener(
-                event -> dataView.addFilter(ticket -> areDatesEqual(ticket, dateFilter)));
-        headerRow.getCell(column).setComponent(dateFilter);
+                e -> filterChangeConsumer.accept(e.getValue()));
         return dateFilter;
     }
 
-    private static boolean areDatesEqual(Ticket ticket, DatePicker dateFilter) {
-        LocalDate dateFilterValue = dateFilter.getValue();
+    private static boolean areDatesEqual(Ticket ticket, LocalDate dateFilter) {
+        LocalDate dateFilterValue = dateFilter;
         if (dateFilterValue != null) {
             LocalDate createdDate = ticket.getCreatedTimeStamp().toLocalDateTime().toLocalDate();
             return dateFilterValue.equals(createdDate);
@@ -262,10 +261,12 @@ public class TicketHistory extends VerticalLayout {
         private String type;
         private String project;
         private String urgency;
+        private LocalDate created;
 
         public TicketFilter(GridListDataView<Ticket> dataView) {
             this.dataView = dataView;
             this.dataView.addFilter(this::test);
+            System.out.println("Constructor");
         }
 
         public void setNumber(String number) {
@@ -276,6 +277,7 @@ public class TicketHistory extends VerticalLayout {
         public void setTitle(String title) {
             this.title = title;
             this.dataView.refreshAll();
+            System.out.println("Setting title");
         }
 
         public void setType(String type) {
@@ -298,6 +300,11 @@ public class TicketHistory extends VerticalLayout {
             this.dataView.refreshAll();;
         }
 
+        public void setCreated(LocalDate created){
+            this.created = created;
+            this.dataView.refreshAll();
+        }
+
         public boolean test(Ticket ticket) {
             boolean matchesNumber = matches(ticket.getTicketNumber(), number);
             boolean matchesTitle = matches(ticket.getTicketName(), title);
@@ -305,8 +312,10 @@ public class TicketHistory extends VerticalLayout {
             boolean matchesStatus = matches(ticket.getTicketStatus().getStatusName(), status);
             boolean matchesProject = matches(ticket.getTicketProject().getProjectName(), project);
             boolean matchesUrgency = matches(ticket.getUrgency(), urgency);
+            boolean matchesCreated = areDatesEqual(ticket, created);
+            System.out.println("Filterting: " + matchesTitle);
 
-            return matchesTitle && matchesStatus && matchesNumber && matchesType && matchesProject && matchesUrgency;
+            return matchesTitle && matchesStatus && matchesNumber && matchesType && matchesProject && matchesUrgency && matchesCreated;
         }
 
         private boolean matches(String value, String searchTerm) {

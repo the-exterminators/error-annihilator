@@ -46,6 +46,7 @@ public class EditTicketForm extends FormLayout {
     TextField ticketName = new TextField("Title");
     TextField ticketNumber = new TextField("Ticket Number");
     TextArea description = new TextArea("Description");
+    ComboBox<String> urgency = new ComboBox<>("Urgency"); // for binding
     ComboBox<String> ticketType = new ComboBox<>("Type"); // I want this to be a dropdown of predefined types
     ComboBox<TicketProject> ticketProject = new ComboBox<>("Project"); // Change it to Projects
     DateTimePicker createdTimeStamp = new DateTimePicker("Date Created");
@@ -100,6 +101,7 @@ public class EditTicketForm extends FormLayout {
         setProjectSampleData(ticketProject);
         setTypeSampleData(ticketType);
         setStatusSampleData(ticketStatus);
+        urgency.setItems(databaseService.getAllUrgencyItems());
 
         HorizontalLayout formRow = new HorizontalLayout(createdTimeStamp, ticketCreator, creatorMail);
         formRow.addClassName("formRow");
@@ -113,6 +115,8 @@ public class EditTicketForm extends FormLayout {
                 ticketName,
                 description,
                 formRow,
+                urgency,
+                createdTimeStamp,
                 ticketType,
                 ticketStatus,
                 ticketProject,
@@ -170,6 +174,7 @@ public class EditTicketForm extends FormLayout {
         binder.bind(creatorMail, "ticketCreator.email");
         binder.bind(assignedUsers, "assignedUsers");
         binder.bind(ticketComment, "ticketComment");
+        binder.bind(urgency, "urgency");
     }
 
     // Style and Design stuff
@@ -238,6 +243,8 @@ public class EditTicketForm extends FormLayout {
                     databaseService.getTicketStatus(ticket.getTicketStatus().getStatusName()),
                     ticketProject.getValue().getProjectId(),
                     databaseService.getUrgencyId(ticket.getUrgency()));
+            databaseService.updateAssignedUser(Integer.valueOf(ticket.getTicketNumber()), assignedUsersMulti.getSelectedItems());
+                // loop through all entries related to the ticket and compare if they are in the list
             // Provide feedback after update
             Notification notification = new Notification(
                     "Details updated successfully!",

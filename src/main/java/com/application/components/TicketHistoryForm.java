@@ -242,7 +242,7 @@ public class TicketHistoryForm extends FormLayout {
             databaseService.updateTicket(Integer.valueOf(ticket.getTicketNumber()),
                     databaseService.getTicketTypeId(ticket.getTicketType()),
                     databaseService.getTicketStatus(ticket.getTicketStatus().getStatusName()),
-                    ticket.getTicketProject().getProjectId(),
+                    databaseService.getProjectId(ticketProject.getValue()),
                     databaseService.getUrgencyId(ticket.getUrgency()),
                     ticket.getTicketName(),
                     ticket.getDescription());
@@ -290,8 +290,11 @@ public class TicketHistoryForm extends FormLayout {
             this.ticketComments.setItems(realComments);
             getUI().ifPresent(ui -> {
                 ui.access(() -> {
-                    if(ticket.getTicketStatus().getStatusName().endsWith("esolved") ||
-                        ticket.getTicketStatus().getStatusName().endsWith("ejected")) {
+                    if(!ticket.getTicketStatus().getStatusName().equalsIgnoreCase("new")){
+                        save.setVisible(false);
+                    }
+                    if(ticket.getTicketStatus().getStatusName().equalsIgnoreCase("resolved") ||
+                        ticket.getTicketStatus().getStatusName().equalsIgnoreCase("rejected")) {
                         reopen.setVisible(true);
                         input.setVisible(false);
                     } else {
@@ -305,6 +308,7 @@ public class TicketHistoryForm extends FormLayout {
                         createdTimeStamp.setReadOnly(true);
                         ticketCreator.setReadOnly(true);
                         creatorMail.setReadOnly(true);
+                        urgency.setReadOnly(true);
                         ticketType.setReadOnly(true);
                         ticketStatus.setReadOnly(true);
                         ticketProject.setReadOnly(true);
@@ -316,6 +320,7 @@ public class TicketHistoryForm extends FormLayout {
                         createdTimeStamp.setReadOnly(true);
                         ticketCreator.setReadOnly(true);
                         creatorMail.setReadOnly(true);
+                        urgency.setReadOnly(false);
                         ticketType.setReadOnly(false);
                         ticketStatus.setReadOnly(true);
                         ticketProject.setReadOnly(false);

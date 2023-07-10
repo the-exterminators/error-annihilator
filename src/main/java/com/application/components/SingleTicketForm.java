@@ -42,6 +42,7 @@ public class SingleTicketForm extends FormLayout {
     TextField ticketName = new TextField("Title");
     TextField ticketNumber = new TextField("Ticket Number");
     TextArea description = new TextArea("Description");
+    ComboBox<String> urgency = new ComboBox<>("Urgency"); // for binding
     ComboBox<String> ticketType = new ComboBox<>("Type"); // I want this to be a dropdown of predefined types
     ComboBox<String> ticketProject = new ComboBox<>("Project"); // Change it to Projects
     DateTimePicker createdTimeStamp = new DateTimePicker("Date Created");
@@ -82,6 +83,7 @@ public class SingleTicketForm extends FormLayout {
         setProjectSampleData(ticketProject);
         setTypeSampleData(ticketType);
         setStatusSampleData(ticketStatus);
+        urgency.setItems(databaseService.getAllUrgencyItems());
 
         HorizontalLayout formRow = new HorizontalLayout(createdTimeStamp, ticketCreator, creatorMail);
         formRow.addClassName("formRow");
@@ -94,6 +96,8 @@ public class SingleTicketForm extends FormLayout {
             ticketName,
             description,
             formRow,
+            urgency,
+            createdTimeStamp,
             ticketType,
             ticketStatus,
             ticketProject,
@@ -155,6 +159,7 @@ public class SingleTicketForm extends FormLayout {
         binder.bind(creatorMail, "ticketCreator.email");
         binder.bind(assignedUsers, "assignedUsers");
         binder.bind(ticketComment, "ticketComment");
+        binder.bind(urgency, "urgency");
     }
 
     // Style and Design stuff
@@ -170,6 +175,7 @@ public class SingleTicketForm extends FormLayout {
         ticketStatus.setReadOnly(true);
         ticketProject.setReadOnly(true);
         assignedUsersMulti.setReadOnly(true);
+        urgency.setReadOnly(true);
 
         // Styles
         createdTimeStamp.getStyle().set("flex", "1");

@@ -23,6 +23,7 @@ import com.vaadin.flow.spring.security.AuthenticationContext;
 import jakarta.annotation.security.PermitAll;
 import jakarta.annotation.security.RolesAllowed;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
 
@@ -156,6 +157,7 @@ public class ProjectManagement extends VerticalLayout {
         Grid.Column<TicketProject> titleColumn = grid.addColumn("projectName").setHeader("Title");
         Grid.Column<TicketProject> descriptionColumn = grid.addColumn("projectDescription").setHeader("Description");
         Grid.Column<TicketProject> leaderColumn = grid.addColumn("projectLead").setHeader("Project Lead");
+        Grid.Column<TicketProject> activeColumn = grid.addColumn("is_active").setHeader("Active");
 
         // Add listeners
         grid.asSingleSelect().addValueChangeListener(e -> editProject(e.getValue()));
@@ -170,6 +172,11 @@ public class ProjectManagement extends VerticalLayout {
         headerRow.getCell(titleColumn).setComponent(createFilterHeader(projectFilter::setTitle));
         headerRow.getCell(descriptionColumn).setComponent(createFilterHeader(projectFilter::setDescription));
         editComboFilter(headerRow, leaderColumn, databaseService.getAllUsernames(), projectFilter::setLead);
+
+        List<String> items = new ArrayList<>();
+        items.add("True");
+        items.add("False");
+        editComboFilterActive(headerRow, activeColumn, items, projectFilter::setActive);
 
 
         // Grid Size Settings
@@ -211,12 +218,30 @@ public class ProjectManagement extends VerticalLayout {
         return comboBox;
     }
 
+    private ComboBox editComboFilterActive(HeaderRow headerRow, Grid.Column<TicketProject> gridColumn, List items, Consumer<String> consumer) {
+        ComboBox<String> comboBox = new ComboBox<>();
+        comboBox.addClassName("filter-header-item");
+        comboBox.setPlaceholder("Filter");
+        comboBox.setClearButtonVisible(true);
+        comboBox.getStyle().set("font-size", "var(--lumo-font-size-xs)");
+        comboBox.setWidth("100%");
+        comboBox.setItems(items);
+        comboBox.setValue("True");
+        consumer.accept("True");
+
+        comboBox.addValueChangeListener(e -> consumer.accept(e.getValue()));
+        headerRow.getCell(gridColumn).setComponent(comboBox);
+
+        return comboBox;
+    }
+
     // Class to filter projects in grid
     private static class ProjectFilter {
         private final GridListDataView<TicketProject> dataView;
         private String title;
         private String description;
         private String lead;
+        private String is_active;
 
         public ProjectFilter(GridListDataView<TicketProject> dataView) {
             this.dataView = dataView;
@@ -238,13 +263,19 @@ public class ProjectManagement extends VerticalLayout {
             this.dataView.refreshAll();
         }
 
+        public void setActive(String is_active) {
+            this.is_active = is_active;
+            this.dataView.refreshAll();
+        }
+
 
         public boolean test(TicketProject ticketProject) {
             boolean matchesTitle = matches(ticketProject.getProjectName(), title);
             boolean matchesDescr = matches(ticketProject.getProjectDescription(), description);
             boolean matchesLead = matches(ticketProject.getProjectLead().toString(), lead);
+            boolean matchesActive = matches(ticketProject.getIs_active().toString(), is_active);
 
-            return matchesTitle && matchesDescr && matchesLead;
+            return matchesTitle && matchesDescr && matchesLead & matchesActive;
         }
 
         private boolean matches(String value, String searchTerm) {

@@ -5,9 +5,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 
 import java.sql.Timestamp;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Service
 public class DatabaseService {
@@ -224,19 +222,57 @@ public class DatabaseService {
         jdbcTemplate.update(query, updateTypeId, updateStatusId, updateProjectId, updateUrgencyId, title, description, ticketId);
     }
 
-    public String doesAssignedExist(int ticketId, int userId) {
-        String query = "SELECT tau_id FROM tickets_assigned_users WHERE ticket_id = ? AND user_id = ?";
-        return jdbcTemplate.queryForObject(query, String.class, ticketId, userId);
+    public Integer getNextTauId(){
+        String query = "SELECT max(tau_id) From tickets_assigned_users";
+        Integer id = jdbcTemplate.queryForObject(query, Integer.class);
+        if(id == null){
+            id = 0;
+        }
+        return id + 1;
     }
 
-    /*public void updateAssignedUsers(int ticketId, int userId){
-        if(doesAssignedExist(ticketId, userId).isEmpty()){
-            String query = "INSERT INTO tickets_assigned_users VALUES(?,?)";
-            jdbcTemplate.update(query, ticketId, userId);
+    // loop through all entries related to the ticket and compare if they are in the list
+    // Excuse the complicated function, it can surely be easier than this :(
+    public void updateAssignedUser(int ticketId, Set<User> users){
+        List<User> currentUsers = getAllUsersAssignedToTicketEntity(ticketId);
+        Set<User> newUsers = new HashSet<>();
+
+        // Loop through all current assigned users
+        if(!currentUsers.isEmpty()) {
+            Boolean deleteUser = true;
+            for (User currUser : currentUsers) {
+                // Loop through our new user list
+                for (User user : users) {
+                    // if the new user exists we dont want to delete the current user
+                    if (user.getUser_id() == currUser.getUser_id()) {
+                        deleteUser = false;
+                        // if the array doesnt already contain the user, we want to add the user to the new users
+                    } else if (!newUsers.contains(user)) { // also need to compare to other currUsers
+                        Boolean addUser = true;
+                        for(User currUser2 : currentUsers) {
+                            if(currUser2.getUser_id() == user.getUser_id()) {
+                                addUser = false;
+                            }
+                        }
+                        if(addUser){
+                            newUsers.add(user);
+                        }
+                    }
+                }
+                if (deleteUser) {
+                    String query = "DELETE FROM tickets_assigned_users WHERE user_id = ? AND ticket_id = ?";
+                    jdbcTemplate.update(query, currUser.getUser_id(), ticketId);
+                }
+                deleteUser = true;
+            }
         } else {
-            String query = "DELETE FROM tickets_assigned_users WHERE ticket_id = ? AND user_id = ?"
+            newUsers = users;
         }
-    }*/
+        for(User user : newUsers){
+            String query = "INSERT INTO tickets_assigned_users VALUES(?,?,?)";
+            jdbcTemplate.update(query, getNextTauId(), ticketId, user.getUser_id());
+        }
+    }
 
 
     /**
@@ -424,7 +460,6 @@ public class DatabaseService {
 
     // Calling the createcomment Procedure from the db
     public void createComment(String commentText, int ticketId, int userId) {
-        System.out.println(ticketId + " " + userId + " " + commentText);
         String query = "Insert into comments Values(?, ?, ?, ?, CURRENT_TIMESTAMP)";
         jdbcTemplate.update(query, getNextCommentId(), commentText, ticketId, userId);
     }
@@ -508,7 +543,7 @@ public class DatabaseService {
      */
 
     public List<String> getAllProjectItems() {
-        String query = "SELECT title FROM projects WHERE is_active = true";
+        String query = "SELECT title FROM projects";
         return jdbcTemplate.queryForList(query, String.class);
     }
 
@@ -524,14 +559,15 @@ public class DatabaseService {
 
     // Jana: Brauchte TicketProject Items, sorry für die hässliche Benennung
     public List<TicketProject> getAllProjectItems2() {
-        String query = "SELECT * FROM projects where is_active = true";
+        String query = "SELECT * FROM projects";
         return jdbcTemplate.query(query,
                 (rs, rowNum) ->
                         new TicketProject(
                                 rs.getInt("project_id"),
                                 rs.getString("title"),
                                 rs.getString("description"),
-                                getUserByID(rs.getInt("project_lead"))
+                                getUserByID(rs.getInt("project_lead")),
+                                rs.getBoolean("is_active")
                         ));
     }
 
