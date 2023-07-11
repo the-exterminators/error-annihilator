@@ -102,8 +102,10 @@ public class UserProfileForm extends FormLayout {
         try {
             binder.writeBean(user);
             BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
-            databaseService.updateCurrentUserInfo(Math.toIntExact(user.getUser_id()), user.getFirstName(), user.getLastName(), user.getUserName(), user.getEmail(), databaseService.getRoleByName(user.getUserRole()));
-            databaseService.updateCurrentUserPasswordHash(Math.toIntExact(user.getUser_id()), encoder.encode(dummyPassword.getValue()));
+            databaseService.updateCurrentUserInfo(Math.toIntExact(user.getUser_id()), user.getFirstName(), user.getLastName(), user.getUserName(), user.getEmail());
+            if(!dummyPassword.isEmpty()){
+                databaseService.updateCurrentUserPasswordHash(Math.toIntExact(user.getUser_id()), encoder.encode(dummyPassword.getValue()));
+            }
             // Provide feedback after update
             Notification notification = new Notification(
                     "Details updated successfully!",
