@@ -129,7 +129,7 @@ public class ProjectSingleView extends VerticalLayout implements HasUrlParameter
         removeClassName("editing");
         grid.getStyle().set("display", "block");
         grid.asSingleSelect().clear(); // deselect ticket in grid
-        getUI().ifPresent(ui -> ui.access(() -> title.setText(ticketProject.getProjectName())));
+        getUI().ifPresent(ui -> ui.access(() -> title.setText("Project")));
     }
 
     // Saves ticket, updates the grid and closes editor/form
@@ -141,18 +141,20 @@ public class ProjectSingleView extends VerticalLayout implements HasUrlParameter
     @Override
     public void setParameter(BeforeEvent event, String parameter) {
         try {
+            System.out.println("1");
             ticketProject = databaseService.getProjectEntity(databaseService.getProjectId(parameter));
+            System.out.println("2");
             getUI().flatMap(ui -> {
+                System.out.println("Setting title");
                 ui.access(() -> title.setText(ticketProject.getProjectName()));
                 ui.access(() -> description.setText(ticketProject.getProjectDescription()));
                 return Optional.empty();
             });
+            System.out.println("3");
             configureGrid();
-            updateList();
+            System.out.println("4");
         }
-        catch (EmptyResultDataAccessException e){
-
-        }
+        catch (EmptyResultDataAccessException e){}
     }
 
     // update the grid
@@ -238,6 +240,7 @@ public class ProjectSingleView extends VerticalLayout implements HasUrlParameter
         grid.setSizeFull();
         grid.addClassName("assignedTickets-grid");
         grid.setWidth("90vw");
+        closeEditor();
     }
 
     // FILTER ==================================

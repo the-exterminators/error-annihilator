@@ -509,6 +509,11 @@ public class DatabaseService {
         jdbcTemplate.update(query, roleId, firstName, lastName, username, email, userId);
     }
 
+    public void updateCurrentUserInfo(int userId, String firstName, String lastName, String username, String email) {
+        String query = "UPDATE users SET first_name = ?, last_name = ?, username = ?, email = ? WHERE user_id = ?";
+        jdbcTemplate.update(query, firstName, lastName, username, email, userId);
+    }
+
     public void updateCurrentUserPasswordHash(int userId, String passwordHash) {
         String query = "CALL updatecurrentuserpasswordhash(?, ?)";
         jdbcTemplate.update(query, userId, passwordHash);
