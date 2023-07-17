@@ -78,3 +78,8 @@ cd target
 java -jar error-annihilator-1.0-SNAPSHOT.jar
 ```
 
+# User Credentials for Login to Application
+To begin using the application please use the Administrator-Credentials below:
+Username: demo
+Password: password
+
