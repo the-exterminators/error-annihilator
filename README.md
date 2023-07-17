@@ -3,6 +3,14 @@
 
 The Exteriminators proudly present their Project for Software Engineering 2 at Management Center Innsbruck, # Digital Business and Software Engineering Class of 2021.
 
+Our Project-Application is a Bug and Defect Tracking Ticketing System, which would not only allow users to create, assign and solve tickets, but also manage projects (for ticket categorization), manage users and much more.
+
+Feel free to check out our ticketing system to your heart's content.
+Please keep in mind, we are currently connecting to a cloud-based SQL Instance for Data persistence.
+Once that is shutdown the Database would have to be run locally and the database connection credentials would need to be adapted accordingly in src/main/resources/application.properties
+
+
+
 # No matter which OS you're running (Unix, Linux, Windows) please make sure to have the following Pre-requisites installed and ready (Path environment Variables set, etc.)
 
 1. Java JDK 17 or higher
@@ -36,7 +44,6 @@ docker run --hostname=ed4b6d87eefe --user=myuser --env=PATH=/usr/local/openjdk-1
 ```
 
 # The following instructions are for downloading, unpacking, building and executing of the Java-Application
-
 
 1. please download the released codebase from GitHub at: 'link-to-zip-files'
 2. Unzip the downloaded folder with the following command
