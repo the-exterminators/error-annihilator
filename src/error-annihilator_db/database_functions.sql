@@ -172,6 +172,46 @@ AS $$
         Return;
     End;
 $$ Language plpgsql;
+
+-- Function 1.12 - GetTicketResolvedDeltaCreated --
+Create Or Replace Function GetTicketResolvedDeltaCreated(arg_ticket_id integer)
+Returns float
+AS $$
+	Declare
+		delta_time interval;
+		var_created timestamp;
+		var_resolved timestamp;
+	Begin
+		Select created, resolved
+		Into var_created, var_resolved
+		From tickets
+		Where ticket_id = arg_ticket_id;
+		delta_time := var_resolved - var_created;
+		Return Extract(epoch From delta_time)::double precision;
+	End;
+$$ Language plpgsql;
+
+-- Function 1.13 - GetTicketsCreatedDateInterval --
+Create Or Replace Function GetTicketsCreatedDateInterval()
+Returns integer
+AS $$
+	Declare
+		result Interval;
+		min_created TIMESTAMP;
+		max_created TIMESTAMP;
+	Begin
+		Select min(created)::date
+		Into min_created
+		From tickets;
+
+		Select max(created)::date
+		Into max_created
+		From tickets;
+
+		result := max_created - min_created;
+		Return Extract(epoch from result)::integer;
+	End;
+$$ Language plpgsql;
 ------------------------------------------------------------------------------------------------------------------------
 -- Views - Tests -------------------------------------------------------------------------------------------------------
 -- Gets Tickets Assigned to User: John Doe
@@ -186,4 +226,5 @@ Select * From GetAllCreatedTickets(1);
 Select * From GetAllUsersAssignedToTicket(1);
 Select * From GetProject(1);
 Select * From GetAllTicketsFromProject(2);
+Select * From GetTicketResolvedDeltaCreated(1);
 ------------------------------------------------------------------------------------------------------------------------
