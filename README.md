@@ -20,30 +20,7 @@ Once that is shutdown the Database would have to be run locally and the database
 5. Docker Hub
 
 
-# The following instructions are for downloading, unpacking and building of a Docker-Container for application execution
-
-1. please download the released codebase from GitHub at: 'link-to-zip-files'
-2. Unzip the downloaded folder with the following command
-```
-unzip <package-file.zip>
-```
-3. make sure Java, Maven, Node.js, Docker-Engine and Docker-Hub are installed with the required version (or higher)
-```
-java --version
-mvn --version
-npm --version
-docker --version
-```
-4. Build a Docker image 
-```
-docker build --build-arg offlinekey='eyJraWQiOiI1NDI3NjRlNzAwMDkwOGU2NWRjM2ZjMWRhYmY0ZTJjZDI4OTY2NzU4IiwidHlwIjoiSldUIiwiYWxnIjoiRVM1MTIifQ.eyJhbGxvd2VkUHJvZHVjdHMiOlsidmFhZGluLWNvbGxhYm9yYXRpb24tZW5naW5lIiwidmFhZGluLXRlc3RiZW5jaCIsInZhYWRpbi1kZXNpZ25lciIsInZhYWRpbi1jaGFydCIsInZhYWRpbi1ib2FyZCIsInZhYWRpbi1jb25maXJtLWRpYWxvZyIsInZhYWRpbi1jb29raWUtY29uc2VudCIsInZhYWRpbi1yaWNoLXRleHQtZWRpdG9yIiwidmFhZGluLWdyaWQtcHJvIiwidmFhZGluLW1hcCIsInZhYWRpbi1zcHJlYWRzaGVldC1mbG93IiwidmFhZGluLWNydWQiXSwic3ViIjoiMWVmYjZkNzQtZWI0OC00OTRkLWE5N2EtYWY5ZDA2OTM4NWI0IiwidmVyIjoxLCJpc3MiOiJWYWFkaW4iLCJuYW1lIjoiU3RlZmFuIEVsIEFiZGVsbGFvdWkiLCJhbGxvd2VkRmVhdHVyZXMiOlsiY2VydGlmaWNhdGlvbnMiLCJzcHJlYWRzaGVldCIsInRlc3RiZW5jaCIsImRlc2lnbmVyIiwiY2hhcnRzIiwiYm9hcmQiLCJhcHBzdGFydGVyIiwidmlkZW90cmFpbmluZyIsInByby1wcm9kdWN0cy0yMDIyMTAiXSwibWFjaGluZV9pZCI6bnVsbCwic3Vic2NyaXB0aW9uIjoiVmFhZGluIFBybyIsImJ1aWxkX3R5cGVzIjpbInByb2R1Y3Rpb24iXSwiZXhwIjoxNzE4OTI4MDAwLCJpYXQiOjE2ODc3ODgzODksImFjY291bnQiOiJNYW5hZ2VtZW50IENlbnRlciBJbm5zYnJ1Y2sifQ.AHQRyxUNG6g59lXR-upHtUjJjI1K3mhGiJQk79Sbq3Ia988pAbFEmRqwR_Xbn_xMEnPy3v7mWPl-yii8SEPcadWFAPKcP2cTOxldLknoPNubkMw70wNh7ElFbJhA7hSqTkRgVvq61fR-HLdUXOoJFj0oVqgL73XdLDXJrwe8xiJ64KNk' -t error-annihilator .
-```
-5. Run the Docker image as a container
-```
-docker run --hostname=ed4b6d87eefe --user=myuser --env=PATH=/usr/local/openjdk-17/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin --env=JAVA_HOME=/usr/local/openjdk-17 --env=LANG=C.UTF-8 --env=JAVA_VERSION=17 --env=MAVEN_HOME=/usr/share/maven --env=MAVEN_CONFIG=/root/.m2 -p 8080:8080 --runtime=runc -d error-annihilator:latest
-```
-
-# The following instructions are for downloading, unpacking, building and executing of the Java-Application
+# The following instructions are for downloading and unpacking the Repository from GitHub
 
 1. please download the released codebase from GitHub using the following links (either .zip or .tar.gz File): 
 	- https://github.com/the-exterminators/error-annihilator/archive/refs/tags/pre-release.zip
@@ -59,21 +36,44 @@ tar -xzf error-annihilator-prea-release.tar.gz
 ```
 for the tar.gz-File
 
-3. make sure Java, Maven and Node.js are installed with the required verion (or higher)
+# The following instructions are for building a Docker-Container for application execution in the unpacked Project Folder
+
+1. make sure Java, Maven, Node.js, Docker-Engine and Docker-Hub are installed with the required version (or higher)
 ```
 java --version
 mvn --version
 npm --version
+docker --version
 ```
-4. Build a Production Package via Maven by entering the following command into the command line:
+2. Make sure you have navigated to the proper directory (unpacked Project Folder From previous Step '...Downloading and Unpacking the Repository...')
+3. Build a Docker image 
+```
+docker build --build-arg offlinekey='eyJraWQiOiI1NDI3NjRlNzAwMDkwOGU2NWRjM2ZjMWRhYmY0ZTJjZDI4OTY2NzU4IiwidHlwIjoiSldUIiwiYWxnIjoiRVM1MTIifQ.eyJhbGxvd2VkUHJvZHVjdHMiOlsidmFhZGluLWNvbGxhYm9yYXRpb24tZW5naW5lIiwidmFhZGluLXRlc3RiZW5jaCIsInZhYWRpbi1kZXNpZ25lciIsInZhYWRpbi1jaGFydCIsInZhYWRpbi1ib2FyZCIsInZhYWRpbi1jb25maXJtLWRpYWxvZyIsInZhYWRpbi1jb29raWUtY29uc2VudCIsInZhYWRpbi1yaWNoLXRleHQtZWRpdG9yIiwidmFhZGluLWdyaWQtcHJvIiwidmFhZGluLW1hcCIsInZhYWRpbi1zcHJlYWRzaGVldC1mbG93IiwidmFhZGluLWNydWQiXSwic3ViIjoiMWVmYjZkNzQtZWI0OC00OTRkLWE5N2EtYWY5ZDA2OTM4NWI0IiwidmVyIjoxLCJpc3MiOiJWYWFkaW4iLCJuYW1lIjoiU3RlZmFuIEVsIEFiZGVsbGFvdWkiLCJhbGxvd2VkRmVhdHVyZXMiOlsiY2VydGlmaWNhdGlvbnMiLCJzcHJlYWRzaGVldCIsInRlc3RiZW5jaCIsImRlc2lnbmVyIiwiY2hhcnRzIiwiYm9hcmQiLCJhcHBzdGFydGVyIiwidmlkZW90cmFpbmluZyIsInByby1wcm9kdWN0cy0yMDIyMTAiXSwibWFjaGluZV9pZCI6bnVsbCwic3Vic2NyaXB0aW9uIjoiVmFhZGluIFBybyIsImJ1aWxkX3R5cGVzIjpbInByb2R1Y3Rpb24iXSwiZXhwIjoxNzE4OTI4MDAwLCJpYXQiOjE2ODc3ODgzODksImFjY291bnQiOiJNYW5hZ2VtZW50IENlbnRlciBJbm5zYnJ1Y2sifQ.AHQRyxUNG6g59lXR-upHtUjJjI1K3mhGiJQk79Sbq3Ia988pAbFEmRqwR_Xbn_xMEnPy3v7mWPl-yii8SEPcadWFAPKcP2cTOxldLknoPNubkMw70wNh7ElFbJhA7hSqTkRgVvq61fR-HLdUXOoJFj0oVqgL73XdLDXJrwe8xiJ64KNk' -t error-annihilator .
+```
+4. Run the Docker image as a container
+```
+docker run --hostname=ed4b6d87eefe --user=myuser --env=PATH=/usr/local/openjdk-17/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin --env=JAVA_HOME=/usr/local/openjdk-17 --env=LANG=C.UTF-8 --env=JAVA_VERSION=17 --env=MAVEN_HOME=/usr/share/maven --env=MAVEN_CONFIG=/root/.m2 -p 8080:8080 --runtime=runc -d error-annihilator:latest
+```
+
+# The following instructions are for building and executing the Java-Application
+
+1. make sure Java, Maven, Node.js, Docker-Engine and Docker-Hub are installed with the required version (or higher)
+```
+java --version
+mvn --version
+npm --version
+docker --version
+```
+2. Make sure you have navigated to the proper directory (unpacked Project Folder From previous Step '...Downloading and Unpacking the Repository...')
+3. Build a Production Package via Maven by entering the following command into the command line:
 ```
 mvn clean package -Pproduction -Dvaadin.productionMode -Dvaadin.offline -Dvaadin.offline.key=eyJraWQiOiI1NDI3NjRlNzAwMDkwOGU2NWRjM2ZjMWRhYmY0ZTJjZDI4OTY2NzU4IiwidHlwIjoiSldUIiwiYWxnIjoiRVM1MTIifQ.eyJhbGxvd2VkUHJvZHVjdHMiOlsidmFhZGluLWNvbGxhYm9yYXRpb24tZW5naW5lIiwidmFhZGluLXRlc3RiZW5jaCIsInZhYWRpbi1kZXNpZ25lciIsInZhYWRpbi1jaGFydCIsInZhYWRpbi1ib2FyZCIsInZhYWRpbi1jb25maXJtLWRpYWxvZyIsInZhYWRpbi1jb29raWUtY29uc2VudCIsInZhYWRpbi1yaWNoLXRleHQtZWRpdG9yIiwidmFhZGluLWdyaWQtcHJvIiwidmFhZGluLW1hcCIsInZhYWRpbi1zcHJlYWRzaGVldC1mbG93IiwidmFhZGluLWNydWQiXSwic3ViIjoiMWVmYjZkNzQtZWI0OC00OTRkLWE5N2EtYWY5ZDA2OTM4NWI0IiwidmVyIjoxLCJpc3MiOiJWYWFkaW4iLCJuYW1lIjoiU3RlZmFuIEVsIEFiZGVsbGFvdWkiLCJhbGxvd2VkRmVhdHVyZXMiOlsiY2VydGlmaWNhdGlvbnMiLCJzcHJlYWRzaGVldCIsInRlc3RiZW5jaCIsImRlc2lnbmVyIiwiY2hhcnRzIiwiYm9hcmQiLCJhcHBzdGFydGVyIiwidmlkZW90cmFpbmluZyIsInByby1wcm9kdWN0cy0yMDIyMTAiXSwibWFjaGluZV9pZCI6bnVsbCwic3Vic2NyaXB0aW9uIjoiVmFhZGluIFBybyIsImJ1aWxkX3R5cGVzIjpbInByb2R1Y3Rpb24iXSwiZXhwIjoxNzE4OTI4MDAwLCJpYXQiOjE2ODc3ODgzODksImFjY291bnQiOiJNYW5hZ2VtZW50IENlbnRlciBJbm5zYnJ1Y2sifQ.AHQRyxUNG6g59lXR-upHtUjJjI1K3mhGiJQk79Sbq3Ia988pAbFEmRqwR_Xbn_xMEnPy3v7mWPl-yii8SEPcadWFAPKcP2cTOxldLknoPNubkMw70wNh7ElFbJhA7hSqTkRgVvq61fR-HLdUXOoJFj0oVqgL73XdLDXJrwe8xiJ64KNk
 ```
-5. Navigate to the target folder
+4. Navigate to the target folder
 ```
 cd target
 ```
-6. Execute the JAR File with the following command:
+5. Execute the JAR File with the following command:
 ```
 java -jar error-annihilator-1.0-SNAPSHOT.jar
 ```
