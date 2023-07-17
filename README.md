@@ -45,11 +45,20 @@ docker run --hostname=ed4b6d87eefe --user=myuser --env=PATH=/usr/local/openjdk-1
 
 # The following instructions are for downloading, unpacking, building and executing of the Java-Application
 
-1. please download the released codebase from GitHub at: 'link-to-zip-files'
-2. Unzip the downloaded folder with the following command
+1. please download the released codebase from GitHub using the following links (either .zip or .tar.gz File): 
+	- https://github.com/the-exterminators/error-annihilator/archive/refs/tags/pre-release.zip
+	- https://github.com/the-exterminators/error-annihilator/archive/refs/tags/pre-release.tar.gz
+2. Navigate to the Folder containing the downloaded archive and unpack it with the following command
 ```
-unzip <package-file.zip>
+unzip error-annihilator-pre-release.zip
 ```
+for the zip-File
+and
+```
+tar -xzf error-annihilator-prea-release.tar.gz
+```
+for the tar.gz-File
+
 3. make sure Java, Maven and Node.js are installed with the required verion (or higher)
 ```
 java --version
