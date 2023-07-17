@@ -1,6 +1,7 @@
 # the-exterminators_ticketing-system
 # Group 5 &lt;The Exterminators> - Project for Software Engineering 2 - MCI
-# The Exteriminators proudly present their Project for Software Engineering 2 at Management Center Innsbruck, # Digital Business and Software Engineering Class of 2021.
+
+The Exteriminators proudly present their Project for Software Engineering 2 at Management Center Innsbruck, # Digital Business and Software Engineering Class of 2021.
 
 # No matter which OS you're running (Unix, Linux, Windows) please make sure to have the following Pre-requisites installed and ready (Path environment Variables set, etc.)
 
