@@ -23,16 +23,16 @@ Once that is shutdown the Database would have to be run locally and the database
 # The following instructions are for downloading and unpacking the Repository from GitHub
 
 1. please download the released codebase from GitHub using the following links (either .zip or .tar.gz File): 
-	- https://github.com/the-exterminators/error-annihilator/archive/refs/tags/pre-release.zip
-	- https://github.com/the-exterminators/error-annihilator/archive/refs/tags/pre-release.tar.gz
+	- https://github.com/the-exterminators/error-annihilator/archive/refs/tags/final.zip
+	- https://github.com/the-exterminators/error-annihilator/archive/refs/tags/final.tar.gz
 2. Navigate to the Folder containing the downloaded archive and unpack it with the following command
 ```
-unzip error-annihilator-pre-release.zip
+unzip error-annihilator-final.zip
 ```
 for the zip-File
 and
 ```
-tar -xzf error-annihilator-prea-release.tar.gz
+tar -xzf error-annihilator-final.tar.gz
 ```
 for the tar.gz-File
 
